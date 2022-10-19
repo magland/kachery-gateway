@@ -6,13 +6,14 @@ import { FileRecord, isFileRecord } from '../../src/types/FileRecord'
 import axios from "axios"
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeId): Promise<FindFileResponse> => {
-    const { hashAlg, hash } = request.payload
+    const { hashAlg, hash, bucketHints } = request.payload
 
     const db = firestoreDatabase()
 
     const filesCollection = db.collection('kachery-gateway.files')
     const querySnapshot = await filesCollection.where('hash', '==', hash).get()
     let fileRecord: FileRecord | undefined = undefined
+    let cacheHit = false
     for (let doc of querySnapshot.docs) {
         const rec = doc.data()
         if (!isFileRecord(rec)) {
@@ -20,11 +21,24 @@ const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeI
         }
         if (rec.hashAlg === hashAlg) {
             fileRecord = rec
+            cacheHit = true
             break
         }
     }
     if (!fileRecord) {
-        for (let b of gatewayConfig.buckets) {
+        const buckets = [...gatewayConfig.buckets].sort((b1, b2) => {
+            if (bucketHints) {
+                if ((bucketHints.includes(b1.uri)) && (!bucketHints.includes(b2.uri))) {
+                    return -1
+                }
+                else if ((bucketHints.includes(b2.uri)) && (!bucketHints.includes(b1.uri))) {
+                    return 1
+                }
+                else return 0
+            }
+            else return 0
+        })
+        for (let b of buckets) {
             const url = formFileUrl({bucketUri: b.uri, hashAlg, hash})
             const resp = await axios.head(url)
             if (resp.status === 200) {
@@ -54,7 +68,8 @@ const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeI
         found: true,
         size: fileRecord.size,
         bucketUri: fileRecord.bucketUri,
-        url: formFileUrl({bucketUri: fileRecord.bucketUri, hashAlg, hash})
+        url: formFileUrl({bucketUri: fileRecord.bucketUri, hashAlg, hash}),
+        cacheHit
     }
 }
 

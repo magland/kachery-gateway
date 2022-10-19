@@ -28,7 +28,7 @@ const AdminPage: FunctionComponent<Props> = () => {
 							<TableRow key={ii}>
 								<TableCell>{logItem.requestTimestamp}</TableCell>
 								<TableCell>{logItem.elapsed}</TableCell>
-								<TableCell>{JSON.stringify(logItem.requestPayload, null, 4)}</TableCell>
+								<TableCell>{JSON.stringify(supressSignatureField(logItem.request), null, 4)}</TableCell>
 								<TableCell>{JSON.stringify(logItem.response, null, 4)}</TableCell>
 								<TableCell>{JSON.stringify(logItem.requestHeaders, null, 4)}</TableCell>
 							</TableRow>
@@ -38,6 +38,10 @@ const AdminPage: FunctionComponent<Props> = () => {
 			</Table>
 		</div>
 	)
+}
+
+const supressSignatureField = (x: any) => {
+	return {...x, signature: '...'}
 }
 
 export default AdminPage

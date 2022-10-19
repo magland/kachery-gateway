@@ -1,7 +1,7 @@
 import validateObject, { isNumber, optional } from "./validateObject"
 
 export type LogItem = {
-    requestPayload: any
+    request: any
     response: any
     requestTimestamp: number
     elapsed: number
@@ -10,7 +10,7 @@ export type LogItem = {
 
 export const isLogItem = (x: any): x is LogItem => {
     return validateObject(x, {
-        requestPayload: () => (true),
+        request: () => (true),
         response: () => (true),
         requestTimestamp: isNumber,
         elapsed: isNumber,

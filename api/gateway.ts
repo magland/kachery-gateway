@@ -38,7 +38,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
     })().then((response) => {
         const elapsed = Date.now() - timestamp
-        writeLogItem({requestPayload: request.payload, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+        writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
             res.json(response)
         }).catch((err2: Error) => {
             console.warn(`Error writing log item: ${err2.message}`)

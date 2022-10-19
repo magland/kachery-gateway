@@ -1,5 +1,5 @@
 import { isNodeId, isSignature, NodeId, Signature } from "./keypair"
-import validateObject, { isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
+import validateObject, { isArrayOf, isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
 // findFile
@@ -10,6 +10,7 @@ export type FindFileRequest = {
         timestamp: number
         hashAlg: string
         hash: string
+        bucketHints?: string[]
     }
     fromClientId: NodeId
     signature: Signature
@@ -21,7 +22,8 @@ export const isFindFileRequest = (x: any): x is FindFileRequest => {
             type: isEqualTo('findFile'),
             timestamp: isNumber,
             hashAlg: isString,
-            hash: isString
+            hash: isString,
+            bucketHints: optional(isArrayOf(isString))
         })
     }
     return validateObject(x, {
@@ -37,6 +39,7 @@ export type FindFileResponse = {
     size?: number
     url?: string
     bucketUri?: string
+    cacheHit?: boolean
 }
 
 export const isFindFileResponse = (x: any): x is FindFileResponse => {
@@ -45,7 +48,8 @@ export const isFindFileResponse = (x: any): x is FindFileResponse => {
         found: isBoolean,
         size: optional(isNumber),
         url: optional(isString),
-        bucketUri: optional(isString)
+        bucketUri: optional(isString),
+        cacheHit: optional(isBoolean)
     })
 }
 
