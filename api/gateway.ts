@@ -1,9 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { isGatewayRequest } from '../src/types/GatewayRequest'
+import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
 import { hexToPublicKey, verifySignature } from '../src/types/crypto/signatures'
 import { nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
 import writeLogItem from '../apiHelpers/writeLogItem'
+import initiateFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/initiateFileUploadHandler'
+import finalizeFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/finalizeFileUploadHandler'
 
 module.exports = (req: VercelRequest, res: VercelResponse) => {
     const {body: request} = req
@@ -30,11 +32,17 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         const verifiedClientId = fromClientId
 
-        if (request.payload.type === 'findFile') {
+        if (isFindFileRequest(request)) {
             return await findFileHandler(request, verifiedClientId)
         }
+        else if (isInitiateFileUploadRequest(request)) {
+            return await initiateFileUploadHandler(request, verifiedClientId)
+        }
+        else if (isFinalizeFileUploadRequest(request)) {
+            return await finalizeFileUploadHandler(request, verifiedClientId)
+        }
         else {
-            throw Error(`Unexpected request type: ${request.payload.type}`)
+            throw Error(`Unexpected request type: ${(request as any).payload.type}`)
         }
     })().then((response) => {
         const elapsed = Date.now() - timestamp

@@ -5,6 +5,7 @@ export type FileRecord = {
     hash: string
     size: number
     bucketUri: string
+    objectKey: string
     timestamp: number
 }
 
@@ -14,6 +15,7 @@ export const isFileRecord = (x: any): x is FileRecord => {
         hash: isString,
         size: isNumber,
         bucketUri: isString,
+        objectKey: isString,
         timestamp: isNumber
     })
 }

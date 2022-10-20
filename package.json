@@ -49,6 +49,7 @@
   "devDependencies": {
     "@google-cloud/firestore": "^6.4.0",
     "@vercel/node": "^2.5.25",
+    "aws-sdk": "^2.1236.0",
     "tweetnacl": "^1.0.3"
   }
 }

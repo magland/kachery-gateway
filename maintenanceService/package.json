@@ -1,0 +1,29 @@
+{
+  "name": "kachery-cloud-maintenance-service",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "description": "Kachery cloud maintenance service",
+  "bin": {
+    "kachery-cloud-maintenance": "dist/cli.js"
+  },
+  "scripts": {
+    "start": "tsc && node dist/maintenanceService/src/cli.js",
+    "dev": "ts-node ./src/cli.ts",
+    "migrate-projects": "ts-node ./src/migrateProjects.ts",
+    "process-log-items": "ts-node ./src/processLogItems.ts",
+    "analyze-logs": "ts-node ./src/analyzeLogs.ts",
+    "build": "tsc"
+  },
+  "repository": "https://github.com/scratchrealm/kachery-cloud-gui",
+  "author": "Jeremy Magland",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "aws-sdk": "^2.1236.0",
+    "typescript": "^4.6.3"
+  },
+  "devDependencies": {
+    "ts-node": "^10.7.0"
+  }
+}
