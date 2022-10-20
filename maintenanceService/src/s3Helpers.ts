@@ -1,5 +1,6 @@
 import { PutObjectRequest } from "aws-sdk/clients/s3";
 import getS3Client, { HeadObjectOutputX } from "./getS3Client";
+import * as crypto from 'crypto'
 
 export type Bucket = {
     uri: string // e.g., wasabi://kachery-cloud?region=us-east-1
@@ -60,6 +61,25 @@ export const getObjectContent = async (bucket: Bucket, key: string): Promise<any
                 return
             }
             resolve(data.Body)
+        })
+    })
+}
+
+export const computeObjectSha1 = async (bucket: Bucket, key: string): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const s3 = getS3Client(bucket)
+        s3.getObject({
+            Bucket: bucketNameFromUri(bucket.uri),
+            Key: key
+        }, (err, data) => {
+            if (err) {
+                reject(new Error(`Error gettings metadata for object: ${err.message}`))
+                return
+            }
+            const sha1sum = crypto.createHash('sha1')
+            sha1sum.update(data.Body)
+            const hash = sha1sum.digest('hex')
+            resolve(hash)
         })
     })
 }
@@ -139,6 +159,22 @@ export const getSignedUploadUrl = async (bucket: Bucket, key: string): Promise<s
                 return
             }
             resolve(url)
+        })
+    })
+}
+
+export const listObjects = async (bucket: Bucket, prefix: string): Promise<{Key: string, Size: number}[]> => {
+    return new Promise((resolve, reject) => {
+        const s3Client = getS3Client(bucket)
+        s3Client.listObjects({
+            Bucket: 'kachery-cloud',
+            Prefix: prefix
+        }, (err, data) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(data.Contents as any[])
         })
     })
 }

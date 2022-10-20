@@ -1,52 +1,44 @@
 import * as fs from 'fs'
 import { LogItem } from "../../src/types/LogItem"
 import getS3Client from "./getS3Client"
-import { getObjectContent } from "./s3Helpers"
-import sleepMsec from "./sleepMsec"
+import { Bucket, getObjectContent, listObjects } from "./s3Helpers"
 
 const main = async () => {
     const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
     const bucket = {uri: 'wasabi://kachery-cloud?region=us-east-1', credentials: wasabiCredentials}
     const s3Client = getS3Client(bucket)
-    await sleepMsec(500)
 
-    const listObjects = async (prefix: string): Promise<{Key: string, Size: number}[]> => {
-        return new Promise((resolve, reject) => {
-            s3Client.listObjects({
-                Bucket: 'kachery-cloud',
-                Prefix: prefix
-            }, (err, data) => {
-                if (err) {
-                    reject(err)
-                    return
-                }
-                resolve(data.Contents as any[])
-            })
-        })
+    if (!fs.existsSync('logs')) {
+        fs.mkdirSync('logs')
     }
 
-    const logFiles = await listObjects('logs/')
+    const logFiles = await listObjects(bucket, 'logs/')
     const logItemsList: LogItem[] = []
     for (let a of logFiles) {
         console.info(`Loading ${a.Key} (${a.Size})`)
-        // if (a.Size < 1000000) {
-        const logItemsJson = await getObjectContent(bucket, a.Key)
+        if (!fs.existsSync(a.Key)) {
+            console.info('Downloading')
+            const content = await getObjectContent(bucket, a.Key)
+            fs.writeFileSync(a.Key, content)
+        }
+        const logItemsJson = fs.readFileSync(a.Key, 'utf-8')
         const logItems = JSON.parse(logItemsJson)
         logItemsList.push(logItems)
-        // }
     }
     const allLogItems = logItemsList.flat(1)
     console.info(`Got ${allLogItems.length} log items`)
 
-    let count = 0
+    let migratedFileCount = 0
+    let migratedFileByteCount = 0
     for (let item of allLogItems) {
         if (item.request.type === 'migrateProjectFile') {
-            count++
+            migratedFileCount += 1
+            migratedFileByteCount += item.request.fileRecord.size
         }
-        else {
-            console.info(item.request.payload.type)
-        }
+        // else {
+        //     console.info(item.request.payload.type)
+        // }
     }
-    console.info(`Migrated ${count} project files`)
+    console.info(`Migrated ${migratedFileCount} project files, ${migratedFileByteCount / 1e9} GiB`)
 }
 main()

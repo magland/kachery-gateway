@@ -1,10 +1,9 @@
-import sleepMsec from "./sleepMsec"
 import * as fs from 'fs'
-import getS3Client from "./getS3Client"
-import firestoreDatabase from "./firestoreDatabase"
-import { copyObject, deleteObject, headObject, parseBucketUri, putObject } from "./s3Helpers"
-import { isLogItem, LogItem } from "../../src/types/LogItem"
 import { JSONStringifyDeterministic } from "../../src/types/keypair"
+import { isLogItem, LogItem } from "../../src/types/LogItem"
+import firestoreDatabase from "./firestoreDatabase"
+import { parseBucketUri, putObject } from "./s3Helpers"
+import sleepMsec from "./sleepMsec"
 
 const main = async () => {
     const googleCredentials = fs.readFileSync('googleCredentials.json', {encoding: 'utf-8'})
@@ -26,8 +25,12 @@ const main = async () => {
             console.warn(logItem)
             throw Error('Invalid log item in database')
         }
-        console.info(new Date(logItem.requestTimestamp).toISOString())
+        // console.info(new Date(logItem.requestTimestamp).toISOString())
         logItems.push(logItem)
+    }
+    if (logItems.length === 0) {
+        console.info('No log items to process. Exiting.')
+        return
     }
     console.info('=================================================')
     console.info(`Processing ${logItems.length} log items.`)

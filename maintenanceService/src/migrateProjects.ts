@@ -13,69 +13,57 @@ const main = async () => {
     const credentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
 
     const bucket = {uri: 'wasabi://kachery-cloud?region=us-east-1', credentials}
-    const s3Client = getS3Client(bucket)
     await sleepMsec(500)
 
-    const listObjects = async (prefix: string): Promise<{Key: string, Size: number}[]> => {
-        return new Promise((resolve, reject) => {
-            s3Client.listObjects({
-                Bucket: 'kachery-cloud',
-                Prefix: prefix
-            }, (err, data) => {
-                if (err) {
-                    reject(err)
-                    return
-                }
-                resolve(data.Contents as any[])
-            })
-        })
-    }
-
-    const projectId = 'gsnqumxito'
     const filesCollection = db.collection('kacherycloud.files')
     const logItemsCollection = db.collection('kachery-gateway.logItems')
-    const result = await filesCollection.where('projectId', '==', projectId).limit(10000).get()
-    for (let doc of result.docs) {
-        const requestTimestamp = Date.now()
-        const file = doc.data()
-        const {hash, hashAlg} = file
-        console.info('======================================')
-        console.info(`${projectId}: ${hashAlg}://${hash}`)
-        const h = hash
-        const key0 = `projects/${projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
-        const key1 = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
-        let okay = false
-        try {
-            await headObject(bucket, key0)
-            okay = true
-        }
-        catch {
-            console.warn('Unable to find file.')
-            await sleepMsec(3000)
-        }
-        if (okay) {
-            console.info('Copying object')
-            await copyObject(bucket, key0, key1)
-            console.info('Deleting object')
-            await deleteObject(bucket, key0)
-            console.info('Deleting document')
-            doc.ref.delete()
-            const elapsed = Date.now() - requestTimestamp
-            console.info(`Elapsed ${elapsed}`)
-            const logItem: LogItem = {
-                request: {
-                    type: 'migrateProjectFile',
-                    hash,
-                    hashAlg,
-                    projectId,
-                    fileRecord: file
-                },
-                response: {},
-                requestTimestamp,
-                elapsed,
-                requestHeaders: {}
+
+    const projectIds = ['ywrnvfzmph', 'ylvgppgtfc']
+    for (let projectId of projectIds) {
+        console.info(`PROJECT: ${projectId}`)
+        const result = await filesCollection.where('projectId', '==', projectId).limit(10000).get()
+        for (let doc of result.docs) {
+            const requestTimestamp = Date.now()
+            const file = doc.data()
+            const {hash, hashAlg} = file
+            console.info('======================================')
+            console.info(`${projectId}: ${hashAlg}://${hash}`)
+            const h = hash
+            const key0 = `projects/${projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+            const key1 = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+            let okay = false
+            try {
+                await headObject(bucket, key0)
+                okay = true
             }
-            logItemsCollection.add(logItem)
+            catch {
+                console.warn('Unable to find file.')
+                await sleepMsec(500)
+            }
+            if (okay) {
+                console.info('Copying object')
+                await copyObject(bucket, key0, key1)
+                console.info('Deleting object')
+                await deleteObject(bucket, key0)
+                console.info('Deleting document')
+                doc.ref.delete()
+                const elapsed = Date.now() - requestTimestamp
+                console.info(`Elapsed ${elapsed}`)
+                const logItem: LogItem = {
+                    request: {
+                        type: 'migrateProjectFile',
+                        hash,
+                        hashAlg,
+                        projectId,
+                        fileRecord: file
+                    },
+                    response: {},
+                    requestTimestamp,
+                    elapsed,
+                    requestHeaders: {}
+                }
+                logItemsCollection.add(logItem)
+            }
         }
     }
 
