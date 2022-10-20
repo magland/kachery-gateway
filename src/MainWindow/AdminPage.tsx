@@ -28,9 +28,9 @@ const AdminPage: FunctionComponent<Props> = () => {
 							<TableRow key={ii}>
 								<TableCell>{logItem.requestTimestamp}</TableCell>
 								<TableCell>{logItem.elapsed}</TableCell>
-								<TableCell>{JSON.stringify(supressSignatureField(logItem.request), null, 4)}</TableCell>
-								<TableCell>{JSON.stringify(logItem.response, null, 4)}</TableCell>
-								<TableCell>{JSON.stringify(logItem.requestHeaders, null, 4)}</TableCell>
+								<TableCell>{JSONStringifyDeterministic(supressSignatureField(logItem.request), ' ')}</TableCell>
+								<TableCell>{JSONStringifyDeterministic(logItem.response, ' ')}</TableCell>
+								<TableCell>{JSONStringifyDeterministic(logItem.requestHeaders, ' ')}</TableCell>
 							</TableRow>
 						))
 					}
@@ -42,6 +42,14 @@ const AdminPage: FunctionComponent<Props> = () => {
 
 const supressSignatureField = (x: any) => {
 	return {...x, signature: '...'}
+}
+
+// Thanks: https://stackoverflow.com/questions/16167581/sort-object-properties-and-json-stringify
+export const JSONStringifyDeterministic = ( obj: any, space: string | number | undefined =undefined ) => {
+    var allKeys: string[] = [];
+    JSON.stringify( obj, function( key, value ){ allKeys.push( key ); return value; } )
+    allKeys.sort();
+    return JSON.stringify( obj, allKeys, space );
 }
 
 export default AdminPage
