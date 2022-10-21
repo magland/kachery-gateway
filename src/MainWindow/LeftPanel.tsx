@@ -1,4 +1,4 @@
-import { CropSquare, Home } from "@material-ui/icons";
+import { CropSquare, Home, ViewModule } from "@material-ui/icons";
 import { FunctionComponent, useMemo } from "react";
 import { useSignedIn } from "../components/googleSignIn/GoogleSignIn";
 import './LeftPanel.css';
@@ -24,7 +24,8 @@ const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
             route: Route
             icon?: any
         }[] = [
-            {label: 'Home', route: {page: 'home'}, icon: <Home />}
+            {label: 'Home', route: {page: 'home'}, icon: <Home />},
+            {label: 'Clients', route: {page: 'clients'}, icon: <ViewModule />}
         ]
         if ((userId) && (adminUsers.includes(userId.toString()))) {
             ret.push({

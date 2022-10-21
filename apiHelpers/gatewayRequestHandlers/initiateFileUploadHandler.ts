@@ -42,9 +42,10 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         throw Error(`File too large: ${size} > ${MAX_UPLOAD_SIZE}`)
     }
 
-    // make sure the client is registered
-    // in the future we will check the owner for authorization
-    const client = await getClient(clientId.toString())
+    // DON'T ENFORCE THIS YET - WHILE WE MIGRATE
+    // // make sure the client is registered
+    // // in the future we will check the owner for authorization
+    // const client = await getClient(clientId.toString())
 
     const findFileResponse = await findFile({hash, hashAlg})
     if (findFileResponse.found) {

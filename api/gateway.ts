@@ -67,7 +67,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             throw Error(`Unexpected request type: ${(request as any).payload.type}`)
         }
     })().then((response) => {
-        const elapsed = Date.now() - timestamp
+        const elapsed = Date.now() - requestTimestamp
         writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
             res.json(response)
         }).catch((err2: Error) => {

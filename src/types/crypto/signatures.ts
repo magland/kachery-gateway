@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import nacl from 'tweetnacl'
-import { isPrivateKeyHex, isPublicKeyHex, isSignature, KeyPair, PrivateKey, PrivateKeyHex, PublicKey, PublicKeyHex, Sha1Hash, Signature } from '../keypair'
+import { isPrivateKeyHex, isPublicKeyHex, isSignature, KeyPair, NodeId, PrivateKey, PrivateKeyHex, PublicKey, PublicKeyHex, Sha1Hash, Signature } from '../keypair'
 
 const ed25519PubKeyPrefix = "302a300506032b6570032100"
 const ed25519PrivateKeyPrefix = "302e020100300506032b657004220420"
@@ -129,6 +129,10 @@ export const publicKeyToHex = (publicKey: PublicKey): PublicKeyHex => {
         throw Error('Problem in public key format.')
     }
     return ret.slice(ed25519PubKeyPrefix.length) as any as PublicKeyHex
+}
+
+export const publicKeyHexToNodeId = (x: PublicKeyHex) : NodeId => {
+    return x as any as NodeId;
 }
 
 export const hexToPrivateKey = (x: PrivateKeyHex): PrivateKey => {

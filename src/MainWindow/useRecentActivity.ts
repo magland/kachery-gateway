@@ -25,7 +25,7 @@ const useRecentActivity = () => {
                 type: 'getRecentActivity',
                 auth: { userId, googleIdToken }
             }
-            const resp = await guiApiRequest(req, { setErrorMessage })
+            const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
             if (!resp) return
             if (!isGetRecentActivityResponse(resp)) {
                 console.warn(resp)

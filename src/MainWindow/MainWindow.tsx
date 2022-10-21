@@ -9,6 +9,7 @@ import ApplicationBar from './ApplicationBar/ApplicationBar';
 import LeftPanel from './LeftPanel';
 import HomePage from './HomePage';
 import AdminPage from './AdminPage';
+import ClientsTable from './ClientsTable';
 
 type Props = {
 }
@@ -54,7 +55,9 @@ const MainWindow: FunctionComponent<Props> = () => {
                         (route.page === 'home') ? (
                             <HomePage />
                         ) : signedIn ? (
-                            route.page === 'admin' ? (
+                            route.page === 'clients' ? (
+                                <ClientsTable />
+                            ) : route.page === 'admin' ? (
                                 <AdminPage
                                     width={W}
                                     height={H}

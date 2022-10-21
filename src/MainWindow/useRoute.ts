@@ -1,17 +1,14 @@
 import { useCallback } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { NodeId } from '../types/keypair'
 
 export type Route = {
     page: 'home'
 } | {
-    page: 'project'
-    projectId: string
+    page: 'clients'
 } | {
-    page: 'dataset',
-    datasetId: string
-} | {
-    page: 'submission',
-    submissionId: string
+    page: 'client'
+    clientId: NodeId
 } | {
     page: 'admin'
 }
@@ -22,28 +19,18 @@ const useRoute = () => {
 
     const p = location.pathname
     let route: Route = {page: 'home'}
-    if (p.startsWith('/project/')) {
-        const x = p.split('/')
-        const projectId = x[2]
+    if (p === '/clients') {
         route = {
-            page: 'project',
-            projectId
+            page: 'clients'
         }
     }
-    else if (p.startsWith('/dataset/')) {
+    else if (p.startsWith('/client')) {
         const x = p.split('/')
-        const datasetId = x[2]
-        route = {
-            page: 'dataset',
-            datasetId
-        }
-    }
-    else if (p.startsWith('/submission/')) {
-        const x = p.split('/')
-        const submissionId = x[2]
-        route = {
-            page: 'submission',
-            submissionId
+        if (x.length === 3) {
+            route = {
+                page: 'client',
+                clientId: x[2] as any as NodeId
+            }
         }
     }
     else if (p === '/admin') {
@@ -54,14 +41,11 @@ const useRoute = () => {
 
     const setRoute = useCallback((route: Route) => {
         let pathname2 = '/home'
-        if (route.page === 'project') {
-            pathname2 = `/project/${route.projectId}`
+        if (route.page === 'clients') {
+            pathname2 = `/clients`
         }
-        else if (route.page === 'dataset') {
-            pathname2 = `/dataset/${route.datasetId}`
-        }
-        else if (route.page === 'submission') {
-            pathname2 = `/submission/${route.submissionId}`
+        else if (route.page === 'client') {
+            pathname2 = `/client/${route.clientId}`
         }
         else if (route.page === 'admin') {
             pathname2 = `/admin`

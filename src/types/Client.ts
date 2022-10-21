@@ -1,17 +1,18 @@
-import { isNodeId, isNumber, isPrivateKeyHex, isString, isUserId, NodeId, optional, PrivateKeyHex, UserId, _validateObject } from "../commonInterface/kacheryTypes"
+import { isNodeId, isPrivateKeyHex, NodeId, PrivateKeyHex } from "./keypair"
+import validateObject, { isNumber, isString, optional } from "./validateObject"
 
 export type Client = {
     clientId: NodeId
-    ownerId: UserId
+    ownerId: string
     timestampCreated: number
     label: string
     privateKeyHex?: PrivateKeyHex
 }
 
 export const isClient = (x: any): x is Client => {
-    return _validateObject(x, {
+    return validateObject(x, {
         clientId: isNodeId,
-        ownerId: isUserId,
+        ownerId: isString,
         timestampCreated: isNumber,
         label: isString,
         privateKeyHex: optional(isPrivateKeyHex)
