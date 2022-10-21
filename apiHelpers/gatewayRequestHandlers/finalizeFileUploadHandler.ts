@@ -1,5 +1,6 @@
 import { FinalizeFileUploadRequest, FinalizeFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from '../../src/types/keypair';
+import { getClient } from "../common/getDatabaseItems";
 import { getBucket, MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
 import { deleteObject, headObject } from "./s3Helpers";
 
@@ -13,6 +14,10 @@ const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, ver
     if (!clientId) {
         throw Error('No verified client ID')
     }
+
+    // make sure the client is registered
+    // in the future we will check the owner for authorization
+    const client = await getClient(clientId.toString())
 
     const x = await headObject(bucket, objectKey)
     const size0 = x.ContentLength

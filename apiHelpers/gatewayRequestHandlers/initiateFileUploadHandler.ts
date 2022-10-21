@@ -1,5 +1,6 @@
 import { InitiateFileUploadRequest, InitiateFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
+import { getClient } from "../common/getDatabaseItems";
 import { findFile } from "./findFileHandler";
 import ObjectCache from "./ObjectCache";
 import { Bucket, getSignedUploadUrl } from "./s3Helpers";
@@ -40,6 +41,10 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
     if (size > MAX_UPLOAD_SIZE) {
         throw Error(`File too large: ${size} > ${MAX_UPLOAD_SIZE}`)
     }
+
+    // make sure the client is registered
+    // in the future we will check the owner for authorization
+    const client = await getClient(clientId.toString())
 
     const findFileResponse = await findFile({hash, hashAlg})
     if (findFileResponse.found) {

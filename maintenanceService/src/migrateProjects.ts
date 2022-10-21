@@ -18,52 +18,49 @@ const main = async () => {
     const filesCollection = db.collection('kacherycloud.files')
     const logItemsCollection = db.collection('kachery-gateway.logItems')
 
-    const projectIds = ['ywrnvfzmph', 'ylvgppgtfc']
-    for (let projectId of projectIds) {
-        console.info(`PROJECT: ${projectId}`)
-        const result = await filesCollection.where('projectId', '==', projectId).limit(10000).get()
-        for (let doc of result.docs) {
-            const requestTimestamp = Date.now()
-            const file = doc.data()
-            const {hash, hashAlg} = file
-            console.info('======================================')
-            console.info(`${projectId}: ${hashAlg}://${hash}`)
-            const h = hash
-            const key0 = `projects/${projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
-            const key1 = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
-            let okay = false
-            try {
-                await headObject(bucket, key0)
-                okay = true
+    // const result = await filesCollection.limit(1000).get()
+    const result = await filesCollection.where('projectId', '==', 'lqqrbobsev').limit(10000).get()
+    for (let doc of result.docs) {
+        const requestTimestamp = Date.now()
+        const file = doc.data()
+        const {hash, hashAlg, projectId} = file
+        console.info('======================================')
+        console.info(`${projectId}: ${hashAlg}://${hash}`)
+        const h = hash
+        const key0 = `projects/${projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+        const key1 = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+        let okay = false
+        try {
+            await headObject(bucket, key0)
+            okay = true
+        }
+        catch {
+            console.warn('Unable to find file.')
+            // await sleepMsec(500)
+        }
+        if (okay) {
+            console.info('Copying object')
+            await copyObject(bucket, key0, key1)
+            console.info('Deleting object')
+            await deleteObject(bucket, key0)
+            console.info('Deleting document')
+            doc.ref.delete()
+            const elapsed = Date.now() - requestTimestamp
+            console.info(`Elapsed ${elapsed}`)
+            const logItem: LogItem = {
+                request: {
+                    type: 'migrateProjectFile',
+                    hash,
+                    hashAlg,
+                    projectId,
+                    fileRecord: file
+                },
+                response: {},
+                requestTimestamp,
+                elapsed,
+                requestHeaders: {}
             }
-            catch {
-                console.warn('Unable to find file.')
-                await sleepMsec(500)
-            }
-            if (okay) {
-                console.info('Copying object')
-                await copyObject(bucket, key0, key1)
-                console.info('Deleting object')
-                await deleteObject(bucket, key0)
-                console.info('Deleting document')
-                doc.ref.delete()
-                const elapsed = Date.now() - requestTimestamp
-                console.info(`Elapsed ${elapsed}`)
-                const logItem: LogItem = {
-                    request: {
-                        type: 'migrateProjectFile',
-                        hash,
-                        hashAlg,
-                        projectId,
-                        fileRecord: file
-                    },
-                    response: {},
-                    requestTimestamp,
-                    elapsed,
-                    requestHeaders: {}
-                }
-                logItemsCollection.add(logItem)
-            }
+            await logItemsCollection.add(logItem)
         }
     }
 

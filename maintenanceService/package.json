@@ -14,6 +14,7 @@
     "process-log-items": "ts-node ./src/processLogItems.ts",
     "analyze-logs": "ts-node ./src/analyzeLogs.ts",
     "process-uploads": "ts-node ./src/processUploads.ts",
+    "migrate-clients": "ts-node ./src/migrateClients.ts",
     "build": "tsc"
   },
   "repository": "https://github.com/scratchrealm/kachery-cloud-gui",
