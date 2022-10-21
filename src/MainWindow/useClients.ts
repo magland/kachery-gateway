@@ -1,12 +1,12 @@
+import { useCallback, useEffect, useState } from "react"
 import guiApiRequest from "../common/guiApiRequest"
 import { useSignedIn } from "../components/googleSignIn/GoogleSignIn"
 import useErrorMessage from "../errorMessageContext/useErrorMessage"
-import { useCallback, useEffect, useState } from "react"
-import { DeleteClientRequest, GetClientsRequest, isDeleteClientResponse, isGetClientsResponse, isAddClientResponse, AddClientRequest } from "../types/GuiRequest"
 import { Client } from "../types/Client"
 import { createKeyPair, privateKeyToHex, publicKeyHexToNodeId, publicKeyToHex, signMessage } from "../types/crypto/signatures"
-import useRoute from "./useRoute"
+import { AddClientRequest, DeleteClientRequest, GetClientsRequest, isAddClientResponse, isDeleteClientResponse, isGetClientsResponse } from "../types/GuiRequest"
 import { NodeId, PrivateKeyHex, Signature } from "../types/keypair"
+import useRoute from "./useRoute"
 
 const useClients = () => {
     const [clients, setClients] = useState<Client[] | undefined>(undefined)
@@ -41,7 +41,9 @@ const useClients = () => {
         })()
     }, [userId, googleIdToken, refreshCode, setErrorMessage])
 
-    const addClient = useCallback((clientId: NodeId, label: string, verificationDocument: {type: 'addClient'}, verificationSignature: Signature, o: {privateKeyHex?: PrivateKeyHex}={}) => {
+    const {setRoute} = useRoute()
+
+    const addClient = useCallback((clientId: NodeId, label: string, verificationDocument: {type: 'addClient'}, verificationSignature: Signature, o: {privateKeyHex?: PrivateKeyHex, navigateToClientPage?: boolean}={}) => {
         if (!userId) return
             ; (async () => {
                 const req: AddClientRequest = {
@@ -61,11 +63,12 @@ const useClients = () => {
                 if (!isAddClientResponse(resp)) {
                     throw Error('Unexpected response')
                 }
+                if (o.navigateToClientPage) {
+                    setRoute({page: 'client', clientId})
+                }
                 refreshClients()
             })()
-    }, [userId, googleIdToken, refreshClients, setErrorMessage])
-
-    const {setRoute} = useRoute()
+    }, [userId, googleIdToken, refreshClients, setErrorMessage, setRoute])
 
     const createClient = useCallback((label: string, o: {navigateToClientPage?: boolean}={}) => {
         ;(async () => {
@@ -73,12 +76,9 @@ const useClients = () => {
             const clientId = publicKeyHexToNodeId(publicKeyToHex(keyPair.publicKey))
             const verificationDocument = {type: 'addClient' as 'addClient'}
             const verificationSignature = await signMessage(verificationDocument, keyPair)
-            addClient(clientId, label, verificationDocument, verificationSignature, {privateKeyHex: privateKeyToHex(keyPair.privateKey)})
-            if (o.navigateToClientPage) {
-                setRoute({page: 'client', clientId})
-            }
+            addClient(clientId, label, verificationDocument, verificationSignature, {privateKeyHex: privateKeyToHex(keyPair.privateKey), navigateToClientPage: o.navigateToClientPage})
         })()
-    }, [addClient, setRoute])
+    }, [addClient])
 
     const deleteClient = useCallback((clientId: NodeId) => {
         if (!userId) return

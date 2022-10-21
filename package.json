@@ -22,7 +22,8 @@
     "typescript": "^4.8.4",
     "web-vitals": "^2.1.4",
     "crypto": "npm:crypto-browserify",
-    "stream": "npm:stream-browserify"
+    "stream": "npm:stream-browserify",
+    "assert": "npm:assert-browserify"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",

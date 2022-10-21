@@ -83,7 +83,7 @@ const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, labe
     return (
         <div>
             <h2>Register a client</h2>
-            <p>You are associating this client with your logged in user and a kachery-cloud project.</p>
+            <p>You are associating this client with your logged in user.</p>
             <p>Complete this form and then click the REGISTER CLIENT button below.</p>
             <Table>
                 <TableBody>

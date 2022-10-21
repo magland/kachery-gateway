@@ -71,7 +71,7 @@ const ClientPage: FunctionComponent<Props> = ({clientId}) => {
     }, [client, handleLabelChange])
 
     const handleBack = useCallback(() => {
-        setRoute({page: 'home'})
+        setRoute({page: 'clients'})
     }, [setRoute])
 
     if (!clients) {
