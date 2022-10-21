@@ -1,5 +1,6 @@
+import { Client, isClient } from "./Client"
 import { isNodeId, isSignature, NodeId, Signature } from "./keypair"
-import validateObject, { isArrayOf, isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
+import validateObject, { isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
 // findFile
@@ -147,31 +148,77 @@ export const isFinalizeFileUploadResponse = (x: any): x is FinalizeFileUploadRes
     })
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// getClientInfo
+
+export type GetClientInfoRequest = {
+    payload: {
+        type: 'getClientInfo'
+        timestamp: number
+        clientId: NodeId
+    }
+    fromClientId: NodeId
+    signature: Signature
+}
+
+export const isGetClientInfoRequest = (x: any): x is GetClientInfoRequest => {
+    const isPayload = (y: any) => {
+        return validateObject(y, {
+            type: isEqualTo('getClientInfo'),
+            timestamp: isNumber,
+            clientId: isNodeId
+        })
+    }
+    return validateObject(x, {
+        payload: isPayload,
+        fromClientId: isNodeId,
+        signature: isSignature
+    })
+}
+
+export type GetClientInfoResponse = {
+    type: 'getClientInfo'
+    found: boolean
+    client?: Client
+}
+
+export const isGetClientInfoResponse = (x: any): x is GetClientInfoResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getClientInfo'),
+        found: isBoolean,
+        client: optional(isClient)
+    })
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 
 export type GatewayRequest =
     FindFileRequest |
     InitiateFileUploadRequest |
-    FinalizeFileUploadRequest
+    FinalizeFileUploadRequest |
+    GetClientInfoRequest
 
 export const isGatewayRequest = (x: any): x is GatewayRequest => {
     return isOneOf([
         isFindFileRequest,
         isInitiateFileUploadRequest,
-        isFinalizeFileUploadRequest
+        isFinalizeFileUploadRequest,
+        isGetClientInfoRequest
     ])(x)
 }
 
 export type GatewayResponse =
     FindFileResponse |
     InitiateFileUploadResponse |
-    FinalizeFileUploadResponse
+    FinalizeFileUploadResponse |
+    GetClientInfoResponse
 
 export const isGatewayResponse = (x: any): x is GatewayResponse => {
     return isOneOf([
         isFindFileResponse,
         isInitiateFileUploadResponse,
-        isFinalizeFileUploadResponse
+        isFinalizeFileUploadResponse,
+        isGetClientInfoResponse
     ])(x)
 }

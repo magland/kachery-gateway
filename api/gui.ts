@@ -76,7 +76,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         if ((request.type === 'addClient') || (request.type === 'deleteClient') || (request.type === 'setClientInfo')) {
             const elapsed = Date.now() - requestTimestamp
             const requestForLog = {...request}
-            if (requestForLog['auth'] {
+            if (requestForLog['auth']) {
                 delete (requestForLog as any)['auth']
             }
             writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {

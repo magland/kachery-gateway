@@ -1,11 +1,12 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
+import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
 import { hexToPublicKey, verifySignature } from '../src/types/crypto/signatures'
 import { nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
 import writeLogItem from '../apiHelpers/writeLogItem'
 import initiateFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/initiateFileUploadHandler'
 import finalizeFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/finalizeFileUploadHandler'
+import getClientInfoHandler from '../apiHelpers/gatewayRequestHandlers/getClientInfoHandler'
 
 module.exports = (req: VercelRequest, res: VercelResponse) => {
     const {body: request} = req
@@ -63,17 +64,25 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         else if (isFinalizeFileUploadRequest(request)) {
             return await finalizeFileUploadHandler(request, verifiedClientId)
         }
+        else if (isGetClientInfoRequest(request)) {
+            return await getClientInfoHandler(request)
+        }
         else {
             throw Error(`Unexpected request type: ${(request as any).payload.type}`)
         }
     })().then((response) => {
-        const elapsed = Date.now() - requestTimestamp
-        writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+        if (request.payload.type !== 'getClientInfo') {
+            const elapsed = Date.now() - requestTimestamp
+            writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+                res.json(response)
+            }).catch((err2: Error) => {
+                console.warn(`Error writing log item: ${err2.message}`)
+                res.status(500).send(`Error writing log item: ${err2.message}`)
+            })
+        }
+        else {
             res.json(response)
-        }).catch((err2: Error) => {
-            console.warn(`Error writing log item: ${err2.message}`)
-            res.status(500).send(`Error writing log item: ${err2.message}`)
-        })
+        }
     }).catch((error: Error) => {
         console.warn(error.message)
         res.status(500).send(`Error: ${error.message}`)

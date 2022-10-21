@@ -10,6 +10,8 @@ import LeftPanel from './LeftPanel';
 import HomePage from './HomePage';
 import AdminPage from './AdminPage';
 import ClientsTable from './ClientsTable';
+import RegisterClientPage from './RegisterClientPage';
+import ClientPage from './ClientPage';
 
 type Props = {
 }
@@ -52,7 +54,13 @@ const MainWindow: FunctionComponent<Props> = () => {
                         ) : <span />
                     }
                     {
-                        (route.page === 'home') ? (
+                        route.page === 'registerClient' ? (
+                            <RegisterClientPage
+                                clientId={route.clientId}
+                                signature={route.signature}
+                                label={route.label}
+                            />
+                        ) : (route.page === 'home') ? (
                             <HomePage />
                         ) : signedIn ? (
                             route.page === 'clients' ? (
@@ -61,6 +69,10 @@ const MainWindow: FunctionComponent<Props> = () => {
                                 <AdminPage
                                     width={W}
                                     height={H}
+                                />
+                            ) : route.page === 'client' ? (
+                                <ClientPage
+                                    clientId={route.clientId}
                                 />
                             ) : <span />
                         ) : (
