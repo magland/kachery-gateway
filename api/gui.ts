@@ -73,13 +73,22 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             throw Error(`Unexpected request type: ${request.type}`)
         }
     })().then((response) => {
-        const elapsed = Date.now() - requestTimestamp
-        writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+        if ((request.type === 'addClient') || (request.type === 'deleteClient') || (request.type === 'setClientInfo')) {
+            const elapsed = Date.now() - requestTimestamp
+            const requestForLog = {...request}
+            if (requestForLog['auth'] {
+                delete (requestForLog as any)['auth']
+            }
+            writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+                res.json(response)
+            }).catch((err2: Error) => {
+                console.warn(`Error writing log item: ${err2.message}`)
+                res.status(500).send(`Error writing log item: ${err2.message}`)
+            })
+        }
+        else {
             res.json(response)
-        }).catch((err2: Error) => {
-            console.warn(`Error writing log item: ${err2.message}`)
-            res.status(500).send(`Error writing log item: ${err2.message}`)
-        })
+        }
     }).catch((error: Error) => {
         console.warn(error.message)
         res.status(500).send(`Error: ${error.message}`)
