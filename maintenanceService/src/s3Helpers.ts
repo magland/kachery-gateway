@@ -164,10 +164,11 @@ export const getSignedUploadUrl = async (bucket: Bucket, key: string): Promise<s
 }
 
 export const listObjects = async (bucket: Bucket, prefix: string): Promise<{Key: string, Size: number}[]> => {
+    const {bucketName} = parseBucketUri(bucket.uri)
     return new Promise((resolve, reject) => {
         const s3Client = getS3Client(bucket)
         s3Client.listObjects({
-            Bucket: 'kachery-cloud',
+            Bucket: bucketName,
             Prefix: prefix
         }, (err, data) => {
             if (err) {

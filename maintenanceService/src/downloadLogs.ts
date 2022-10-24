@@ -1,23 +1,23 @@
 import * as fs from 'fs'
 import { LogItem } from "../../src/types/LogItem"
-import { getBucket } from './getBucket'
+import { getAdminBucket } from './getBucket'
 import { getObjectContent, listObjects } from "./s3Helpers"
 
 const main = async () => {
-    const bucket = getBucket()
+    const adminBucket = getAdminBucket()
     // const s3Client = getS3Client(bucket)
 
     if (!fs.existsSync('logs')) {
         fs.mkdirSync('logs')
     }
 
-    const logFiles = await listObjects(bucket, 'logs/')
+    const logFiles = await listObjects(adminBucket, 'logs/')
     const logItemsList: LogItem[] = []
     for (let a of logFiles) {
         console.info(`Loading ${a.Key} (${a.Size})`)
         if (!fs.existsSync(a.Key)) {
             console.info('Downloading')
-            const content = await getObjectContent(bucket, a.Key)
+            const content = await getObjectContent(adminBucket, a.Key)
             fs.writeFileSync(a.Key, content)
         }
         const logItemsJson = fs.readFileSync(a.Key, 'utf-8')
