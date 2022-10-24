@@ -115,7 +115,7 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
     }
 
     // report last accessed
-    const uri = `${hashAlg}://${hash}`
+    const uri = `${hashAlg}:${hash}`
     const db = firestoreDatabase()
     const collection = db.collection('kachery-gateway.filesAccessed')
     await collection.doc(uri).set({
