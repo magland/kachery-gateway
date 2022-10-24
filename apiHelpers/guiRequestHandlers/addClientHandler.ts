@@ -1,10 +1,9 @@
 import { Client } from "../../src/types/Client";
 import { hexToPublicKey, verifySignature } from "../../src/types/crypto/signatures";
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
-import { JSONStringifyDeterministic, nodeIdToPublicKeyHex } from "../../src/types/keypair";
+import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
+import firestoreDatabase from "../common/firestoreDatabase";
 import { invalidateAllClients } from "../common/getDatabaseItems";
-import { getAdminBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
-import { objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 // const MAX_NUM_CLIENTS_PER_USER = 25
 
@@ -24,21 +23,21 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
         throw Error('Invalid verification signature')
     }
 
-    const adminBucket = getAdminBucket()
-    const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
-    const kk = `clients/${clientId}`
+    // const adminBucket = getAdminBucket()
+    // const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
+    // const kk = `clients/${clientId}`
     
-    const alreadyExists = await objectExists(adminBucket, kk)
-    if (alreadyExists) {
-        throw Error('Client with clientId already exists.')
-    }
-
-    // const db = firestoreDatabase()
-    // const clientsCollection = db.collection('kachery-gateway.clients')
-    // const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
-    // if (clientSnapshot.exists) {
-    //     throw Error('Client clientId already exists.')
+    // const alreadyExists = await objectExists(adminBucket, kk)
+    // if (alreadyExists) {
+    //     throw Error('Client with clientId already exists.')
     // }
+
+    const db = firestoreDatabase()
+    const clientsCollection = db.collection('kachery-gateway.clients')
+    const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
+    if (clientSnapshot.exists) {
+        throw Error('Client clientId already exists.')
+    }
 
     // const result = await clientsCollection.where('ownerId', '==', ownerId).get()
     // if (result.docs.length + 1 > MAX_NUM_CLIENTS_PER_USER) {
@@ -53,16 +52,15 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
     }
     if (privateKeyHex) client.privateKeyHex = privateKeyHex
     
-    await putObject(adminBucket, {
-        Key: kk,
-        Body: JSONStringifyDeterministic(client),
-        Bucket: adminBucketName
-    })
+    // await putObject(adminBucket, {
+    //     Key: kk,
+    //     Body: JSONStringifyDeterministic(client),
+    //     Bucket: adminBucketName
+    // })
 
-    // await clientsCollection.doc(clientId.toString()).set(client)
+    await clientsCollection.doc(clientId.toString()).set(client)
 
     invalidateAllClients()
-    
     
     return {
         type: 'addClient'
