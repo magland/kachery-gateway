@@ -1,12 +1,11 @@
 import * as fs from 'fs'
 import { LogItem } from "../../src/types/LogItem"
-import getS3Client from "./getS3Client"
-import { Bucket, getObjectContent, listObjects } from "./s3Helpers"
+import { getBucket } from './getBucket'
+import { getObjectContent, listObjects } from "./s3Helpers"
 
 const main = async () => {
-    const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
-    const bucket = {uri: 'wasabi://kachery-cloud?region=us-east-1', credentials: wasabiCredentials}
-    const s3Client = getS3Client(bucket)
+    const bucket = getBucket()
+    // const s3Client = getS3Client(bucket)
 
     if (!fs.existsSync('logs')) {
         fs.mkdirSync('logs')

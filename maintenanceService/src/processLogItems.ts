@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import { JSONStringifyDeterministic } from "../../src/types/keypair"
 import { isLogItem, LogItem } from "../../src/types/LogItem"
 import firestoreDatabase from "./firestoreDatabase"
+import { getAdminBucket } from './getBucket'
 import { parseBucketUri, putObject } from "./s3Helpers"
 import sleepMsec from "./sleepMsec"
 
@@ -10,11 +11,11 @@ const main = async () => {
     process.env['GOOGLE_CREDENTIALS'] = googleCredentials
     const db = firestoreDatabase()
 
-    const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
-    const bucket = {uri: 'wasabi://kachery-cloud?region=us-east-1', credentials: wasabiCredentials}
+    // const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
+    const adminBucket = getAdminBucket()
     await sleepMsec(500)
 
-    const {bucketName} = parseBucketUri(bucket.uri)
+    const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
 
     const logItemsCollection = db.collection('kachery-gateway.logItems')
     const result = await logItemsCollection.orderBy('requestTimestamp', 'asc').limit(10000).get()
@@ -40,11 +41,11 @@ const main = async () => {
     const objectKey = `logs/${fname}`
     console.info(`Writing ${fname}`)
     fs.writeFileSync(fname, logItemsJson)
-    console.info(`Uploading log to bucket ${objectKey}`)
-    await putObject(bucket, {
+    console.info(`Uploading log to admin bucket ${objectKey}`)
+    await putObject(adminBucket, {
         Body: logItemsJson,
         Key: objectKey,
-        Bucket: bucketName
+        Bucket: adminBucketName
     })
     console.info('Deleting log items')
     const docBatches = splitIntoBatches(result.docs)

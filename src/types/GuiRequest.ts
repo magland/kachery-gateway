@@ -5,33 +5,6 @@ import { isLogItem, LogItem } from "./LogItem"
 import validateObject, { isArrayOf, isEqualTo, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
-// getProjectsForUser
-
-export type GetRecentActivityRequest = {
-    type: 'getRecentActivity'
-    auth: Auth
-}
-
-export const isGetRecentActivityRequest = (x: any): x is GetRecentActivityRequest => {
-    return validateObject(x, {
-        type: isEqualTo('getRecentActivity'),
-        auth: isAuth
-    })
-}
-
-export type GetRecentActivityResponse = {
-    type: 'getRecentActivity'
-    logItems: LogItem[]
-}
-
-export const isGetRecentActivityResponse = (x: any): x is GetRecentActivityResponse => {
-    return validateObject(x, {
-        type: isEqualTo('getRecentActivity'),
-        logItems: isArrayOf(isLogItem)
-    })
-}
-
-//////////////////////////////////////////////////////////////////////////////////
 // addClient
 
 export type AddClientRequest = {
@@ -165,7 +138,6 @@ export const isSetClientInfoResponse = (x: any): x is SetClientInfoResponse => {
 //////////////////////////////////////////////////////////////////////////////////
 
 export type GuiRequest =
-    GetRecentActivityRequest |
     AddClientRequest |
     DeleteClientRequest |
     GetClientsRequest |
@@ -173,7 +145,6 @@ export type GuiRequest =
 
 export const isGuiRequest = (x: any): x is GuiRequest => {
     return isOneOf([
-        isGetRecentActivityRequest,
         isAddClientRequest,
         isDeleteClientRequest,
         isGetClientsRequest,
@@ -182,7 +153,6 @@ export const isGuiRequest = (x: any): x is GuiRequest => {
 }
 
 export type GuiResponse =
-    GetRecentActivityResponse |
     AddClientResponse |
     DeleteClientResponse |
     GetClientsResponse |
@@ -190,7 +160,6 @@ export type GuiResponse =
 
 export const isGuiResponse = (x: any): x is GuiResponse => {
     return isOneOf([
-        isGetRecentActivityResponse,
         isAddClientResponse,
         isDeleteClientResponse,
         isGetClientsResponse,

@@ -1,25 +1,25 @@
-import sleepMsec from "./sleepMsec"
 import * as fs from 'fs'
-import getS3Client from "./getS3Client"
-import firestoreDatabase from "./firestoreDatabase"
-import { copyObject, deleteObject, headObject } from "./s3Helpers"
 import { LogItem } from "../../src/types/LogItem"
+import firestoreDatabase from "./firestoreDatabase"
+import { getBucket } from "./getBucket"
+import { copyObject, deleteObject, headObject } from "./s3Helpers"
+import sleepMsec from "./sleepMsec"
 
 const main = async () => {
     const googleCredentials = fs.readFileSync('googleCredentials.json', {encoding: 'utf-8'})
     process.env['GOOGLE_CREDENTIALS'] = googleCredentials
     const db = firestoreDatabase()
 
-    const credentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
+    // const credentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
 
-    const bucket = {uri: 'wasabi://kachery-cloud?region=us-east-1', credentials}
+    const bucket = getBucket()
     await sleepMsec(500)
 
     const filesCollection = db.collection('kacherycloud.files')
     const logItemsCollection = db.collection('kachery-gateway.logItems')
 
-    // const result = await filesCollection.limit(1000).get()
-    const result = await filesCollection.where('projectId', '==', 'lqqrbobsev').limit(10000).get()
+    const result = await filesCollection.limit(1000).get()
+    // const result = await filesCollection.where('projectId', '==', 'lqqrbobsev').limit(10000).get()
     for (let doc of result.docs) {
         const requestTimestamp = Date.now()
         const file = doc.data()

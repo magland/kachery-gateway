@@ -4,7 +4,6 @@ import googleVerifyIdToken from '../apiHelpers/common/googleVerifyIdToken'
 import addClientHandler from '../apiHelpers/guiRequestHandlers/addClientHandler'
 import deleteClientHandler from '../apiHelpers/guiRequestHandlers/deleteClientHandler'
 import getClientsHandler from '../apiHelpers/guiRequestHandlers/getClientsHandler'
-import getRecentActivityHandler from '../apiHelpers/guiRequestHandlers/getRecentActivityHandler'
 import setClientInfoHandler from '../apiHelpers/guiRequestHandlers/setClientInfoHandler'
 import writeLogItem from '../apiHelpers/writeLogItem'
 import { isGuiRequest } from '../src/types/GuiRequest'
@@ -44,10 +43,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     ;(async () => {
         const verifiedUserId = userId ? await googleVerifyIdToken(userId.toString(), googleIdToken) : undefined
         const verifiedReCaptchaInfo: VerifiedReCaptchaInfo | undefined = await verifyReCaptcha(reCaptchaToken)
-        if (request.type === 'getRecentActivity') {
-            return await getRecentActivityHandler(request, verifiedUserId)
-        }
-        else if (request.type === 'addClient') {
+        if (request.type === 'addClient') {
             if (!verifiedReCaptchaInfo) {
                 throw Error('ReCaptcha required')
             }

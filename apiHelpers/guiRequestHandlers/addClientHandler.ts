@@ -1,10 +1,12 @@
+import { Client } from "../../src/types/Client";
 import { hexToPublicKey, verifySignature } from "../../src/types/crypto/signatures";
-import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
-import { Client } from "../../src/types/Client"
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
-import firestoreDatabase from '../common/firestoreDatabase';
+import { JSONStringifyDeterministic, nodeIdToPublicKeyHex } from "../../src/types/keypair";
+import { invalidateAllClients } from "../common/getDatabaseItems";
+import { getAdminBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
-const MAX_NUM_CLIENTS_PER_USER = 25
+// const MAX_NUM_CLIENTS_PER_USER = 25
 
 const addClientHandler = async (request: AddClientRequest, verifiedUserId?: string): Promise<AddClientResponse> => {
     const { clientId, ownerId, label, privateKeyHex } = request
@@ -22,17 +24,26 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
         throw Error('Invalid verification signature')
     }
 
-    const db = firestoreDatabase()
-    const clientsCollection = db.collection('kachery-gateway.clients')
-    const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
-    if (clientSnapshot.exists) {
-        throw Error('Client clientId already exists.')
+    const adminBucket = getAdminBucket()
+    const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
+    const kk = `clients/${clientId}`
+    
+    const alreadyExists = await objectExists(adminBucket, kk)
+    if (alreadyExists) {
+        throw Error('Client with clientId already exists.')
     }
 
-    const result = await clientsCollection.where('ownerId', '==', ownerId).get()
-    if (result.docs.length + 1 > MAX_NUM_CLIENTS_PER_USER) {
-        throw Error(`User cannot own more than ${MAX_NUM_CLIENTS_PER_USER} clients`)
-    }
+    // const db = firestoreDatabase()
+    // const clientsCollection = db.collection('kachery-gateway.clients')
+    // const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
+    // if (clientSnapshot.exists) {
+    //     throw Error('Client clientId already exists.')
+    // }
+
+    // const result = await clientsCollection.where('ownerId', '==', ownerId).get()
+    // if (result.docs.length + 1 > MAX_NUM_CLIENTS_PER_USER) {
+    //     throw Error(`User cannot own more than ${MAX_NUM_CLIENTS_PER_USER} clients`)
+    // }
 
     const client: Client = {
         clientId,
@@ -41,7 +52,18 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
         label
     }
     if (privateKeyHex) client.privateKeyHex = privateKeyHex
-    await clientsCollection.doc(clientId.toString()).set(client)
+    
+    await putObject(adminBucket, {
+        Key: kk,
+        Body: JSONStringifyDeterministic(client),
+        Bucket: adminBucketName
+    })
+
+    // await clientsCollection.doc(clientId.toString()).set(client)
+
+    invalidateAllClients()
+    
+    
     return {
         type: 'addClient'
     }

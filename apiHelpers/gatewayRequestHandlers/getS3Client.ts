@@ -68,7 +68,7 @@ const getS3Client = (bucket: Bucket): S3Client => {
     const x = s3ClientObjectCache.get(k)
     if (x) return x
     let ret: S3Client
-    const {service} = parseBucketUri(bucket.uri)
+    const {service, region} = parseBucketUri(bucket.uri)
     if (['aws', 'wasabi', 'google'].includes(service)) {
         const cred = JSON.parse(bucket.credentials || '{}')
         for (let k of ['accessKeyId', 'secretAccessKey']) {
@@ -76,7 +76,6 @@ const getS3Client = (bucket: Bucket): S3Client => {
                 throw Error(`Missing in credentals: ${k}`)
             }
         }
-        const region = cred.region
         const accessKeyId = cred.accessKeyId
         const secretAccessKey = cred.secretAccessKey
         const o: any = {

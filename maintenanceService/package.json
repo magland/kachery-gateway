@@ -12,12 +12,13 @@
     "-prod-example": "tsc && node dist/maintenanceService/src/cli.js",
     "migrate-projects": "ts-node ./src/migrateProjects.ts",
     "process-log-items": "ts-node ./src/processLogItems.ts",
-    "analyze-logs": "ts-node ./src/analyzeLogs.ts",
+    "download-logs": "ts-node ./src/downloadLogs.ts",
     "process-uploads": "ts-node ./src/processUploads.ts",
     "migrate-clients": "ts-node ./src/migrateClients.ts",
+    "move-logs-to-admin-bucket": "ts-node ./src/moveLogsToAdminBucket.ts",
+    "move-clients-to-admin-bucket": "ts-node ./src/moveClientsToAdminBucket.ts",
     "build": "tsc"
   },
-  "repository": "https://github.com/scratchrealm/kachery-cloud-gui",
   "author": "Jeremy Magland",
   "license": "Apache-2.0",
   "dependencies": {

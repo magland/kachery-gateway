@@ -181,3 +181,19 @@ export const formBucketObjectUrl = (bucket: Bucket, objectKey: string) => {
 
     return `${bucketBaseUrl}/${objectKey}`
 }
+
+export const listObjects = async (bucket: Bucket, prefix: string): Promise<{Key: string, Size: number}[]> => {
+    return new Promise((resolve, reject) => {
+        const s3Client = getS3Client(bucket)
+        s3Client.listObjects({
+            Bucket: 'kachery-cloud',
+            Prefix: prefix
+        }, (err, data) => {
+            if (err) {
+                reject(err)
+                return
+            }
+            resolve(data.Contents as any[])
+        })
+    })
+}

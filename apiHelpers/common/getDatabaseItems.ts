@@ -1,5 +1,6 @@
 import { Client, isClient } from "../../src/types/Client"
-import firestoreDatabase from "./firestoreDatabase"
+import { getAdminBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler"
+import { getObjectContent, listObjects } from "../gatewayRequestHandlers/s3Helpers"
 
 export class ObjectCache<ObjectType> {
     #cache: {[key: string]: {object: ObjectType, timestamp: number}} = {}
@@ -30,6 +31,7 @@ export class ObjectCache<ObjectType> {
 
 const expirationMSec = 20000
 const clientObjectCache = new ObjectCache<Client>(expirationMSec)
+const allClientsObjectCache = new ObjectCache<Client[]>(5 * 60 * 1000)
 
 export const getClient = async (clientId: string, o: {includeSecrets?: boolean}={}) => {
     const x = clientObjectCache.get(clientId.toString())
@@ -37,17 +39,45 @@ export const getClient = async (clientId: string, o: {includeSecrets?: boolean}=
         if (!o.includeSecrets) x.privateKeyHex = undefined
         return x
     }
-    const db = firestoreDatabase()
-    const clientsCollection = db.collection('kachery-gateway.clients')
-    const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
-    if (!clientSnapshot.exists) throw Error('Client not registered. Use kachery-cloud-init to register this kachery-cloud client.')
-    const client = clientSnapshot.data()
-    if (!isClient(client)) throw Error('Invalid client in database')
+    const adminBucket = getAdminBucket()
+    const clientJson = await getObjectContent(adminBucket, `clients/${clientId}`)
+    const client = JSON.parse(clientJson)
+    if (!isClient(client)) throw Error('Invalid client in bucket')
     clientObjectCache.set(clientId.toString(), {...client})
     if (!o.includeSecrets) client.privateKeyHex = undefined
     return client
+    // const db = firestoreDatabase()
+    // const clientsCollection = db.collection('kachery-gateway.clients')
+    // const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
+    // if (!clientSnapshot.exists) throw Error('Client not registered. Use kachery-cloud-init to register this kachery-cloud client.')
+    // const client = clientSnapshot.data()
+    // if (!isClient(client)) throw Error('Invalid client in database')
+    // clientObjectCache.set(clientId.toString(), {...client})
+    // if (!o.includeSecrets) client.privateKeyHex = undefined
+    // return client
 }
 
-export const invalidateClientInCache = async (clientId: string) => {
+export const invalidateClientInCache = (clientId: string) => {
     clientObjectCache.delete(clientId)
+}
+
+export const getAllClients = async (): Promise<Client[]> => {
+    const x = allClientsObjectCache.get('all')
+    if (x) {
+        return x
+    }
+    const ret: Client[] = []
+    const adminBucket = getAdminBucket()
+    const a = await listObjects(adminBucket, 'clients/')
+    for (let c of a) {
+        const clientJson = await getObjectContent(adminBucket, c.Key)
+        const client = JSON.parse(clientJson)
+        if (!isClient(client)) throw Error('Invalid client in bucket')
+        ret.push(client)
+    }
+    return ret
+}
+
+export const invalidateAllClients = () => {
+    allClientsObjectCache.delete('all')
 }

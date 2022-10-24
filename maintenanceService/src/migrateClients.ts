@@ -33,7 +33,7 @@ const main = async () => {
         }
         else {
             console.info('Migrating client')
-            clientsCollectionNew.doc(clientNew.clientId).set(clientNew)
+            clientsCollectionNew.doc(clientNew.clientId.toString()).set(clientNew)
             const logItem: LogItem = {
                 request: {
                     type: 'migrateClient',

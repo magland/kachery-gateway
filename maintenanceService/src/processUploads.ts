@@ -1,6 +1,7 @@
 import * as fs from 'fs'
 import { LogItem } from "../../src/types/LogItem"
 import firestoreDatabase from "./firestoreDatabase"
+import { getBucket } from './getBucket'
 import { computeObjectSha1, copyObject, deleteObject, listObjects, objectExists } from "./s3Helpers"
 
 const main = async () => {
@@ -8,8 +9,8 @@ const main = async () => {
     process.env['GOOGLE_CREDENTIALS'] = googleCredentials
     const db = firestoreDatabase()
 
-    const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
-    const bucket = {uri: 'wasabi://kachery-cloud?region=us-east-1', credentials: wasabiCredentials}
+    // const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
+    const bucket = getBucket()
 
     const logItemsCollection = db.collection('kachery-gateway.logItems')
     
