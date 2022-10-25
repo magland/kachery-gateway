@@ -1,8 +1,7 @@
 import { Auth, isAuth } from "./Auth"
 import { Client, isClient } from "./Client"
 import { isNodeId, isPrivateKeyHex, isSignature, NodeId, PrivateKeyHex, Signature } from "./keypair"
-import { isLogItem, LogItem } from "./LogItem"
-import validateObject, { isArrayOf, isEqualTo, isOneOf, isString, optional } from "./validateObject"
+import validateObject, { isArrayOf, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
 // addClient
@@ -134,6 +133,51 @@ export const isSetClientInfoResponse = (x: any): x is SetClientInfoResponse => {
     })
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// getUsage
+
+export type GetUsageRequest = {
+    type: 'getUsage'
+    auth: Auth
+}
+
+export const isGetUsageRequest = (x: any): x is GetUsageRequest => {
+    return validateObject(x, {
+        type: isEqualTo('getUsage'),
+        auth: isAuth
+    })
+}
+
+export type UsageRequestUsage = {
+    timestamp: number,
+    dailyUsage: {
+        date: string
+        clientUsage: {[key: string]: {count: number, size: number, ownerId: string}}
+    }[]
+    totalUsage: {
+        clientUsage: {[key: string]: {count: number, size: number, ownerId: string}}
+    }
+}
+
+export const isUsageRequestUsage = (x: any): x is UsageRequestUsage => {
+    return validateObject(x, {
+        timestamp: isNumber,
+        dailyUsage: () => (true),
+        totalUsage: () => (true)
+    })
+}
+
+export type GetUsageResponse = {
+    type: 'getUsage'
+    usage: UsageRequestUsage
+}
+
+export const isGetUsageResponse = (x: any): x is GetUsageResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getUsage'),
+        usage: isUsageRequestUsage
+    })
+}
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -141,14 +185,16 @@ export type GuiRequest =
     AddClientRequest |
     DeleteClientRequest |
     GetClientsRequest |
-    SetClientInfoRequest
+    SetClientInfoRequest |
+    GetUsageRequest
 
 export const isGuiRequest = (x: any): x is GuiRequest => {
     return isOneOf([
         isAddClientRequest,
         isDeleteClientRequest,
         isGetClientsRequest,
-        isSetClientInfoRequest
+        isSetClientInfoRequest,
+        isGetUsageRequest
     ])(x)
 }
 
@@ -156,13 +202,15 @@ export type GuiResponse =
     AddClientResponse |
     DeleteClientResponse |
     GetClientsResponse |
-    SetClientInfoResponse
+    SetClientInfoResponse |
+    GetUsageResponse
 
 export const isGuiResponse = (x: any): x is GuiResponse => {
     return isOneOf([
         isAddClientResponse,
         isDeleteClientResponse,
         isGetClientsResponse,
-        isSetClientInfoResponse
+        isSetClientInfoResponse,
+        isGetUsageResponse
     ])(x)
 }

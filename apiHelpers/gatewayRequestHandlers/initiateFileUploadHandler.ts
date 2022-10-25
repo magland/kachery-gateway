@@ -1,6 +1,5 @@
 import { InitiateFileUploadRequest, InitiateFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
-import { getClient } from "../common/getDatabaseItems";
 import { findFile } from "./findFileHandler";
 import ObjectCache from "./ObjectCache";
 import { Bucket, getSignedUploadUrl } from "./s3Helpers";

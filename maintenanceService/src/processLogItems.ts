@@ -81,7 +81,7 @@ const main = async () => {
     console.info('done')
 }
 
-function splitIntoBatches(x: any[]): any[][] {
+export function splitIntoBatches(x: any[]): any[][] {
     const batchSize = 400
     const ret: any[][] = []
     let i = 0

@@ -4,7 +4,7 @@ import { NodeId } from "../../src/types/keypair"
 import firestoreDatabase from '../common/firestoreDatabase'
 import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket } from "./initiateFileUploadHandler"
-import { Bucket, formBucketObjectUrl, headObject, parseBucketUri } from "./s3Helpers"
+import { formBucketObjectUrl, headObject } from "./s3Helpers"
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeId): Promise<FindFileResponse> => {
     const { hashAlg, hash } = request.payload
@@ -12,10 +12,10 @@ const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeI
     return findFile({hashAlg, hash})
 }
 
-const bucket = getBucket()
-
 export const findFile = async (o: {hashAlg: string, hash: string}): Promise<FindFileResponse> => {
     const {hashAlg, hash} = o
+
+    const bucket = getBucket()
 
     let cacheHit = false
     let fileRecord: FileRecord | undefined = undefined

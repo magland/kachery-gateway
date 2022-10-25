@@ -1,8 +1,9 @@
 import os
 import json
-from typing import Dict, List
+from typing import Any, Dict, List
 import numpy as np
 import time
+import datetime
 
 class Client:
     def __init__(self, data: dict) -> None:
@@ -83,7 +84,7 @@ class LogAnalyzer:
             print(type0)
 
 def main():
-    base_log_dir = '../logs'
+    base_log_dir = 'logs'
 
     log_items = []
 
@@ -114,8 +115,8 @@ def main():
             client = Client(request['client'])
             clients[client.client_id] = client
     
-    all_elapsed = []
-    recent_file_counts: Dict[str, Any] = {}
+    total_client_usage: Dict[str, Any] = {}
+    client_usage_by_day_dict: Dict[str, Dict[str, Any]] = {}
     for item in log_items:
         request = item['request']
         type0 = request['type'] if 'type' in request else request['payload']['type']
@@ -126,27 +127,63 @@ def main():
             hash = payload['hash']
             size = payload['size']
             timestamp = payload['timestamp']
-            # uri = f'{hashalg}://{hash}'
-            elapsed = time.time() - (timestamp / 1000)
-            all_elapsed.append(elapsed)
-            if elapsed < 24 * 60 * 60:
-                if client_id not in recent_file_counts:
-                    if client_id not in clients:
-                        clients[client_id] = Client({'clientId': client_id, 'label': '', 'ownerId': '', 'timestampCreated': 0})
-                    recent_file_counts[client_id] = {'count': 0, 'size': 0}
-                recent_file_counts[client_id]['count'] += 1
-                recent_file_counts[client_id]['size'] += size
 
-    print(recent_file_counts)
+            if client_id not in clients:
+                clients[client_id] = Client({'clientId': client_id, 'label': '', 'ownerId': '', 'timestampCreated': 0})
 
+            date = datetime.datetime.fromtimestamp(timestamp / 1000)
+            date_str = f'{date.year}.{date.month}.{date.day}'
+            if date_str not in client_usage_by_day_dict:
+                client_usage_by_day_dict[date_str] = {}
+            
+            if client_id not in client_usage_by_day_dict[date_str]:
+                client_usage_by_day_dict[date_str][client_id] = {'count': 0, 'size': 0, 'ownerId': clients[client_id].owner_id}
+            client_usage_by_day_dict[date_str][client_id]['count'] += 1
+            client_usage_by_day_dict[date_str][client_id]['size'] += size
+            if True:
+                if client_id not in total_client_usage:
+                    total_client_usage[client_id] = {'count': 0, 'size': 0, 'ownerId': clients[client_id].owner_id}
+                total_client_usage[client_id]['count'] += 1
+                total_client_usage[client_id]['size'] += size
+
+    date_strings = sorted(list(client_usage_by_day_dict.keys()))
+    daily_usage = []
+    for date_string in date_strings:
+        daily_usage.append({
+            'date': date_string,
+            'clientUsage': client_usage_by_day_dict[date_string]
+        })
+    total_usage = {
+        'clientUsage': total_client_usage
+    }
+
+    for uu in daily_usage:
+        print('')
+        print(f'====================== {uu["date"]}')
+        client_usage = uu['clientUsage']
+        for client in clients.values():
+            if client.client_id in client_usage:
+                count = client_usage[client.client_id]['count']
+                size = client_usage[client.client_id]['size']
+                print(f'{client.client_id[:6]}... {client.owner_id} {count} {size}')
+    
+    print('')
+    print('====================== total')
     for client in clients.values():
-        if client.client_id in recent_file_counts:
-            count = recent_file_counts[client.client_id]['count']
-            size = recent_file_counts[client.client_id]['size']
+        if client.client_id in total_client_usage:
+            count = total_client_usage[client.client_id]['count']
+            size = total_client_usage[client.client_id]['size']
             print(f'{client.client_id[:6]}... {client.owner_id} {count} {size}')
     
-    print(np.min(all_elapsed))
+    usage = {
+        'timestamp': int(time.time() * 1000),
+        'dailyUsage': daily_usage,
+        'totalUsage': total_usage
+    }
 
+    with open('usage.json', 'w') as f:
+        json.dump(usage, f)
+    
     # for client in X.client_manager._clients:
     #     print(f'{"DELETED        " if client.deleted else ""}{client.client_id[:6]} {client.owner_id} {client.label}')
     

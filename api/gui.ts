@@ -4,6 +4,7 @@ import googleVerifyIdToken from '../apiHelpers/common/googleVerifyIdToken'
 import addClientHandler from '../apiHelpers/guiRequestHandlers/addClientHandler'
 import deleteClientHandler from '../apiHelpers/guiRequestHandlers/deleteClientHandler'
 import getClientsHandler from '../apiHelpers/guiRequestHandlers/getClientsHandler'
+import getUsageHandler from '../apiHelpers/guiRequestHandlers/getUsageHandler'
 import setClientInfoHandler from '../apiHelpers/guiRequestHandlers/setClientInfoHandler'
 import writeLogItem from '../apiHelpers/writeLogItem'
 import { isGuiRequest } from '../src/types/GuiRequest'
@@ -64,6 +65,9 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
                 throw Error('ReCaptcha required')
             }
             return await setClientInfoHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getUsage') {
+            return await getUsageHandler(request, verifiedUserId)
         }
         else {
             throw Error(`Unexpected request type: ${request.type}`)
