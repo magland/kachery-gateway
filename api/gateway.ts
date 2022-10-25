@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
+import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
 import { hexToPublicKey, verifySignature } from '../src/types/crypto/signatures'
 import { nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
@@ -7,6 +7,7 @@ import writeLogItem from '../apiHelpers/writeLogItem'
 import initiateFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/initiateFileUploadHandler'
 import finalizeFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/finalizeFileUploadHandler'
 import getClientInfoHandler from '../apiHelpers/gatewayRequestHandlers/getClientInfoHandler'
+import getZoneInfoHandler from '../apiHelpers/gatewayRequestHandlers/getZoneInfoHandler'
 
 module.exports = (req: VercelRequest, res: VercelResponse) => {
     const {body: request} = req
@@ -66,6 +67,9 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         else if (isGetClientInfoRequest(request)) {
             return await getClientInfoHandler(request)
+        }
+        else if (isGetZoneInfoRequest(request)) {
+            return await getZoneInfoHandler(request)
         }
         else {
             throw Error(`Unexpected request type: ${(request as any).payload.type}`)
