@@ -3,7 +3,6 @@ import { FunctionComponent, useCallback } from 'react';
 import './MainWindow.css';
 import useRoute from './useRoute';
 import useErrorMessage from '../errorMessageContext/useErrorMessage';
-import { useSignedIn } from '../components/googleSignIn/GoogleSignIn';
 import logoFull from './logoFull.png'
 import ApplicationBar from './ApplicationBar/ApplicationBar';
 import LeftPanel from './LeftPanel';
@@ -12,6 +11,7 @@ import AdminPage from './AdminPage';
 import ClientsTable from './ClientsTable';
 import RegisterClientPage from './RegisterClientPage';
 import ClientPage from './ClientPage';
+import useSignedIn from '../components/googleSignIn/useSignedIn';
 
 type Props = {
 }

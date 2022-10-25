@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react"
 import guiApiRequest from "../common/guiApiRequest"
-import { useSignedIn } from "../components/googleSignIn/GoogleSignIn"
+import useSignedIn from "../components/googleSignIn/useSignedIn"
 import useErrorMessage from "../errorMessageContext/useErrorMessage"
 import { Client } from "../types/Client"
 import { createKeyPair, privateKeyToHex, publicKeyHexToNodeId, publicKeyToHex, signMessage } from "../types/crypto/signatures"

@@ -1,28 +1,64 @@
+import { useGoogleLogin } from '@react-oauth/google'
+import axios from 'axios'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import GoogleSignInClient from './GoogleSignInClient'
-import {GoogleSignInData} from './GoogleSignInContext'
-import loadGoogleSignInClientOpts from './loadGoogleSignInClientOpts'
+import { GoogleSignInData } from './GoogleSignInContext'
+
+const loadUserIdFromToken = async (token: string) => {
+    const resp = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`)
+    const userId = resp.data.email
+    return userId
+}
 
 const useSetupGoogleSignIn = (): GoogleSignInData => {
-    const opts = useMemo(() => (loadGoogleSignInClientOpts()), [])
-    const [client, setClient] = useState<GoogleSignInClient | undefined>(undefined)
-    const [, setUpdateCode] = useState<number>(0)
-    const incrementUpdateCode = useCallback(() => {setUpdateCode(c => (c+1))}, [])
+    const [googleIdToken, setGoogleIdToken] = useState<string | undefined>()
+    const [userId, setUserId] = useState<string | undefined>()
     useEffect(() => {
-        if (!opts) return
-        const c = new GoogleSignInClient(opts)
-        c.onSignedInChanged(() => {
-            incrementUpdateCode()
+        const x = localStorage.getItem('google-access-token')
+        if (!x) return
+        let a: {expiresTimestamp: number, accessToken: string}
+        try {
+            a = JSON.parse(x)
+        }
+        catch(err) {
+            console.warn('Problem parsing access token from local storage')
+            return
+        }
+        const ts = a.expiresTimestamp
+        if (ts <= Date.now()) {
+            console.warn('Access token expired')
+            return
+        }
+        loadUserIdFromToken(a.accessToken).then(id => {
+            setGoogleIdToken(a.accessToken)
+            setUserId(id)
         })
-        c.initialize().then(() => {
-            setClient(c)
-        })
-    }, [opts, incrementUpdateCode])
+    }, [])
+    const signIn = useGoogleLogin({
+        onSuccess: tokenResponse => {
+            loadUserIdFromToken(tokenResponse.access_token).then(id => {
+                localStorage.setItem('google-access-token', JSON.stringify({
+                    accessToken: tokenResponse.access_token,
+                    expiresTimestamp: Date.now() + tokenResponse.expires_in * 1000
+                }))
+                setGoogleIdToken(tokenResponse.access_token)
+                setUserId(id)
+            })
+        }
+    });
+    const signOut = useCallback(() => {
+        setUserId(undefined)
+        setGoogleIdToken(undefined)
+        localStorage.setItem('google-access-token', '')
+    }, [])
+
+    const signedIn = useMemo(() => (userId !== undefined), [userId])
+
     return {
-        signedIn: client?.signedIn || false,
-        userId: client?.userId as any as string || undefined,
-        googleIdToken: client?.idToken || undefined,
-        gapi: client?.gapi
+        signedIn,
+        userId,
+        googleIdToken,
+        signIn,
+        signOut
     }
 }
 

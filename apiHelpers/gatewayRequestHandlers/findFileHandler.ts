@@ -69,43 +69,43 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
         }
     }
 
-    if (!fileRecord) {
-        // check the old system while we are in the process of migrating
+    // if (!fileRecord) {
+    //     // check the old system while we are in the process of migrating
 
-        const db = firestoreDatabase()
-        const filesCollection = db.collection('kacherycloud.files')
-        const uri = `${hashAlg}://${hash}`
-        const filesResult = await filesCollection.where('uri', '==', uri).orderBy('timestampCreated').get()
-        // const filesResult = await filesCollection.where('uri', '==', uri).get()
-        if (filesResult.docs.length === 0) {
-            return {
-                type: 'findFile',
-                found: false
-            }
-        }
-        else {
-            const fileData = filesResult.docs[0].data() // the first doc is the earliest because we ordered by timestampCreated
-            // note that this is a fileRecord in the old system, not the new!!
-            //     projectId: string
-            //     hashAlg: string
-            //     hash: string
-            //     uri: string
-            //     size: number
-            //     url: string
-            //     timestampCreated?: number // only optional for backward-compatibility
-            //     timestampAccessed?: number // only optional for backward-compatibility
-            // }
-            const h = hash
-            fileRecord = {
-                hashAlg,
-                hash,
-                size: fileData.size,
-                bucketUri: bucket.uri,
-                objectKey: `projects/${fileData.projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${h}`,
-                timestamp: fileData.timestampCreated
-            }
-        }
-    }
+    //     const db = firestoreDatabase()
+    //     const filesCollection = db.collection('kacherycloud.files')
+    //     const uri = `${hashAlg}://${hash}`
+    //     const filesResult = await filesCollection.where('uri', '==', uri).orderBy('timestampCreated').get()
+    //     // const filesResult = await filesCollection.where('uri', '==', uri).get()
+    //     if (filesResult.docs.length === 0) {
+    //         return {
+    //             type: 'findFile',
+    //             found: false
+    //         }
+    //     }
+    //     else {
+    //         const fileData = filesResult.docs[0].data() // the first doc is the earliest because we ordered by timestampCreated
+    //         // note that this is a fileRecord in the old system, not the new!!
+    //         //     projectId: string
+    //         //     hashAlg: string
+    //         //     hash: string
+    //         //     uri: string
+    //         //     size: number
+    //         //     url: string
+    //         //     timestampCreated?: number // only optional for backward-compatibility
+    //         //     timestampAccessed?: number // only optional for backward-compatibility
+    //         // }
+    //         const h = hash
+    //         fileRecord = {
+    //             hashAlg,
+    //             hash,
+    //             size: fileData.size,
+    //             bucketUri: bucket.uri,
+    //             objectKey: `projects/${fileData.projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${h}`,
+    //             timestamp: fileData.timestampCreated
+    //         }
+    //     }
+    // }
 
     if (!fileRecord) {
         return {

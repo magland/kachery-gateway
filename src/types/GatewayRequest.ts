@@ -190,6 +190,48 @@ export const isGetClientInfoResponse = (x: any): x is GetClientInfoResponse => {
     })
 }
 
+//////////////////////////////////////////////////////////////////////////////////
+// getZoneInfo
+
+export type GetZoneInfoRequest = {
+    payload: {
+        type: 'getZoneInfo'
+        timestamp: number
+        zoneName: string
+    }
+    fromClientId: NodeId
+    signature: Signature
+}
+
+export const isGetZoneInfoRequest = (x: any): x is GetZoneInfoRequest => {
+    const isPayload = (y: any) => {
+        return validateObject(y, {
+            type: isEqualTo('getZoneInfo'),
+            timestamp: isNumber,
+            zoneName: isString
+        })
+    }
+    return validateObject(x, {
+        payload: isPayload,
+        fromClientId: isNodeId,
+        signature: isSignature
+    })
+}
+
+export type GetZoneInfoResponse = {
+    type: 'getZoneInfo'
+    found: boolean
+    kacheryGatewayUrl?: string
+}
+
+export const isGetZoneInfoResponse = (x: any): x is GetZoneInfoResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getZoneInfo'),
+        found: isBoolean,
+        kacheryGatewayUrl: optional(isString)
+    })
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////
 
@@ -197,14 +239,16 @@ export type GatewayRequest =
     FindFileRequest |
     InitiateFileUploadRequest |
     FinalizeFileUploadRequest |
-    GetClientInfoRequest
+    GetClientInfoRequest |
+    GetZoneInfoRequest
 
 export const isGatewayRequest = (x: any): x is GatewayRequest => {
     return isOneOf([
         isFindFileRequest,
         isInitiateFileUploadRequest,
         isFinalizeFileUploadRequest,
-        isGetClientInfoRequest
+        isGetClientInfoRequest,
+        isGetZoneInfoRequest
     ])(x)
 }
 
@@ -212,13 +256,15 @@ export type GatewayResponse =
     FindFileResponse |
     InitiateFileUploadResponse |
     FinalizeFileUploadResponse |
-    GetClientInfoResponse
+    GetClientInfoResponse |
+    GetZoneInfoResponse
 
 export const isGatewayResponse = (x: any): x is GatewayResponse => {
     return isOneOf([
         isFindFileResponse,
         isInitiateFileUploadResponse,
         isFinalizeFileUploadResponse,
-        isGetClientInfoResponse
+        isGetClientInfoResponse,
+        isGetZoneInfoResponse
     ])(x)
 }

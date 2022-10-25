@@ -1,7 +1,6 @@
 import { IconButton, Table, TableBody, TableCell, TableRow } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
 import guiApiRequest from '../common/guiApiRequest';
-import { useSignedIn } from '../components/googleSignIn/GoogleSignIn';
 import useRoute from './useRoute';
 import useErrorMessage from '../errorMessageContext/useErrorMessage';
 import React, { FunctionComponent, useCallback, useMemo, useState } from 'react';
@@ -10,6 +9,7 @@ import EditableTextField from './EditableTextField';
 import useClients from './useClients';
 import { NodeId, PrivateKeyHex } from '../types/keypair';
 import Hyperlink from '../components/Hyperlink/Hyperlink';
+import useSignedIn from '../components/googleSignIn/useSignedIn';
 
 type Props = {
     clientId: NodeId

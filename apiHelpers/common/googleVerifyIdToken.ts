@@ -1,32 +1,22 @@
-import {OAuth2Client} from 'google-auth-library'
-import { isString } from '../../src/types/validateObject';
+import axios from 'axios';
 
 const REACT_APP_GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID
 if (!REACT_APP_GOOGLE_CLIENT_ID) {
     throw Error('Environment variable not set: REACT_APP_CLIENT_ID')
 }
 
-const client = new OAuth2Client(REACT_APP_GOOGLE_CLIENT_ID);
 const googleVerifyIdToken = async (userId: string, token?: string) => {
   if (!token) throw Error('No google ID token')
-  const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: REACT_APP_GOOGLE_CLIENT_ID
-      // Or, if multiple clients access the backend:
-      //[CLIENT_ID_1, CLIENT_ID_2, CLIENT_ID_3]
-  })
-  const payload = ticket.getPayload()
-  if (!payload) throw Error('No payload for ticket')
-  const userEmail = payload['email']
-  if (!userEmail) throw Error('No email in payload of token payload')
-  // If request specified a G Suite domain:
-  // const domain = payload['hd'];
-  if (userEmail !== userId.toString()) {
-    console.warn(userEmail, userId)
-    throw Error('Mismatch between auth user id and verified user id')
+
+  // note: I don't know how to verify that we have the correct client ID
+  // something should be compared against REACT_APP_GOOGLE_CLIENT_ID
+
+  const resp = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?access_token=${token}`)
+  const verifiedUserId = resp.data.email
+  if (verifiedUserId !== userId) {
+    throw Error('User ID does not match verified user ID in googleVerifyIdToken')
   }
-  if (!isString(userEmail)) throw Error(`Not a valid user id: ${userEmail}`)
-  return userEmail as any as string
+  return verifiedUserId
 }
 
 export default googleVerifyIdToken

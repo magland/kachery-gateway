@@ -5,6 +5,7 @@
   "dependencies": {
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
+    "@react-oauth/google": "^0.2.8",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -12,18 +13,18 @@
     "@types/node": "^16.11.66",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
+    "assert": "npm:assert-browserify",
     "axios": "^1.1.3",
+    "crypto": "npm:crypto-browserify",
     "google-auth-library": "^8.6.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-google-button": "^0.7.2",
     "react-router-dom": "^6.4.2",
     "react-scripts": "5.0.1",
-    "typescript": "^4.8.4",
-    "web-vitals": "^2.1.4",
-    "crypto": "npm:crypto-browserify",
     "stream": "npm:stream-browserify",
-    "assert": "npm:assert-browserify"
+    "typescript": "^4.8.4",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
     "start": "BROWSER=none react-scripts start",

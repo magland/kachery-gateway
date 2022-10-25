@@ -39,7 +39,7 @@ export const headObject = async (bucket: Bucket, key: string): Promise<HeadObjec
             Key: key
         }, (err: Error, data) => {
             if (err) {
-                reject(new Error(`Error gettings metadata for object: ${err.message}`))
+                reject(new Error(`Error getting metadata for object: ${err.message}`))
                 return
             }
             resolve(data)
@@ -55,7 +55,7 @@ export const getObjectContent = async (bucket: Bucket, key: string): Promise<any
             Key: key
         }, (err, data) => {
             if (err) {
-                reject(new Error(`Error gettings metadata for object: ${err.message}`))
+                reject(new Error(`Error getting metadata for object: ${err.message}`))
                 return
             }
             resolve(data.Body)
@@ -156,7 +156,8 @@ export const parseBucketUri = (uri: string) => {
         }
     }
     const region = query['region'] || ''
-    const service = (aa.split('/')[0] || '').split(':')[0] || ''
+    const service0 = (aa.split('/')[0] || '').split(':')[0] || ''
+    const service = service0 === 'wasabi' ? 'wasabi' : service0 === 'gs' ? 'google' : service0 === 's3' ? 'aws' : service0
     const bucketName = aa.split('/')[2] || ''
     const path = aa.split('/').slice(3).join('/')
     return {region, service, bucketName, path}

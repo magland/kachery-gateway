@@ -3,6 +3,7 @@ import { NodeId } from "../../src/types/keypair";
 import { findFile } from "./findFileHandler";
 import ObjectCache from "./ObjectCache";
 import { Bucket, getSignedUploadUrl } from "./s3Helpers";
+import { getClient } from '../common/getDatabaseItems'
 
 export const MAX_UPLOAD_SIZE = 5 * 1000 * 1000 * 1000
 
@@ -57,10 +58,9 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         throw Error(`File too large: ${size} > ${MAX_UPLOAD_SIZE}`)
     }
 
-    // DON'T ENFORCE THIS YET - WHILE WE MIGRATE
-    // // make sure the client is registered
-    // // in the future we will check the owner for authorization
-    // const client = await getClient(clientId.toString())
+    // make sure the client is registered
+    // in the future we will check the owner for authorization
+    const client = await getClient(clientId.toString())
 
     const findFileResponse = await findFile({hash, hashAlg})
     if (findFileResponse.found) {

@@ -4,10 +4,11 @@ export type GoogleSignInData = {
     signedIn: boolean
     userId?: string,
     googleIdToken?: string
-    gapi?: any
+    signIn: () => void
+    signOut: () => void
 }
 
-const dummyGoogleSignInData: GoogleSignInData = {signedIn: false}
+const dummyGoogleSignInData: GoogleSignInData = {signedIn: false, signIn: () => {}, signOut: () => {}}
 
 const GoogleSignInContext = React.createContext<GoogleSignInData>(dummyGoogleSignInData)
 

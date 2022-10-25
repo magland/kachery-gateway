@@ -1,6 +1,6 @@
 import { CropSquare, Home, ViewModule } from "@material-ui/icons";
 import { FunctionComponent, useMemo } from "react";
-import { useSignedIn } from "../components/googleSignIn/GoogleSignIn";
+import useSignedIn from "../components/googleSignIn/useSignedIn";
 import './LeftPanel.css';
 import LeftPanelItem from "./LeftPanelItem";
 import useRoute, { Route } from "./useRoute";

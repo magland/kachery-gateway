@@ -1,6 +1,6 @@
 import { AppBar, Button, Toolbar } from '@material-ui/core';
 import { FunctionComponent, useCallback } from 'react';
-import { useSignedIn } from '../../components/googleSignIn/GoogleSignIn';
+import useSignedIn from '../../components/googleSignIn/useSignedIn';
 import useRoute from '../useRoute';
 
 const appBarHeight = 50
@@ -12,16 +12,16 @@ type Props = {
 }
 
 const ApplicationBar: FunctionComponent<Props> = ({ title, logo, onHome }) => {
-    const {signedIn, userId, gapi} = useSignedIn()
+    const {signedIn, userId, signIn, signOut} = useSignedIn()
     const {setRoute} = useRoute()
 
     const handleLogin = useCallback(() => {
-        gapi.auth2.getAuthInstance().signIn();
-    }, [gapi])
+        signIn()
+    }, [signIn])
     const handleLogout = useCallback(() => {
-        gapi.auth2.getAuthInstance().signOut()
+        signOut()
         setRoute({page: 'home'})
-    }, [gapi, setRoute])
+    }, [signOut, setRoute])
 
     return (
         <span>

@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import { useSignedIn } from '../components/googleSignIn/GoogleSignIn';
+import useSignedIn from '../components/googleSignIn/useSignedIn';
 
 // const adminUsersJson = process.env.REACT_APP_ADMIN_USERS || "[]"
 // const adminUsers = JSON.parse(adminUsersJson) as any as string[]
