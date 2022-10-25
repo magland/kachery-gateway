@@ -46,7 +46,7 @@ interface S3Client {
     getObject: (params: GetObjectParamsX, callback: (err?: any, data?: any) => void) => void
     deleteObject: (params: DeleteObjectParamsX, callback: (err?: any) => void) => void
     getSignedUrl: (operation: string, params: GetSignedUrlParamsX, callback: (err?: any, url?: string) => void) => void
-    listObjects: (params: {Bucket: string, Prefix: string}, callback: (err?: any, data?: any) => void) => void
+    listObjectsV2: (params: {Bucket: string, Prefix: string, ContinuationToken?: string, MaxKeys?: number}, callback: (err?: any, data?: any) => void) => void
     copyObject: (params: {Bucket: string, CopySource: string, Key: string}, callback: (err?: any, data?: any) => void) => void
 }
 

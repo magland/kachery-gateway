@@ -9,6 +9,7 @@
     "kachery-cloud-maintenance": "dist/cli.js"
   },
   "scripts": {
+    "do-all": "npm run process-uploads && npm run process-log-items && npm run download-logs && npm run analyze-logs && npm run upload-usage",
     "process-uploads": "ts-node ./src/processUploads.ts",
     "process-log-items": "ts-node ./src/processLogItems.ts",
     "download-logs": "ts-node ./src/downloadLogs.ts",

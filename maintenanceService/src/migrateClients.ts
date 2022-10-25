@@ -3,7 +3,7 @@ import { Client } from "../../src/types/Client"
 import { LogItem } from "../../src/types/LogItem"
 import firestoreDatabase from "./firestoreDatabase"
 
-const main = async () => {
+const migrateClients = async () => {
     const googleCredentials = fs.readFileSync('googleCredentials.json', {encoding: 'utf-8'})
     process.env['GOOGLE_CREDENTIALS'] = googleCredentials
     const db = firestoreDatabase()
@@ -48,4 +48,4 @@ const main = async () => {
         }
     }
 }
-main()
+migrateClients()

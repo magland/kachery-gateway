@@ -163,19 +163,21 @@ export const getSignedUploadUrl = async (bucket: Bucket, key: string): Promise<s
     })
 }
 
-export const listObjects = async (bucket: Bucket, prefix: string): Promise<{Key: string, Size: number}[]> => {
+export const listObjects = async (bucket: Bucket, prefix: string, o: {continuationToken?: string, maxObjects?: number}={}): Promise<{objects: {Key: string, Size: number}[], continuationToken: string | undefined}> => {
     const {bucketName} = parseBucketUri(bucket.uri)
     return new Promise((resolve, reject) => {
         const s3Client = getS3Client(bucket)
-        s3Client.listObjects({
+        s3Client.listObjectsV2({
             Bucket: bucketName,
-            Prefix: prefix
+            Prefix: prefix,
+            ContinuationToken: o.continuationToken,
+            MaxKeys: o.maxObjects
         }, (err, data) => {
             if (err) {
                 reject(err)
                 return
             }
-            resolve(data.Contents as any[])
+            resolve({objects: data.Contents as {Key: string, Size: number}[], continuationToken: data.IsTruncated ? data.NextContinuationToken : undefined})
         })
     })
 }

@@ -3,7 +3,7 @@ import { JSONStringifyDeterministic } from '../../src/types/keypair'
 import { getAdminBucket } from './getBucket'
 import { parseBucketUri, putObject } from "./s3Helpers"
 
-const main = async () => {
+const uploadUsage = async () => {
     const adminBucket = getAdminBucket()
 
     const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
@@ -18,4 +18,4 @@ const main = async () => {
     })
 }
 
-main()
+uploadUsage()
