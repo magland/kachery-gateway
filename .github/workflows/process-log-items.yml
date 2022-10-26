@@ -5,7 +5,7 @@ jobs:
   Process-Log-Items:
     runs-on: ubuntu-latest
     container:
-      image: magland/process-log-items
+      image: magland/kachery-gateway-process-log-items
     steps:
       - name: Process log items
         run: cd /working && npm start
