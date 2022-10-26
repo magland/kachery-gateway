@@ -87,9 +87,6 @@ const getS3Client = (bucket: Bucket): S3Client => {
             signatureVersion: 'v4'
         }
         if (service === 'wasabi') {
-            if (!region) {
-                throw Error('Missing region in credentials')
-            }
             o.endpoint = `https://s3.${region}.wasabisys.com`
         }
         else if (service === 'google') {
