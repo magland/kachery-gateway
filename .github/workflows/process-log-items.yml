@@ -8,4 +8,6 @@ jobs:
       image: magland/kachery-gateway-process-log-items
     steps:
       - name: Process log items
+        env:
+            TESTVAR: ${{ secrets.TESTVAR }}
         run: cd /working && npm start
