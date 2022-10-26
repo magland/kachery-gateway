@@ -37,7 +37,7 @@ const processLogItems = async () => {
                 throw Error('Invalid log item in database')
             }
             const type0 = logItem.request.type || (logItem.request.payload || {}).type
-            if (![
+            if ([
                 "initiateFileUpload",
                 "finalizeFileUpload",
                 "addClient",
@@ -46,11 +46,18 @@ const processLogItems = async () => {
                 "migrateClient",
                 "migrateProjectFile"
             ].includes(type0)) {
-                console.warn(JSON.stringify(logItem))
-                throw Error(`Unexpected log item type: ${type0}`)
+                logItems.push(logItem)
+            }
+            else {
+                if (type0 === 'getZoneInfo') {
+                    console.warn(`WARNING: Unexpected log item type: ${type0}`)
+                }
+                else {
+                    throw Error(`Unexpected log item type: ${type0}`)
+                }
             }
             // console.info(new Date(logItem.requestTimestamp).toISOString())
-            logItems.push(logItem)
+            
         }
 
         console.info('=================================================')

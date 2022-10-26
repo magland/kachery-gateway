@@ -1,7 +1,7 @@
 import { GetZoneInfoRequest, GetZoneInfoResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
 
-const zonesConfigJson = process.env['REACT_APP_KACHERY_ZONES']
+const zonesConfigJson = process.env['KACHERY_ZONES']
 const zonesConfig: {
     zoneName: string
     kacheryGatewayUrl: string
