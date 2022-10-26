@@ -1,0 +1,11 @@
+name: Process log items
+on:
+  workflow_dispatch:
+jobs:
+  Process-Log-Items:
+    runs-on: ubuntu-latest
+    container:
+      image: magland:process-log-items
+    steps:
+      - name: Process log items
+        run: cd /working && npm start
