@@ -121,6 +121,7 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
     await collection.doc(uri).set({
         hashAlg,
         hash,
+        size: fileRecord.size,
         timestamp: Date.now()
     })
 
