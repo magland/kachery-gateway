@@ -36,58 +36,11 @@ class FileManager:
             return
         self._files[uri] = File(uri=uri, size=size)
 
-class LogAnalyzer:
-    def __init__(self) -> None:
-        self.client_manager = ClientManager()
-        self.file_manager = FileManager()
-    def process_log_item(self, item):
-        request = item['request']
-        type0 = request['type'] if 'type' in request else request['payload']['type']
-        if type0 == 'deleteUploadBecauseAlreadyExist':
-            type0 = 'deleteUploadBecauseAlreadyExists' # correct typo
-
-        if type0 == 'migrateProjectFile':
-            file_record = request['fileRecord']
-            uri = f'{file_record["hashAlg"]}://{file_record["hash"]}'
-            size = file_record['size']
-            self.file_manager.add_file(uri=uri, size=size)
-        elif type0 == 'findFile':
-            pass
-        elif type0 == 'initiateFileUpload':
-            pass
-        elif type0 == 'finalizeFileUpload':
-            payload = request['payload']
-            hashalg = payload['hashAlg']
-            hash = payload['hash']
-            size = payload['size']
-            uri = f'{hashalg}://{hash}'
-            self.file_manager.add_file(uri=uri, size=size)
-        elif type0 == 'addClient':
-            self.client_manager.add_client(Client({**request, 'timestampCreated': item['requestTimestamp']}))
-        elif type0 == 'deleteClient':
-            self.client_manager.mark_client_deleted(request['clientId'])
-        elif type0 == 'setClientInfo':
-            pass
-        elif type0 == 'migrateClient':
-            self.client_manager.add_client(Client(request['client']))
-        elif type0 == 'acceptUpload':
-            pass
-        elif type0 in ['getClients']:
-            # ignore
-            pass
-        elif type0 == 'deleteUploadBecauseAlreadyExists':
-            pass
-        elif type0 == 'getRecentActivity':
-            pass
-        else:
-            print(type0)
-
 def main():
     base_log_dir = 'logs'
 
     log_items = []
 
-    # X = LogAnalyzer()
     files = os.listdir(base_log_dir)
     for a in files:
         if a.startswith('log-') and a.endswith('.json'):

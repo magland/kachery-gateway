@@ -18,6 +18,7 @@
     "-onetime-migrate-projects": "ts-node ./src/migrateProjects.ts",
     "-onetime-migrate-clients": "ts-node ./src/migrateClients.ts",
     "-onetime-move-logs-to-admin-bucket": "ts-node ./src/moveLogsToAdminBucket.ts",
+    "-onetime-consolidate-logs": "ts-node ./src/consolidateLogs.ts",
     "-old-process-uploads": "ts-node ./src/processUploads.ts",
     "build": "tsc"
   },

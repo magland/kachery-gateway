@@ -75,7 +75,10 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             throw Error(`Unexpected request type: ${(request as any).payload.type}`)
         }
     })().then((response) => {
-        if ((request.payload.type !== 'getClientInfo') && (request.payload.type !== 'findFile')) {
+        if (
+            ((request.payload.type === 'initiateFileUpload') && (response.type === 'initiateFileUpload') && (!response.alreadyExists))
+            || (request.payload.type === 'finalizeFileUpload')
+        ) {
             const elapsed = Date.now() - requestTimestamp
             writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
                 res.json(response)

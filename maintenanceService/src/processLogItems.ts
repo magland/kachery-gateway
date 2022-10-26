@@ -12,8 +12,6 @@ const processLogItems = async () => {
     process.env['GOOGLE_CREDENTIALS'] = googleCredentials
     const db = firestoreDatabase()
 
-    console.info('Process log items')
-
     // const wasabiCredentials = fs.readFileSync('wasabiCredentials.json', {encoding: 'utf-8'})
     const adminBucket = getAdminBucket()
 
@@ -38,30 +36,26 @@ const processLogItems = async () => {
                 console.warn(logItem)
                 throw Error('Invalid log item in database')
             }
+            const type0 = logItem.request.type || (logItem.request.payload || {}).type
+            if (![
+                "initiateFileUpload",
+                "finalizeFileUpload",
+                "addClient",
+                "deleteClient",
+                "setClientInfo",
+                "migrateClient",
+                "migrateProjectFile"
+            ].includes(type0)) {
+                console.warn(JSON.stringify(logItem))
+                throw Error(`Unexpected log item type: ${type0}`)
+            }
             // console.info(new Date(logItem.requestTimestamp).toISOString())
             logItems.push(logItem)
         }
 
-        // console.info('Loading log items')
-        // const x = await listObjects(adminBucket, 'logItems/')
-        // for (let i = 0; i < x.length; i++) {
-        //     if (i % 10 === 0) {
-        //         console.info(`Loading item ${i} / ${x.length}`)
-        //     }
-        //     const a = x[i]
-        //     const logItemJson = await getObjectContent(adminBucket, a.Key)
-        //     const logItem = JSON.parse(logItemJson)
-        //     if (!isLogItem(logItem)) {
-        //         console.warn(logItem)
-        //         throw Error('Invalid log item in bucket')
-        //     }
-        //     // console.info(new Date(logItem.requestTimestamp).toISOString())
-        //     logItemsList.push({item: logItem, key: a.Key})
-        // }
-
         console.info('=================================================')
         console.info(`Processing ${logItems.length} log items.`)
-        const logItemsJson = JSONStringifyDeterministic(logItems)
+        const logItemsJson = JSON.stringify(logItems) // deterministic stringify can be slow here
         const ts = new Date().toISOString()
         const fname = `log-${ts}.json`
         const objectKey = `logs/${fname}`
