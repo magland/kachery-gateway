@@ -1,7 +1,7 @@
 import { DocumentSnapshot } from '@google-cloud/firestore'
 import * as fs from 'fs'
-import { JSONStringifyDeterministic } from "../../src/types/keypair"
-import { isLogItem, LogItem } from "../../src/types/LogItem"
+import { JSONStringifyDeterministic } from "./types/keypair"
+import { isLogItem, LogItem } from "./types/LogItem"
 import firestoreDatabase from './firestoreDatabase'
 import { getAdminBucket } from './getBucket'
 import { parseBucketUri, putObject } from "./s3Helpers"

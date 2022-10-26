@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { LogItem } from "../../src/types/LogItem"
+import { LogItem } from "./types/LogItem"
 import firestoreDatabase from "./firestoreDatabase"
 import { getBucket } from './getBucket'
 import { computeObjectSha1, copyObject, deleteObject, listObjects, objectExists } from "./s3Helpers"
@@ -59,7 +59,10 @@ const processUploads = async () => {
                         await logItemsCollection.add(logItem)
                     }
                     else if (item.Size > 100 * 1000 * 1000) {
-                        console.info('Too large. Skipping.')
+                        console.info('Too large. Not checking.')
+                        await copyObject(bucket, item.Key, key2)
+                        console.info('Deleting object')
+                        await deleteObject(bucket, item.Key)
                     }
                     else {
                         const hash0 = await computeObjectSha1(bucket, item.Key)

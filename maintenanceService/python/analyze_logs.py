@@ -1,7 +1,6 @@
 import os
 import json
 from typing import Any, Dict, List
-import numpy as np
 import time
 import datetime
 

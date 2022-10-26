@@ -1,5 +1,5 @@
 import AWS from 'aws-sdk';
-import { sha1OfString } from '../../src/types/keypair';
+import { sha1OfString } from './types/keypair';
 import { parseBucketUri } from './s3Helpers';
 import ObjectCache from './ObjectCache';
 import { Bucket } from './s3Helpers';

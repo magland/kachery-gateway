@@ -40,8 +40,8 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
         const h = hash
         const key0 = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
         const objectKeys = [
-            key0, // check root directory
-            `uploads/${key0}` // check uploads directory
+            key0 // check root directory
+            // `uploads/${key0}` // check uploads directory
         ]
         for (let objectKey of objectKeys) {
             let headObjectOutput: HeadObjectOutputX | undefined = undefined

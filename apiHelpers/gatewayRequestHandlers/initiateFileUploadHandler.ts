@@ -73,7 +73,8 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
     const h = hash
     // in case we want to copy on finalize
     // const objectKey = `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}.upload.${randomAlphaString(8)}`
-    const objectKey = `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+    // const objectKey = `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+    const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
 
     const signedUploadUrl = await getSignedUploadUrl(bucket, objectKey)
 

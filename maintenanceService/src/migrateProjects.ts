@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { LogItem } from "../../src/types/LogItem"
+import { LogItem } from "./types/LogItem"
 import firestoreDatabase from "./firestoreDatabase"
 import { getBucket } from "./getBucket"
 import { copyObject, deleteObject, headObject } from "./s3Helpers"

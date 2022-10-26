@@ -1,4 +1,4 @@
-import validateObject, { isEqualTo, isString } from "../../src/types/validateObject"
+import validateObject, { isEqualTo, isString } from "./types/validateObject"
 
 export type GoogleServiceAccountCredentials = {
     type: 'service_account',

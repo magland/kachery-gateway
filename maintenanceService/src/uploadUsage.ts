@@ -1,5 +1,5 @@
 import * as fs from 'fs'
-import { JSONStringifyDeterministic } from '../../src/types/keypair'
+import { JSONStringifyDeterministic } from './types/keypair'
 import { getAdminBucket } from './getBucket'
 import { parseBucketUri, putObject } from "./s3Helpers"
 

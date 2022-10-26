@@ -1,6 +1,6 @@
 import * as fs from 'fs'
-import { Client } from "../../src/types/Client"
-import { LogItem } from "../../src/types/LogItem"
+import { Client } from "./types/Client"
+import { LogItem } from "./types/LogItem"
 import firestoreDatabase from "./firestoreDatabase"
 
 const migrateClients = async () => {
