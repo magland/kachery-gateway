@@ -9,7 +9,6 @@ on:
   workflow_dispatch:
 jobs:
   Deploy-Production:
-    environment: primary
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
