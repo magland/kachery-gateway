@@ -5,6 +5,8 @@ env:
   ADMIN_BUCKET_CREDENTIALS: ${{ secrets.ADMIN_BUCKET_CREDENTIALS }}
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
 jobs:
   Processing:
     runs-on: ubuntu-latest
