@@ -2,4 +2,4 @@
 
 set -ex
 
-docker build -t magland/kachery-gateway-processing .
+docker build -t magland/kachery-gateway-processing:0.1.0 .

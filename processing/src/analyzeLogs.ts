@@ -8,8 +8,8 @@ const analyzeLogs = async () => {
     const { bucketName: adminBucketName } = parseBucketUri(adminBucket.uri)
 
     const clients: {[key: string]: {clientId: string, ownerId: string}} = {}
-    const totalClientUsage: {[key: string]: {size: number, count: number}} = {}
-    const clientUsageByDay: {[key: string]: {[key: string]: {size: number, count: number}}} = {}
+    const totalClientUsage: {[key: string]: {size: number, count: number, ownerId: string}} = {}
+    const clientUsageByDay: {[key: string]: {[key: string]: {size: number, count: number, ownerId: string}}} = {}
 
     const processUpload = (upload: {
         clientId: string
@@ -22,7 +22,7 @@ const analyzeLogs = async () => {
             clients[upload.clientId] = {clientId: upload.clientId, ownerId: ''}
         }
         if (!(upload.clientId in totalClientUsage)) {
-            totalClientUsage[upload.clientId] = {size: 0, count: 0}
+            totalClientUsage[upload.clientId] = {size: 0, count: 0, ownerId: ''}
         }
         const date = new Date(upload.timestamp)
         const dateString = date.toISOString().split('T')[0] // yyyy-mm-dd
@@ -30,7 +30,7 @@ const analyzeLogs = async () => {
             clientUsageByDay[dateString] = {}
         }
         if (!(upload.clientId in clientUsageByDay[dateString])) {
-            clientUsageByDay[dateString][upload.clientId] = {size: 0, count: 0}
+            clientUsageByDay[dateString][upload.clientId] = {size: 0, count: 0, ownerId: ''}
         }
         totalClientUsage[upload.clientId].count += 1
         totalClientUsage[upload.clientId].size += upload.size
@@ -87,7 +87,7 @@ const analyzeLogs = async () => {
     }
 
     const dateStrings = Object.keys(clientUsageByDay).sort()
-    const dailyUsage: {date: string, clientUsage: {[key: string]: {size: number, count: number}}}[] = []
+    const dailyUsage: {date: string, clientUsage: {[key: string]: {size: number, count: number, ownerId: string}}}[] = []
     for (let dateString of dateStrings) {
         dailyUsage.push({
             'date': dateString,
@@ -105,6 +105,7 @@ const analyzeLogs = async () => {
         for (let clientId in clientUsage) {
             const client = clients[clientId]
             const {count, size} = clientUsage[clientId]
+            clientUsage[clientId].ownerId = client.ownerId
             console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${count} ${size}`)
         }
     }
@@ -112,14 +113,17 @@ const analyzeLogs = async () => {
     console.info('====================== total')
     for (let clientId in clients) {
         const client = clients[clientId]
-        const {count, size} = totalClientUsage[clientId]
-        console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${count} ${size}`)
+        if (clientId in totalClientUsage) {
+            const {count, size} = totalClientUsage[clientId]
+            totalClientUsage[clientId].ownerId = client.ownerId
+            console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${count} ${size}`)
+        }
     }
     
     const usage = {
-        'timestamp': Date.now(),
-        'dailyUsage': dailyUsage,
-        'totalUsage': totalUsage
+        timestamp: Date.now(),
+        dailyUsage: dailyUsage,
+        totalUsage: totalUsage
     }
 
     putObject(adminBucket, {
