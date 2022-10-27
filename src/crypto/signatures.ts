@@ -1,6 +1,6 @@
 import crypto from 'crypto'
 import nacl from 'tweetnacl'
-import { isPrivateKeyHex, isPublicKeyHex, isSignature, KeyPair, NodeId, PrivateKey, PrivateKeyHex, PublicKey, PublicKeyHex, Sha1Hash, Signature } from '../keypair'
+import { isPrivateKeyHex, isPublicKeyHex, isSignature, KeyPair, NodeId, PrivateKey, PrivateKeyHex, PublicKey, PublicKeyHex, Sha1Hash, Signature } from '../types/keypair'
 import { Buffer } from 'buffer'
 
 const ed25519PubKeyPrefix = "302a300506032b6570032100"

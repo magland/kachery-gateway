@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
-import { hexToPublicKey, verifySignature } from '../src/types/crypto/signatures'
+import { hexToPublicKey, verifySignature } from '../src/crypto/signatures'
 import { nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
 import writeLogItem from '../apiHelpers/writeLogItem'

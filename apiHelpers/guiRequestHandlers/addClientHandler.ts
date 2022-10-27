@@ -1,5 +1,5 @@
 import { Client } from "../../src/types/Client";
-import { hexToPublicKey, verifySignature } from "../../src/types/crypto/signatures";
+import { hexToPublicKey, verifySignature } from "../../src/crypto/signatures";
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
 import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
 import firestoreDatabase from "../common/firestoreDatabase";
