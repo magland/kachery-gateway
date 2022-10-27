@@ -10,3 +10,5 @@ COPY src /working/src
 RUN cd /working && npm run build
 
 WORKDIR /working
+
+CMD ["/bin/bash"]

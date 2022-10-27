@@ -12,4 +12,4 @@ jobs:
       image: magland/kachery-gateway-processing
     steps:
       - name: Process log items
-        run: npm run process-log-items
+        run: cd /working && npm run process-log-items
