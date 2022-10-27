@@ -1,0 +1,22 @@
+{
+  "name": "kachery-gateway-processing",
+  "version": "0.1.0",
+  "engines": {
+    "node": ">=12.0.0"
+  },
+  "description": "Kachery Gateway processing",
+  "scripts": {
+    "process-log-items": "node dist/processLogItems.js",
+    "build": "tsc"
+  },
+  "author": "Jeremy Magland",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@google-cloud/firestore": "^6.4.1",
+    "aws-sdk": "^2.1236.0",
+    "typescript": "^4.6.3"
+  },
+  "devDependencies": {
+    "ts-node": "^10.7.0"
+  }
+}

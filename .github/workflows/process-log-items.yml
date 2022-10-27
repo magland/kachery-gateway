@@ -1,13 +1,15 @@
 name: Process log items
+env:
+  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+  ADMIN_BUCKET_URI: ${{ secrets.ADMIN_BUCKET_URI }}
+  ADMIN_BUCKET_CREDENTIALS: ${{ secrets.ADMIN_BUCKET_CREDENTIALS }}
 on:
   workflow_dispatch:
 jobs:
   Process-Log-Items:
     runs-on: ubuntu-latest
     container:
-      image: magland/kachery-gateway-process-log-items
+      image: magland/kachery-gateway-processing
     steps:
       - name: Process log items
-        env:
-            TESTVAR: ${{ secrets.TESTVAR }}
-        run: cd /working && npm start
+        run: npm run process-log-items
