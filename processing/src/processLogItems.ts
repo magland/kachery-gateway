@@ -1,32 +1,18 @@
 // import { DocumentSnapshot } from '@google-cloud/firestore'
 
-import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
-import firestoreDatabase from "./firestoreDatabase"
-import { getBucket } from "./getBucket"
-import { isLogItem, LogItem } from "./types/LogItem"
 import { DocumentSnapshot } from "@google-cloud/firestore"
 import * as fs from 'fs'
+import firestoreDatabase from "./firestoreDatabase"
+import { getBucket } from "./getBucket"
+import { parseBucketUri, putObject } from "./s3Helpers"
 import splitIntoBatches from "./splitIntoBatches"
+import { isLogItem, LogItem } from "./types/LogItem"
 
 const processLogItems = async () => {
     const db = firestoreDatabase()
 
     const bucket = getBucket()
     const {bucketName} = parseBucketUri(bucket.uri)
-
-    // one-time migration
-    const oneTimeMigrationBucket = {...bucket, uri: 'wasabi://kachery-cloud-admin?region=us-east-1'}
-    const {objects} = await listObjects(oneTimeMigrationBucket, 'logs/')
-    for (let obj of objects) {
-        const content = await getObjectContent(oneTimeMigrationBucket, obj.Key)
-        await putObject(bucket, {
-            Key: obj.Key,
-            Body: content,
-            Bucket: bucketName
-        })
-    }
-    ////////////////////////////////////////////////////////////////////////
-
 
     const logItems: LogItem[] = []
 
