@@ -49,32 +49,34 @@ const analyzeLogs = async () => {
         const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, 'logs/', {continuationToken, maxObjects: 500})
         for (let a of logFiles) {
             console.info(`Loading ${a.Key} (${a.Size})`)
-            console.info('Downloading')
-            const logItemsJson = await getObjectContent(bucket, a.Key)
-            const logItems = JSON.parse(logItemsJson)
-            for (let logItem of logItems) {
-                const type0 = logItem.request.type || (logItem.request.payload || {}).type
-                if (type0 === 'finalizeFileUpload') {
-                    const req = logItem.request as FinalizeFileUploadRequest
-                    processUpload({
-                        clientId: req.fromClientId.toString(),
-                        hash: req.payload.hash,
-                        hashAlg: req.payload.hashAlg,
-                        size: req.payload.size,
-                        timestamp: logItem.requestTimestamp
-                    })
-                }
-                else if (type0 === 'addClient') {
-                    const req = logItem.request as AddClientRequest
-                    const clientId = req.clientId
-                    const ownerId = req.ownerId
-                    processAddClient(clientId.toString(), ownerId)
-                }
-                else if (type0 === 'migrateClient') {
-                    const req = logItem.request
-                    const clientId = req.client.clientId
-                    const ownerId = req.client.ownerId
-                    processAddClient(clientId, ownerId)
+            if (a.Size > 0) { // ignore empty files
+                console.info('Downloading')
+                const logItemsJson = await getObjectContent(bucket, a.Key)
+                const logItems = JSON.parse(logItemsJson)
+                for (let logItem of logItems) {
+                    const type0 = logItem.request.type || (logItem.request.payload || {}).type
+                    if (type0 === 'finalizeFileUpload') {
+                        const req = logItem.request as FinalizeFileUploadRequest
+                        processUpload({
+                            clientId: req.fromClientId.toString(),
+                            hash: req.payload.hash,
+                            hashAlg: req.payload.hashAlg,
+                            size: req.payload.size,
+                            timestamp: logItem.requestTimestamp
+                        })
+                    }
+                    else if (type0 === 'addClient') {
+                        const req = logItem.request as AddClientRequest
+                        const clientId = req.clientId
+                        const ownerId = req.ownerId
+                        processAddClient(clientId.toString(), ownerId)
+                    }
+                    else if (type0 === 'migrateClient') {
+                        const req = logItem.request
+                        const clientId = req.client.clientId
+                        const ownerId = req.client.ownerId
+                        processAddClient(clientId, ownerId)
+                    }
                 }
             }
         }
