@@ -13,16 +13,3 @@ export const getBucket = () => {
     }
     return bucket
 }
-export const getAdminBucket = () => {
-    const bucket: Bucket = {
-        uri: process.env['ADMIN_BUCKET_URI'] || '',
-        credentials: process.env['ADMIN_BUCKET_CREDENTIALS'] || ''
-    }
-    if (!bucket.uri) {
-        throw Error(`Environment variable not set: ADMIN_BUCKET_URI`)
-    }
-    if (!bucket.credentials) {
-        throw Error(`Environment variable not set: ADMIN_BUCKET_CREDENTIALS`)
-    }
-    return bucket
-}

@@ -1,8 +1,8 @@
 name: Process log items
 env:
   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
-  ADMIN_BUCKET_URI: ${{ secrets.ADMIN_BUCKET_URI }}
-  ADMIN_BUCKET_CREDENTIALS: ${{ secrets.ADMIN_BUCKET_CREDENTIALS }}
+  BUCKET_URI: ${{ secrets.BUCKET_URI }}
+  BUCKET_CREDENTIALS: ${{ secrets.BUCKET_CREDENTIALS }}
 on:
   workflow_dispatch:
   schedule:

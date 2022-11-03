@@ -4,13 +4,16 @@ import { NodeId } from "../../src/types/keypair"
 import firestoreDatabase from '../common/firestoreDatabase'
 import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket } from "./initiateFileUploadHandler"
-import { formBucketObjectUrl, headObject } from "./s3Helpers"
+import ObjectCache from './ObjectCache'
+import { getSignedDownloadUrl, headObject } from "./s3Helpers"
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeId): Promise<FindFileResponse> => {
     const { hashAlg, hash } = request.payload
 
     return findFile({hashAlg, hash})
 }
+
+const signedUrlObjectCache = new ObjectCache<{timestampCreated: number, url: string}>(1000 * 60 * 30)
 
 export const findFile = async (o: {hashAlg: string, hash: string}): Promise<FindFileResponse> => {
     const {hashAlg, hash} = o
@@ -125,13 +128,31 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
         timestamp: Date.now()
     })
 
+    // const url = formBucketObjectUrl(bucket, fileRecord.objectKey)
+    const cacheKey = `${bucket.uri}.${fileRecord.objectKey}`
+    const aa = signedUrlObjectCache.get(cacheKey)
+    let url: string | undefined = undefined
+    if (aa) {
+        const elapsed = Date.now() - aa.timestampCreated
+        if (elapsed < 1000 * 60 * 30) {
+            url = aa.url
+        }
+        else {
+            signedUrlObjectCache.delete(cacheKey)
+        }
+    }
+    if (!url) {
+        url = await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
+        signedUrlObjectCache.set(cacheKey, {timestampCreated: Date.now(), url})
+    }
+
     return {
         type: 'findFile',
         found: true,
         size: fileRecord.size,
         bucketUri: fileRecord.bucketUri,
         objectKey: fileRecord.objectKey,
-        url: formBucketObjectUrl(bucket, fileRecord.objectKey),
+        url,
         cacheHit
     }
 }

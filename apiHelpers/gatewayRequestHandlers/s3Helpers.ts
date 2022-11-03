@@ -142,6 +142,27 @@ export const getSignedUploadUrl = async (bucket: Bucket, key: string): Promise<s
     })
 }
 
+export const getSignedDownloadUrl = async (bucket: Bucket, key: string, expiresSec: number): Promise<string> => {
+    return new Promise<string>((resolve, reject) => {
+        const s3 = getS3Client(bucket)
+        s3.getSignedUrl('getObject', {
+            Bucket: bucketNameFromUri(bucket.uri),
+            Key: key,
+            Expires: expiresSec
+        }, (err, url) => {
+            if (err) {
+                reject(new Error(`Error getting signed url: ${err.message}`))
+                return
+            }
+            if (!url) {
+                reject(new Error('Unexpected, url is undefined'))
+                return
+            }
+            resolve(url)
+        })
+    })
+}
+
 export const parseBucketUri = (uri: string) => {
     let ind = uri.indexOf('?')
     if (ind < 0) ind = uri.length

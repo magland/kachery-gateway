@@ -1,11 +1,11 @@
-import { getAdminBucket } from './getBucket'
+import { getBucket } from './getBucket'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import { FinalizeFileUploadRequest } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
 
 const analyzeLogs = async () => {
-    const adminBucket = getAdminBucket()
-    const { bucketName: adminBucketName } = parseBucketUri(adminBucket.uri)
+    const bucket = getBucket()
+    const { bucketName } = parseBucketUri(bucket.uri)
 
     const clients: {[key: string]: {clientId: string, ownerId: string}} = {}
     const totalClientUsage: {[key: string]: {size: number, count: number, ownerId: string}} = {}
@@ -46,11 +46,11 @@ const analyzeLogs = async () => {
 
     let continuationToken: string | undefined = undefined
     while (true) {
-        const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(adminBucket, 'logs/', {continuationToken, maxObjects: 500})
+        const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, 'logs/', {continuationToken, maxObjects: 500})
         for (let a of logFiles) {
             console.info(`Loading ${a.Key} (${a.Size})`)
             console.info('Downloading')
-            const logItemsJson = await getObjectContent(adminBucket, a.Key)
+            const logItemsJson = await getObjectContent(bucket, a.Key)
             const logItems = JSON.parse(logItemsJson)
             for (let logItem of logItems) {
                 const type0 = logItem.request.type || (logItem.request.payload || {}).type
@@ -126,9 +126,9 @@ const analyzeLogs = async () => {
         totalUsage: totalUsage
     }
 
-    putObject(adminBucket, {
+    putObject(bucket, {
         Key: `usage/usage.json`,
-        Bucket: adminBucketName,
+        Bucket: bucketName,
         Body: JSON.stringify(usage, null, 4)
     })
 }

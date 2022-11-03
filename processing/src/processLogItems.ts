@@ -1,8 +1,8 @@
 // import { DocumentSnapshot } from '@google-cloud/firestore'
 
-import { parseBucketUri, putObject } from "./s3Helpers"
+import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import firestoreDatabase from "./firestoreDatabase"
-import { getAdminBucket } from "./getBucket"
+import { getBucket } from "./getBucket"
 import { isLogItem, LogItem } from "./types/LogItem"
 import { DocumentSnapshot } from "@google-cloud/firestore"
 import * as fs from 'fs'
@@ -11,8 +11,22 @@ import splitIntoBatches from "./splitIntoBatches"
 const processLogItems = async () => {
     const db = firestoreDatabase()
 
-    const adminBucket = getAdminBucket()
-    const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
+    const bucket = getBucket()
+    const {bucketName} = parseBucketUri(bucket.uri)
+
+    // one-time migration
+    const oneTimeMigrationBucket = {...bucket, uri: 'wasabi://kachery-cloud-admin?region=us-east-1'}
+    const {objects} = await listObjects(oneTimeMigrationBucket, 'logs/')
+    for (let obj of objects) {
+        const content = await getObjectContent(oneTimeMigrationBucket, obj.Key)
+        await putObject(bucket, {
+            Key: obj.Key,
+            Body: content,
+            Bucket: bucketName
+        })
+    }
+    ////////////////////////////////////////////////////////////////////////
+
 
     const logItems: LogItem[] = []
 
@@ -65,10 +79,10 @@ const processLogItems = async () => {
         console.info(`Writing ${fname}`)
         fs.writeFileSync(fname, logItemsJson)
         console.info(`Uploading log to admin bucket ${objectKey}`)
-        await putObject(adminBucket, {
+        await putObject(bucket, {
             Body: logItemsJson,
             Key: objectKey,
-            Bucket: adminBucketName
+            Bucket: bucketName
         })
         console.info('Deleting log items')
         const docBatches = splitIntoBatches(result.docs, 400)
