@@ -37,6 +37,7 @@ const processLogItems = async () => {
             if ([
                 "initiateFileUpload",
                 "finalizeFileUpload",
+                "findFile",
                 "addClient",
                 "deleteClient",
                 "setClientInfo",
