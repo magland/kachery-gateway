@@ -162,14 +162,11 @@ const analyzeLogs = async () => {
     console.info('====================== total')
     for (let clientId in clients) {
         const client = clients[clientId]
-        console.info(`::::::::::::::::: ${client.clientId}`)
         if (clientId in totalClientUsage) {
             const {uploadCount, uploadSize, downloadCount, downloadSize} = totalClientUsage[clientId]
             totalClientUsage[clientId].ownerId = client.ownerId
             console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${uploadCount} ${uploadSize} ${downloadCount} ${downloadSize}`)
         }
-        console.info(JSON.stringify(client.headerInfo))
-        console.info('')
     }
     
     const usage = {
