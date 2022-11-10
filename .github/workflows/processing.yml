@@ -13,6 +13,8 @@ jobs:
     container:
       image: magland/kachery-gateway-processing:0.1.0
     steps:
+      - name: Cleanup findFile cache
+        run: cd /working && npm run cleanup-find-file-cache
       - name: Process log items
         run: cd /working && npm run process-log-items
       - name: Analyze logs
