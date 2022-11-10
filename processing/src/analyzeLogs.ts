@@ -3,11 +3,13 @@ import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3He
 import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
 
+type HeaderInfo = {userAgent: string, ip: string, ipCity: string, ipCountry: string, ipCountryRegion: string, referer: string}
+
 const analyzeLogs = async () => {
     const bucket = getBucket()
     const { bucketName } = parseBucketUri(bucket.uri)
 
-    const clients: {[key: string]: {clientId: string, ownerId: string}} = {}
+    const clients: {[key: string]: {clientId: string, ownerId: string, headerInfo: HeaderInfo | undefined}} = {}
     const totalClientUsage: {[key: string]: {uploadSize: number, uploadCount: number, downloadSize: number, downloadCount: number, ownerId: string}} = {}
     const clientUsageByDay: {[key: string]: {[key: string]: {uploadSize: number, uploadCount: number, downloadSize: number, downloadCount: number, ownerId: string}}} = {}
 
@@ -17,9 +19,12 @@ const analyzeLogs = async () => {
         hash: string
         size: number
         timestamp: number
-    }) => {
+    }, headerInfo: HeaderInfo) => {
         if (!(upload.clientId in clients)) {
-            clients[upload.clientId] = {clientId: upload.clientId, ownerId: ''}
+            clients[upload.clientId] = {clientId: upload.clientId, ownerId: '', headerInfo: undefined}
+        }
+        if (!clients[upload.clientId].headerInfo) {
+            clients[upload.clientId].headerInfo = headerInfo
         }
         if (!(upload.clientId in totalClientUsage)) {
             totalClientUsage[upload.clientId] = {uploadSize: 0, uploadCount: 0, downloadSize: 0, downloadCount: 0, ownerId: ''}
@@ -43,9 +48,12 @@ const analyzeLogs = async () => {
         hash: string
         size: number
         timestamp: number
-    }) => {
+    }, headerInfo: HeaderInfo) => {
         if (!(x.clientId in clients)) {
-            clients[x.clientId] = {clientId: x.clientId, ownerId: ''}
+            clients[x.clientId] = {clientId: x.clientId, ownerId: '', headerInfo: undefined}
+        }
+        if (!clients[x.clientId].headerInfo) {
+            clients[x.clientId].headerInfo = headerInfo
         }
         if (!(x.clientId in totalClientUsage)) {
             totalClientUsage[x.clientId] = {uploadSize: 0, uploadCount: 0, downloadSize: 0, downloadCount: 0, ownerId: ''}
@@ -65,7 +73,7 @@ const analyzeLogs = async () => {
     }
     const processAddClient = (clientId: string, ownerId: string) => {
         if (!(clientId in clients)) {
-            clients[clientId] = {clientId: clientId, ownerId: ''}
+            clients[clientId] = {clientId: clientId, ownerId: '', headerInfo: undefined}
         }
         clients[clientId].ownerId = ownerId
     }
@@ -83,24 +91,26 @@ const analyzeLogs = async () => {
                     const type0 = logItem.request.type || (logItem.request.payload || {}).type
                     if (type0 === 'finalizeFileUpload') {
                         const req = logItem.request as FinalizeFileUploadRequest
+                        const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
                         processUpload({
                             clientId: req.fromClientId.toString(),
                             hash: req.payload.hash,
                             hashAlg: req.payload.hashAlg,
                             size: req.payload.size,
                             timestamp: logItem.requestTimestamp
-                        })
+                        }, headerInfo)
                     }
                     else if (type0 === 'findFile') {
                         const req = logItem.request as FindFileRequest
                         const resp = logItem.response as FindFileResponse
+                        const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
                         processFindFile({
                             clientId: req.fromClientId.toString(),
                             hash: req.payload.hash,
                             hashAlg: req.payload.hashAlg,
                             size: resp.size || 0,
                             timestamp: logItem.requestTimestamp
-                        })   
+                        }, headerInfo)   
                     }
                     else if (type0 === 'addClient') {
                         const req = logItem.request as AddClientRequest
@@ -152,17 +162,21 @@ const analyzeLogs = async () => {
     console.info('====================== total')
     for (let clientId in clients) {
         const client = clients[clientId]
+        console.info(`::::::::::::::::: ${client.clientId}`)
         if (clientId in totalClientUsage) {
             const {uploadCount, uploadSize, downloadCount, downloadSize} = totalClientUsage[clientId]
             totalClientUsage[clientId].ownerId = client.ownerId
             console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${uploadCount} ${uploadSize} ${downloadCount} ${downloadSize}`)
         }
+        console.info(JSON.stringify(client.headerInfo))
+        console.info('')
     }
     
     const usage = {
         timestamp: Date.now(),
-        dailyUsage: dailyUsage,
-        totalUsage: totalUsage
+        clients,
+        dailyUsage,
+        totalUsage
     }
 
     putObject(bucket, {
@@ -171,4 +185,16 @@ const analyzeLogs = async () => {
         Body: JSON.stringify(usage, null, 4)
     })
 }
+
+const getHeaderInfoFromRequestHeaders = (requestHeaders: any): HeaderInfo => {
+    return {
+        userAgent: requestHeaders['user-agent'] || '',
+        ip: requestHeaders['x-real-ip'],
+        ipCity: requestHeaders['x-vercel-ip-city'],
+        ipCountry: requestHeaders['x-vercel-ip-country'],
+        ipCountryRegion: requestHeaders['x-vercel-ip-country-region'],
+        referer: requestHeaders['referer']
+    }
+}
+
 analyzeLogs()
