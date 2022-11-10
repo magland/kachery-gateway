@@ -148,8 +148,11 @@ export const isGetUsageRequest = (x: any): x is GetUsageRequest => {
     })
 }
 
+type HeaderInfo = {userAgent: string, ip: string, ipCity: string, ipCountry: string, ipCountryRegion: string, referer: string}
+
 export type UsageRequestUsage = {
     timestamp: number,
+    clients: {[key: string]: {clientId: string, ownerId: string, headerInfo: HeaderInfo | undefined}}
     dailyUsage: {
         date: string
         clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
@@ -162,6 +165,7 @@ export type UsageRequestUsage = {
 export const isUsageRequestUsage = (x: any): x is UsageRequestUsage => {
     return validateObject(x, {
         timestamp: isNumber,
+        clients: () => (true),
         dailyUsage: () => (true),
         totalUsage: () => (true)
     })
