@@ -1,6 +1,8 @@
-import { FileRecord } from '../../src/types/FileRecord'
+import { CollectionReference } from '@google-cloud/firestore'
+import { FileRecord, isFileRecord } from '../../src/types/FileRecord'
 import { FindFileRequest, FindFileResponse } from "../../src/types/GatewayRequest"
-import { NodeId } from "../../src/types/keypair"
+import { NodeId, sha1OfString } from "../../src/types/keypair"
+import validateObject, { isNumber } from '../../src/types/validateObject'
 import firestoreDatabase from '../common/firestoreDatabase'
 import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket } from "./initiateFileUploadHandler"
@@ -13,147 +15,144 @@ const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeI
     return findFile({hashAlg, hash})
 }
 
-const signedUrlObjectCache = new ObjectCache<{timestampCreated: number, url: string}>(1000 * 60 * 30)
+type CacheRecord = {
+    timestampCreated: number,
+    url: string, // signed download url
+    fileRecord: FileRecord
+}
+
+const isCacheRecord = (x: any): x is CacheRecord => {
+    return validateObject(x, {
+        timestampCreated: isNumber,
+        url: isNumber,
+        fileRecord: isFileRecord
+    })
+}
+
+const signedUrlObjectCache = new ObjectCache<CacheRecord>(1000 * 60 * 30)
+
+const checkFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string): Promise<CacheRecord | undefined> => {
+    const docRef = cacheCollection.doc(cacheKey)
+    const docSnapshot = await docRef.get()
+    if (!docSnapshot.exists) return undefined
+    const cacheRecord = docSnapshot.data()
+    if (!cacheRecord) return undefined
+    if (!isCacheRecord(cacheRecord)) {
+        console.warn('WARNING: Error in cache record')
+        return undefined
+    }
+    return cacheRecord
+}
+
+const setFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string, cacheRecord: CacheRecord) => {
+    const docRef = cacheCollection.doc(cacheKey)
+    await docRef.set(cacheRecord)
+}
+
+const deleteFromFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string) => {
+    const docRef = cacheCollection.doc(cacheKey)
+    
+    // we are assuming it doesn't throw exception if doesn't exist
+    await docRef.delete()
+}
 
 export const findFile = async (o: {hashAlg: string, hash: string}): Promise<FindFileResponse> => {
     const {hashAlg, hash} = o
 
     const bucket = getBucket()
 
-    let cacheHit = false
     let fileRecord: FileRecord | undefined = undefined
 
-    // for when we want to keep a cache in firestore
-    // const db = firestoreDatabase()
-    // const filesCollection = db.collection('kachery-gateway.files')
-    // const querySnapshot = await filesCollection.where('hash', '==', hash).get()
-    // for (let doc of querySnapshot.docs) {
-    //     const rec = doc.data()
-    //     if (!isFileRecord(rec)) {
-    //         throw Error('Invalid file record in database')
-    //     }
-    //     if (rec.hashAlg === hashAlg) {
-    //         fileRecord = rec
-    //         cacheHit = true
-    //         break
-    //     }
-    // }
+    const h = hash
+    const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
 
-    if (!fileRecord) {
-        const h = hash
-        const key0 = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
-        const objectKeys = [
-            key0 // check root directory
-            // `uploads/${key0}` // check uploads directory
-        ]
-        for (let objectKey of objectKeys) {
-            let headObjectOutput: HeadObjectOutputX | undefined = undefined
-            try {
-                headObjectOutput = await headObject(bucket, objectKey)
-            }
-            catch(err) {
-                // continue
-            }
-            if (headObjectOutput) {
-                const size = headObjectOutput.ContentLength
-                if (size === undefined) throw Error('No ContentLength in headObjectOutput')
-                fileRecord = {
-                    hashAlg,
-                    hash,
-                    objectKey,
-                    bucketUri: bucket.uri,
-                    size,
-                    timestamp: Date.now()
-                }
-                // for when we want to keep a cache in firestore
-                // await filesCollection.add(fileRecord)
-                break
-            }
-        }
-    }
-
-    // if (!fileRecord) {
-    //     // check the old system while we are in the process of migrating
-
-    //     const db = firestoreDatabase()
-    //     const filesCollection = db.collection('kacherycloud.files')
-    //     const uri = `${hashAlg}://${hash}`
-    //     const filesResult = await filesCollection.where('uri', '==', uri).orderBy('timestampCreated').get()
-    //     // const filesResult = await filesCollection.where('uri', '==', uri).get()
-    //     if (filesResult.docs.length === 0) {
-    //         return {
-    //             type: 'findFile',
-    //             found: false
-    //         }
-    //     }
-    //     else {
-    //         const fileData = filesResult.docs[0].data() // the first doc is the earliest because we ordered by timestampCreated
-    //         // note that this is a fileRecord in the old system, not the new!!
-    //         //     projectId: string
-    //         //     hashAlg: string
-    //         //     hash: string
-    //         //     uri: string
-    //         //     size: number
-    //         //     url: string
-    //         //     timestampCreated?: number // only optional for backward-compatibility
-    //         //     timestampAccessed?: number // only optional for backward-compatibility
-    //         // }
-    //         const h = hash
-    //         fileRecord = {
-    //             hashAlg,
-    //             hash,
-    //             size: fileData.size,
-    //             bucketUri: bucket.uri,
-    //             objectKey: `projects/${fileData.projectId}/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${h}`,
-    //             timestamp: fileData.timestampCreated
-    //         }
-    //     }
-    // }
-
-    if (!fileRecord) {
-        return {
-            type: 'findFile',
-            found: false
-        }
-    }
-
-    // report last accessed
-    const uri = `${hashAlg}:${hash}`
     const db = firestoreDatabase()
-    const collection = db.collection('kachery-gateway.filesAccessed')
-    await collection.doc(uri).set({
-        hashAlg,
-        hash,
-        size: fileRecord.size,
-        timestamp: Date.now()
-    })
+    const cacheCollection = db.collection('kachery-gateway.findFileCache')
 
-    // const url = formBucketObjectUrl(bucket, fileRecord.objectKey)
-    const cacheKey = `${bucket.uri}.${fileRecord.objectKey}`
-    const aa = signedUrlObjectCache.get(cacheKey)
-    let url: string | undefined = undefined
+    // check cache
+    const cacheKey = sha1OfString(`${bucket.uri}.${objectKey}`).toString()
+    // first check in-memory cache
+    let aa = signedUrlObjectCache.get(cacheKey) // check memory cache
+    if (!aa) {
+        // second check firestore cache
+        aa = await checkFirestoreCache(cacheCollection, cacheKey)
+    }
+
     if (aa) {
+        // we have a cache hit
         const elapsed = Date.now() - aa.timestampCreated
         if (elapsed < 1000 * 60 * 30) {
-            url = aa.url
+            // it is recent enough
+            return {
+                type: 'findFile',
+                found: true,
+                size: aa.fileRecord.size,
+                bucketUri: aa.fileRecord.bucketUri,
+                objectKey: aa.fileRecord.objectKey,
+                url: aa.url,
+                cacheHit: true
+            }
         }
         else {
-            signedUrlObjectCache.delete(cacheKey)
+            // it is not recent enough
+            signedUrlObjectCache.delete(cacheKey) // delete from memory cache
+            deleteFromFirestoreCache(cacheCollection, cacheKey) // delete from firestore cache
         }
     }
-    if (!url) {
-        url = await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
-        signedUrlObjectCache.set(cacheKey, {timestampCreated: Date.now(), url})
+    
+    let headObjectOutput: HeadObjectOutputX | undefined = undefined
+    try {
+        headObjectOutput = await headObject(bucket, objectKey)
+    }
+    catch(err) {
+        // continue
+    }
+    if (headObjectOutput) {
+        const size = headObjectOutput.ContentLength
+        if (size === undefined) throw Error('No ContentLength in headObjectOutput')
+        fileRecord = {
+            hashAlg,
+            hash,
+            objectKey,
+            bucketUri: bucket.uri,
+            size,
+            timestamp: Date.now()
+        }
+        const url = await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
+
+        // store in cache
+        const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}
+
+        // first set to in-memory cache
+        signedUrlObjectCache.set(cacheKey, cacheRecord)
+        // second set to firestore cache
+        await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+    
+        // // report last accessed
+        // const uri = `${hashAlg}:${hash}`
+        // const db = firestoreDatabase()
+        // const collection = db.collection('kachery-gateway.filesAccessed')
+        // await collection.doc(uri).set({
+        //     hashAlg,
+        //     hash,
+        //     size: fileRecord.size,
+        //     timestamp: Date.now()
+        // })
+    
+        return {
+            type: 'findFile',
+            found: true,
+            size: fileRecord.size,
+            bucketUri: fileRecord.bucketUri,
+            objectKey: fileRecord.objectKey,
+            url,
+            cacheHit: false
+        }
     }
 
     return {
         type: 'findFile',
-        found: true,
-        size: fileRecord.size,
-        bucketUri: fileRecord.bucketUri,
-        objectKey: fileRecord.objectKey,
-        url,
-        cacheHit
+        found: false
     }
 }
 
