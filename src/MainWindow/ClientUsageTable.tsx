@@ -3,14 +3,16 @@ import NiceTable from "../components/NiceTable/NiceTable";
 import formatByteCount from "../misc/formatByteCount";
 
 type Props ={
-	clientUsage: {[key: string]: {count: number, size: number, ownerId: string}}
+	clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
 }
 
 const columns = [
 	{key: 'clientId', label: 'Client'},
 	{key: 'ownerId', label: 'Owner'},
-	{key: 'numFiles', label: 'Num. files'},
-	{key: 'size', label: 'Size'}
+	{key: 'numFilesUpload', label: 'Num. files upload'},
+	{key: 'sizeUpload', label: 'Size upload'},
+	{key: 'numFilesDownload', label: 'Num. files download'},
+	{key: 'sizeDownload', label: 'Size download'}
 ]
 
 const ClientUsageTable: FunctionComponent<Props> = ({clientUsage}) => {
@@ -19,10 +21,12 @@ const ClientUsageTable: FunctionComponent<Props> = ({clientUsage}) => {
 		clientIds.map(clientId => ({
 			key: clientId,
 			columnValues: {
-				clientId,
+				clientId: `${clientId.slice(0, 6)}...`,
 				ownerId: clientUsage[clientId].ownerId,
-				numFiles: clientUsage[clientId].count,
-				size: formatByteCount(clientUsage[clientId].size)
+				numFilesUpload: clientUsage[clientId].uploadCount,
+				sizeUpload: formatByteCount(clientUsage[clientId].uploadSize),
+				numFilesDownload: clientUsage[clientId].downloadCount,
+				sizeDownload: formatByteCount(clientUsage[clientId].downloadSize)
 			}
 		}))
 	), [clientUsage, clientIds])

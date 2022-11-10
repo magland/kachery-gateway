@@ -152,10 +152,10 @@ export type UsageRequestUsage = {
     timestamp: number,
     dailyUsage: {
         date: string
-        clientUsage: {[key: string]: {count: number, size: number, ownerId: string}}
+        clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
     }[]
     totalUsage: {
-        clientUsage: {[key: string]: {count: number, size: number, ownerId: string}}
+        clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
     }
 }
 
