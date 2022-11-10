@@ -1,6 +1,6 @@
 import { getBucket } from './getBucket'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
-import { FinalizeFileUploadRequest } from './types/GatewayRequest'
+import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
 
 const analyzeLogs = async () => {
@@ -8,8 +8,8 @@ const analyzeLogs = async () => {
     const { bucketName } = parseBucketUri(bucket.uri)
 
     const clients: {[key: string]: {clientId: string, ownerId: string}} = {}
-    const totalClientUsage: {[key: string]: {size: number, count: number, ownerId: string}} = {}
-    const clientUsageByDay: {[key: string]: {[key: string]: {size: number, count: number, ownerId: string}}} = {}
+    const totalClientUsage: {[key: string]: {uploadSize: number, uploadCount: number, downloadSize: number, downloadCount: number, ownerId: string}} = {}
+    const clientUsageByDay: {[key: string]: {[key: string]: {uploadSize: number, uploadCount: number, downloadSize: number, downloadCount: number, ownerId: string}}} = {}
 
     const processUpload = (upload: {
         clientId: string
@@ -22,7 +22,7 @@ const analyzeLogs = async () => {
             clients[upload.clientId] = {clientId: upload.clientId, ownerId: ''}
         }
         if (!(upload.clientId in totalClientUsage)) {
-            totalClientUsage[upload.clientId] = {size: 0, count: 0, ownerId: ''}
+            totalClientUsage[upload.clientId] = {uploadSize: 0, uploadCount: 0, downloadSize: 0, downloadCount: 0, ownerId: ''}
         }
         const date = new Date(upload.timestamp)
         const dateString = date.toISOString().split('T')[0] // yyyy-mm-dd
@@ -30,12 +30,38 @@ const analyzeLogs = async () => {
             clientUsageByDay[dateString] = {}
         }
         if (!(upload.clientId in clientUsageByDay[dateString])) {
-            clientUsageByDay[dateString][upload.clientId] = {size: 0, count: 0, ownerId: ''}
+            clientUsageByDay[dateString][upload.clientId] = {uploadSize: 0, uploadCount: 0, downloadSize: 0, downloadCount: 0, ownerId: ''}
         }
-        totalClientUsage[upload.clientId].count += 1
-        totalClientUsage[upload.clientId].size += upload.size
-        clientUsageByDay[dateString][upload.clientId].count += 1
-        clientUsageByDay[dateString][upload.clientId].size += upload.size
+        totalClientUsage[upload.clientId].uploadCount += 1
+        totalClientUsage[upload.clientId].uploadSize += upload.size
+        clientUsageByDay[dateString][upload.clientId].uploadCount += 1
+        clientUsageByDay[dateString][upload.clientId].uploadSize += upload.size
+    }
+    const processFindFile = (x: {
+        clientId: string
+        hashAlg: string
+        hash: string
+        size: number
+        timestamp: number
+    }) => {
+        if (!(x.clientId in clients)) {
+            clients[x.clientId] = {clientId: x.clientId, ownerId: ''}
+        }
+        if (!(x.clientId in totalClientUsage)) {
+            totalClientUsage[x.clientId] = {uploadSize: 0, uploadCount: 0, downloadSize: 0, downloadCount: 0, ownerId: ''}
+        }
+        const date = new Date(x.timestamp)
+        const dateString = date.toISOString().split('T')[0] // yyyy-mm-dd
+        if (!(dateString in clientUsageByDay)) {
+            clientUsageByDay[dateString] = {}
+        }
+        if (!(x.clientId in clientUsageByDay[dateString])) {
+            clientUsageByDay[dateString][x.clientId] = {uploadSize: 0, uploadCount: 0, downloadSize: 0, downloadCount: 0, ownerId: ''}
+        }
+        totalClientUsage[x.clientId].downloadCount += 1
+        totalClientUsage[x.clientId].downloadSize += x.size
+        clientUsageByDay[dateString][x.clientId].downloadCount += 1
+        clientUsageByDay[dateString][x.clientId].downloadSize += x.size
     }
     const processAddClient = (clientId: string, ownerId: string) => {
         if (!(clientId in clients)) {
@@ -65,6 +91,17 @@ const analyzeLogs = async () => {
                             timestamp: logItem.requestTimestamp
                         })
                     }
+                    else if (type0 === 'findFile') {
+                        const req = logItem.request as FindFileRequest
+                        const resp = logItem.response as FindFileResponse
+                        processFindFile({
+                            clientId: req.fromClientId.toString(),
+                            hash: req.payload.hash,
+                            hashAlg: req.payload.hashAlg,
+                            size: resp.size || 0,
+                            timestamp: logItem.requestTimestamp
+                        })   
+                    }
                     else if (type0 === 'addClient') {
                         const req = logItem.request as AddClientRequest
                         const clientId = req.clientId
@@ -89,7 +126,7 @@ const analyzeLogs = async () => {
     }
 
     const dateStrings = Object.keys(clientUsageByDay).sort()
-    const dailyUsage: {date: string, clientUsage: {[key: string]: {size: number, count: number, ownerId: string}}}[] = []
+    const dailyUsage: {date: string, clientUsage: {[key: string]: {uploadSize: number, uploadCount: number, downloadSize: number, downloadCount: number, ownerId: string}}}[] = []
     for (let dateString of dateStrings) {
         dailyUsage.push({
             'date': dateString,
@@ -106,9 +143,9 @@ const analyzeLogs = async () => {
         const clientUsage = uu.clientUsage
         for (let clientId in clientUsage) {
             const client = clients[clientId]
-            const {count, size} = clientUsage[clientId]
+            const {uploadCount, uploadSize, downloadCount, downloadSize} = clientUsage[clientId]
             clientUsage[clientId].ownerId = client.ownerId
-            console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${count} ${size}`)
+            console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${uploadCount} ${uploadSize} ${downloadCount} ${downloadSize}`)
         }
     }
     console.info('')
@@ -116,9 +153,9 @@ const analyzeLogs = async () => {
     for (let clientId in clients) {
         const client = clients[clientId]
         if (clientId in totalClientUsage) {
-            const {count, size} = totalClientUsage[clientId]
+            const {uploadCount, uploadSize, downloadCount, downloadSize} = totalClientUsage[clientId]
             totalClientUsage[clientId].ownerId = client.ownerId
-            console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${count} ${size}`)
+            console.info(`${clientId.slice(0, 6)}... ${client.ownerId} ${uploadCount} ${uploadSize} ${downloadCount} ${downloadSize}`)
         }
     }
     
