@@ -11,7 +11,7 @@ const cleanupFindFileCache = async () => {
     while (true) {
         let qq = findFileCacheCollection.orderBy('timestampCreated', 'asc')
         qq = lastSnapshot ? qq.startAfter(lastSnapshot) : qq
-        const result = await qq.limit(10000).get()
+        const result = await qq.limit(500).get() // can only delete 500 at a time
         if (result.docs.length === 0) {
             console.info('No more findFile cache items to process. Exiting.')
             return
