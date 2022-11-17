@@ -12,7 +12,7 @@ const GitHubAccessControl: FunctionComponent<Props> = ({ onOpen }) => {
 	const {signedIn} = useGithubAuth()
     return (
         <IconButton onClick={onOpen}>
-            <FontAwesomeIcon icon={faGithub} style={{color: signedIn ? 'darkblue' : 'gray'}} />
+            <FontAwesomeIcon icon={faGithub} style={{color: signedIn ? 'white' : 'gray'}} />
         </IconButton>
     );
 }
