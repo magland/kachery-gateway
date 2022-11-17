@@ -1,12 +1,12 @@
 import { Button, Table, TableBody, TableCell, TableRow } from '@material-ui/core';
-import guiApiRequest from '../common/guiApiRequest';
-import useRoute from './useRoute';
-import useErrorMessage from '../errorMessageContext/useErrorMessage';
 import { FunctionComponent, useCallback, useEffect, useMemo, useState } from 'react';
-import EditableTextField from './EditableTextField';
-import { NodeId, Signature } from '../types/keypair';
+import guiApiRequest from '../common/guiApiRequest';
+import useErrorMessage from '../errorMessageContext/useErrorMessage';
+import { useGithubAuth } from '../GithubAuth/useGithubAuth';
 import { AddClientRequest } from '../types/GuiRequest';
-import useSignedIn from '../components/googleSignIn/useSignedIn';
+import { NodeId, Signature } from '../types/keypair';
+import EditableTextField from './EditableTextField';
+import useRoute from './useRoute';
 
 type Props = {
     clientId: NodeId
@@ -17,7 +17,7 @@ type Props = {
 type Status = 'waiting' | 'starting' | 'running' | 'error' | 'finished'
 
 const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, label}) => {
-    const {userId, googleIdToken, signedIn} = useSignedIn()
+    const {userId, accessToken, signedIn} = useGithubAuth()
     const [status, setStatus] = useState<Status>('waiting')
     const { errorMessage, setErrorMessage } = useErrorMessage()
     const { setRoute } = useRoute()
@@ -36,7 +36,7 @@ const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, labe
 
     useEffect(() => {
         if (!userId) return
-        if (!googleIdToken) return
+        if (!accessToken) return
         ;(async () => {
             if (status === 'starting') {
                 setStatus('running')
@@ -51,7 +51,7 @@ const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, labe
                     verificationSignature: signature,
                     auth: {
                         userId,
-                        googleIdToken
+                        githubAccessToken: accessToken
                     }
                 }
                 const response = await guiApiRequest(req, {reCaptcha: true, setErrorMessage})
@@ -63,7 +63,7 @@ const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, labe
                 }
             }
         })()
-    }, [status, userId, clientId, setErrorMessage, signature, googleIdToken, setRoute, editLabel])
+    }, [status, userId, clientId, setErrorMessage, signature, accessToken, setRoute, editLabel])
 
     const submitOkay = useMemo(() => {
         if (!userId) return false

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from "react"
 import guiApiRequest from "../common/guiApiRequest"
-import useSignedIn from "../components/googleSignIn/useSignedIn"
 import useErrorMessage from "../errorMessageContext/useErrorMessage"
+import { useGithubAuth } from "../GithubAuth/useGithubAuth"
 import { GetUsageRequest, isGetUsageResponse, UsageRequestUsage } from "../types/GuiRequest"
 
 const useUsage = () => {
     const [usage, setUsage] = useState<UsageRequestUsage | undefined>(undefined)
-    const { userId, googleIdToken } = useSignedIn()
+    const { userId, accessToken } = useGithubAuth()
     const [refreshCode, setRefreshCode] = useState<number>(0)
     const refreshUsage = useCallback(() => {
         setRefreshCode(c => (c + 1))
@@ -21,7 +21,7 @@ const useUsage = () => {
             let canceled = false
             const req: GetUsageRequest = {
                 type: 'getUsage',
-                auth: { userId, googleIdToken }
+                auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
             if (!resp) return
@@ -34,7 +34,7 @@ const useUsage = () => {
             setUsage(resp.usage)
             return () => { canceled = true }
         })()
-    }, [userId, googleIdToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage])
 
     return { usage, refreshUsage }
 }

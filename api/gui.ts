@@ -1,5 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import axios from 'axios'
+import githubVerifyAccessToken from '../apiHelpers/common/githubVerifyAccessToken'
 import googleVerifyIdToken from '../apiHelpers/common/googleVerifyIdToken'
 import addClientHandler from '../apiHelpers/guiRequestHandlers/addClientHandler'
 import deleteClientHandler from '../apiHelpers/guiRequestHandlers/deleteClientHandler'
@@ -38,11 +39,12 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     const requestTimestamp = Date.now()
 
     const auth = request.auth
-    const {userId, googleIdToken, reCaptchaToken} = auth
-    if ((userId) && (!googleIdToken)) throw Error('No google id token')
+    const {userId, githubAccessToken, reCaptchaToken} = auth
+    if ((userId) && (!githubAccessToken)) throw Error('No github access token')
 
     ;(async () => {
-        const verifiedUserId = userId ? await googleVerifyIdToken(userId.toString(), googleIdToken) : undefined
+        // const verifiedUserId = userId ? await googleVerifyIdToken(userId.toString(), googleIdToken) : undefined
+        const verifiedUserId = userId ? await githubVerifyAccessToken(userId.toString(), githubAccessToken) : undefined
         const verifiedReCaptchaInfo: VerifiedReCaptchaInfo | undefined = await verifyReCaptcha(reCaptchaToken)
         if (request.type === 'addClient') {
             if (!verifiedReCaptchaInfo) {

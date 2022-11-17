@@ -1,15 +1,15 @@
 import { IconButton, Table, TableBody, TableCell, TableRow } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@material-ui/icons';
+import { FunctionComponent, useCallback, useMemo, useState } from 'react';
 import guiApiRequest from '../common/guiApiRequest';
-import useRoute from './useRoute';
+import Hyperlink from '../components/Hyperlink/Hyperlink';
 import useErrorMessage from '../errorMessageContext/useErrorMessage';
-import React, { FunctionComponent, useCallback, useMemo, useState } from 'react';
+import { useGithubAuth } from '../GithubAuth/useGithubAuth';
 import { SetClientInfoRequest } from '../types/GuiRequest';
+import { NodeId, PrivateKeyHex } from '../types/keypair';
 import EditableTextField from './EditableTextField';
 import useClients from './useClients';
-import { NodeId, PrivateKeyHex } from '../types/keypair';
-import Hyperlink from '../components/Hyperlink/Hyperlink';
-import useSignedIn from '../components/googleSignIn/useSignedIn';
+import useRoute from './useRoute';
 
 type Props = {
     clientId: NodeId
@@ -23,26 +23,26 @@ const ClientPage: FunctionComponent<Props> = ({clientId}) => {
         (clients || []).filter(client => (client.clientId === clientId))[0]
     ), [clients, clientId])
 
-    const {userId, googleIdToken} = useSignedIn()
+    const {userId, accessToken} = useGithubAuth()
 
     const { setErrorMessage } = useErrorMessage()
 
     const handleLabelChange = useCallback((label: string) => {
         if (!userId) return
-        if (!googleIdToken) return
+        if (!accessToken) return
         ;(async () => {
             const req: SetClientInfoRequest = {
                 type: 'setClientInfo',
                 clientId,
                 label,
                 auth: {
-                    userId, googleIdToken
+                    userId, githubAccessToken: accessToken
                 }
             }
             await guiApiRequest(req, {reCaptcha: true, setErrorMessage})
             refreshClients()
         })()
-    }, [clientId, userId, googleIdToken, refreshClients, setErrorMessage])
+    }, [clientId, userId, accessToken, refreshClients, setErrorMessage])
 
     const tableData = useMemo(() => {
         if (!client) return undefined

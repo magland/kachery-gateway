@@ -17,6 +17,8 @@ export type Route = {
     label: string
 } | {
     page: 'admin'
+} | {
+    page: 'github-auth'
 }
 
 const useRoute = () => {
@@ -61,6 +63,11 @@ const useRoute = () => {
             page: 'admin'
         }
     }
+    else if (p === '/github/auth') {
+        route = {
+            page: 'github-auth'
+        }
+    }
 
     const setRoute = useCallback((route: Route) => {
         const query2 = {...query}
@@ -78,6 +85,9 @@ const useRoute = () => {
         }
         else if (route.page === 'admin') {
             pathname2 = `/admin`
+        }
+        else if (route.page === 'github-auth') {
+            pathname2 = '/github/auth'
         }
         const search2 = queryString(query2)
         navigate({...location, pathname: pathname2, search: search2})

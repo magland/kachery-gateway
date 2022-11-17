@@ -1,6 +1,6 @@
 import { CropSquare, Home, ViewModule } from "@material-ui/icons";
 import { FunctionComponent, useMemo } from "react";
-import useSignedIn from "../components/googleSignIn/useSignedIn";
+import { useGithubAuth } from "../GithubAuth/useGithubAuth";
 import './LeftPanel.css';
 import LeftPanelItem from "./LeftPanelItem";
 import useRoute, { Route } from "./useRoute";
@@ -16,7 +16,7 @@ const adminUsers = JSON.parse(adminUsersJson) as any as string[]
 const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
     const {route, setRoute} = useRoute()
 
-    const {userId} = useSignedIn()
+    const {userId} = useGithubAuth()
 
     const items = useMemo(() => {
         const ret: {

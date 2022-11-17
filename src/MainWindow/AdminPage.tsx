@@ -1,6 +1,6 @@
 import { IconButton } from "@material-ui/core";
 import { Refresh } from "@material-ui/icons";
-import { FunctionComponent, useMemo } from "react";
+import { FunctionComponent } from "react";
 import ClientUsageTable from "./ClientUsageTable";
 import useUsage from "./useUsage";
 

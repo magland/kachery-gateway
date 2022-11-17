@@ -1,15 +1,16 @@
 import { MuiThemeProvider } from '@material-ui/core';
 import { BrowserRouter } from 'react-router-dom';
 import './App.css';
-import GoogleSignInSetup from './components/googleSignIn/GoogleSignInSetup';
 import ErrorMessageSetup from './errorMessageContext/ErrorMessageSetup';
+import GithubAuthSetup from './GithubAuth/GithubAuthSetup';
 import MainWindow from './MainWindow/MainWindow';
 import theme from './theme';
 
 function App() {
   return (
     <div className="App">
-      <GoogleSignInSetup>
+      {/* <GoogleSignInSetup> */}
+      <GithubAuthSetup>
         <MuiThemeProvider theme={theme}>
           <BrowserRouter>
             <ErrorMessageSetup>
@@ -17,7 +18,8 @@ function App() {
             </ErrorMessageSetup>
           </BrowserRouter>
         </MuiThemeProvider>
-      </GoogleSignInSetup>
+      </GithubAuthSetup>
+      {/* </GoogleSignInSetup> */}
     </div>
   );
 }

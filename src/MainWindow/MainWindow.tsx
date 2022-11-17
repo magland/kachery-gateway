@@ -1,17 +1,18 @@
-import useWindowDimensions from '../misc/useWindowDimensions';
 import { FunctionComponent, useCallback } from 'react';
-import './MainWindow.css';
-import useRoute from './useRoute';
 import useErrorMessage from '../errorMessageContext/useErrorMessage';
-import logoFull from './logoFull.png'
-import ApplicationBar from './ApplicationBar/ApplicationBar';
-import LeftPanel from './LeftPanel';
-import HomePage from './HomePage';
+import { useGithubAuth } from '../GithubAuth/useGithubAuth';
+import useWindowDimensions from '../misc/useWindowDimensions';
 import AdminPage from './AdminPage';
-import ClientsTable from './ClientsTable';
-import RegisterClientPage from './RegisterClientPage';
+import ApplicationBar from './ApplicationBar/ApplicationBar';
 import ClientPage from './ClientPage';
-import useSignedIn from '../components/googleSignIn/useSignedIn';
+import ClientsTable from './ClientsTable';
+import GitHubAuthPage from './GitHubAuthPage';
+import HomePage from './HomePage';
+import LeftPanel from './LeftPanel';
+import logoFull from './logoFull.png';
+import './MainWindow.css';
+import RegisterClientPage from './RegisterClientPage';
+import useRoute from './useRoute';
 
 type Props = {
 }
@@ -26,28 +27,39 @@ const MainWindow: FunctionComponent<Props> = () => {
 
     const {errorMessage} = useErrorMessage()
 
-    const { signedIn } = useSignedIn()
+    const { signedIn } = useGithubAuth()
 
     const W = width - 290
     const H = height - 50
 
+    const applicationBarHeight = (route.page !== 'github-auth') ? 50 : 0
+    const leftPanelWidth = (route.page !== 'github-auth') ? 250 : 0
+
     return (
         <div>
             <div>
-                <ApplicationBar
-                    title={"Kachery Gateway"}
-                    onHome={handleHome}
-                    logo={logoFull}
-                />
+                {
+                    (applicationBarHeight > 0) && (
+                        <ApplicationBar
+                            title={"Kachery Gateway"}
+                            onHome={handleHome}
+                            logo={logoFull}
+                        />
+                    )
+                }
             </div>
-            <div style={{position: 'absolute', top: 50}}>
-                <div style={{position: 'absolute', left: 0, width: 250}}>
-                    <LeftPanel
-                        width={250}
-                        height={height - 50}
-                    />
-                </div>
-                <div style={{position: 'absolute', left: 270, width: W, height: H, overflowY: 'auto'}}>
+            <div style={{position: 'absolute', top: applicationBarHeight}}>
+                {
+                    leftPanelWidth > 0 && (
+                        <div style={{position: 'absolute', left: 0, width: leftPanelWidth}}>
+                            <LeftPanel
+                                width={leftPanelWidth}
+                                height={height - 50}
+                            />
+                        </div>
+                    )
+                }
+                <div style={{position: 'absolute', left: leftPanelWidth + 20, width: W, height: H, overflowY: 'auto'}}>
                     {
                         errorMessage ? (
                             <span style={{color: 'red'}}>{errorMessage}</span>
@@ -62,6 +74,8 @@ const MainWindow: FunctionComponent<Props> = () => {
                             />
                         ) : (route.page === 'home') ? (
                             <HomePage />
+                        ) : (route.page === 'github-auth') ? (
+                            <GitHubAuthPage />
                         ) : signedIn ? (
                             route.page === 'clients' ? (
                                 <ClientsTable />
@@ -74,7 +88,7 @@ const MainWindow: FunctionComponent<Props> = () => {
                                 <ClientPage
                                     clientId={route.clientId}
                                 />
-                            ) : <span />
+                            ) : <span>Unexpected page {(route as any).page}</span>
                         ) : (
                             <div>
                                 <p />

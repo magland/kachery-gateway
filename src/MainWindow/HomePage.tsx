@@ -1,5 +1,5 @@
 import { FunctionComponent } from 'react';
-import useSignedIn from '../components/googleSignIn/useSignedIn';
+import { useGithubAuth } from '../GithubAuth/useGithubAuth';
 
 // const adminUsersJson = process.env.REACT_APP_ADMIN_USERS || "[]"
 // const adminUsers = JSON.parse(adminUsersJson) as any as string[]
@@ -8,7 +8,7 @@ type Props = {
 }
 
 const HomePage: FunctionComponent<Props> = () => {
-    const {signedIn, userId} = useSignedIn()
+    const {signedIn, userId} = useGithubAuth()
     return (
         <div>
             <div className='PageHeading'>

@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from "react"
 import guiApiRequest from "../common/guiApiRequest"
-import useSignedIn from "../components/googleSignIn/useSignedIn"
-import useErrorMessage from "../errorMessageContext/useErrorMessage"
-import { Client } from "../types/Client"
 import { createKeyPair, privateKeyToHex, publicKeyHexToNodeId, publicKeyToHex, signMessage } from "../crypto/signatures"
+import useErrorMessage from "../errorMessageContext/useErrorMessage"
+import { useGithubAuth } from "../GithubAuth/useGithubAuth"
+import { Client } from "../types/Client"
 import { AddClientRequest, DeleteClientRequest, GetClientsRequest, isAddClientResponse, isDeleteClientResponse, isGetClientsResponse } from "../types/GuiRequest"
 import { NodeId, PrivateKeyHex, Signature } from "../types/keypair"
 import useRoute from "./useRoute"
 
 const useClients = () => {
     const [clients, setClients] = useState<Client[] | undefined>(undefined)
-    const { userId, googleIdToken } = useSignedIn()
+    const { userId, accessToken } = useGithubAuth()
     const [refreshCode, setRefreshCode] = useState<number>(0)
     const refreshClients = useCallback(() => {
         setRefreshCode(c => (c + 1))
@@ -26,7 +26,7 @@ const useClients = () => {
             const req: GetClientsRequest = {
                 type: 'getClients',
                 userId,
-                auth: { userId, googleIdToken }
+                auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
             if (!resp) return
@@ -39,7 +39,7 @@ const useClients = () => {
             setClients(resp.clients)
             return () => { canceled = true }
         })()
-    }, [userId, googleIdToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage])
 
     const {setRoute} = useRoute()
 
@@ -51,7 +51,7 @@ const useClients = () => {
                     clientId,
                     ownerId: userId,
                     label,
-                    auth: { userId, googleIdToken },
+                    auth: { userId, githubAccessToken: accessToken },
                     verificationDocument,
                     verificationSignature
                 }
@@ -68,7 +68,7 @@ const useClients = () => {
                 }
                 refreshClients()
             })()
-    }, [userId, googleIdToken, refreshClients, setErrorMessage, setRoute])
+    }, [userId, accessToken, refreshClients, setErrorMessage, setRoute])
 
     const createClient = useCallback((label: string, o: {navigateToClientPage?: boolean}={}) => {
         ;(async () => {
@@ -87,7 +87,7 @@ const useClients = () => {
                     type: 'deleteClient',
                     clientId,
                     ownerId: userId,
-                    auth: { userId, googleIdToken }
+                    auth: { userId, githubAccessToken: accessToken }
                 }
                 const resp = await guiApiRequest(req, { reCaptcha: true, setErrorMessage })
                 if (!resp) return
@@ -96,7 +96,7 @@ const useClients = () => {
                 }
                 refreshClients()
             })()
-    }, [userId, googleIdToken, refreshClients, setErrorMessage])
+    }, [userId, accessToken, refreshClients, setErrorMessage])
 
     return { clients, refreshClients, addClient, createClient, deleteClient }
 }
