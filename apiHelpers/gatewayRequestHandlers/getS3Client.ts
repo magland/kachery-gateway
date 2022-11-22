@@ -90,7 +90,11 @@ const getS3Client = (bucket: Bucket): S3Client => {
             o.endpoint = `https://s3.${region}.wasabisys.com`
         }
         else if (service === 'r2') {
-            o.endpoint = '' // not used
+            if (!cred.endpoint) {
+                throw Error('No endpoint in credentials for r2')
+            }
+            o.region = 'auto'
+            o.endpoint = cred.endpoint
         }
         else if (service === 'google') {
             o.endpoint = "https://storage.googleapis.com"
