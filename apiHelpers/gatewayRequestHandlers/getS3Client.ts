@@ -69,7 +69,7 @@ const getS3Client = (bucket: Bucket): S3Client => {
     if (x) return x
     let ret: S3Client
     const {service, region} = parseBucketUri(bucket.uri)
-    if (['aws', 'wasabi', 'google'].includes(service)) {
+    if (['aws', 'wasabi', 'r2', 'google'].includes(service)) {
         const cred = JSON.parse(bucket.credentials || '{}')
         for (let k of ['accessKeyId', 'secretAccessKey']) {
             if (!cred[k]) {
@@ -88,6 +88,9 @@ const getS3Client = (bucket: Bucket): S3Client => {
         }
         if (service === 'wasabi') {
             o.endpoint = `https://s3.${region}.wasabisys.com`
+        }
+        else if (service === 'r2') {
+            o.endpoint = '' // not used
         }
         else if (service === 'google') {
             o.endpoint = "https://storage.googleapis.com"

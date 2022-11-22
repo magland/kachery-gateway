@@ -218,7 +218,7 @@ export const parseBucketUri = (uri: string) => {
     }
     const region = query['region'] || ''
     const service0 = (aa.split('/')[0] || '').split(':')[0] || ''
-    const service = service0 === 'wasabi' ? 'wasabi' : service0 === 'gs' ? 'google' : service0 === 's3' ? 'aws' : service0
+    const service = service0 === 'wasabi' ? 'wasabi' : service0 === 'gs' ? 'google' : service0 === 's3' ? 'aws' : service0 === 'r2' ? 'r2' : service0
     const bucketName = aa.split('/')[2] || ''
     const path = aa.split('/').slice(3).join('/')
     return {region, service, bucketName, path}
