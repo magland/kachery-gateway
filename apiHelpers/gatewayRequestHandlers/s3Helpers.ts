@@ -4,7 +4,6 @@ import getS3Client, { HeadObjectOutputX } from "./getS3Client";
 export type Bucket = {
     uri: string // e.g., wasabi://kachery-cloud?region=us-east-1
     credentials: string
-    publicBucketUrl?: string
 }
 
 export const bucketNameFromUri = (uri: string) => {

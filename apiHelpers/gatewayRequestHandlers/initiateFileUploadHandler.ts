@@ -23,7 +23,6 @@ export const getBucket = () => {
         uri: process.env['BUCKET_URI'] || '',
         credentials: process.env['BUCKET_CREDENTIALS'] || ''
     }
-    bucket.publicBucketUrl = process.env['PUBLIC_BUCKET_URL'] || undefined
     if (!bucket.uri) {
         throw Error(`Environment variable not set: BUCKET_URI`)
     }
@@ -33,6 +32,23 @@ export const getBucket = () => {
     return bucket
 }
 const bucket = getBucket()
+
+export const getFallbackBucket = () => {
+    if (!process.env['FALLBACK_BUCKET_URI']) {
+        return undefined
+    }
+    const bucket: Bucket = {
+        uri: process.env['FALLBACK_BUCKET_URI'] || '',
+        credentials: process.env['FALLBACK_BUCKET_CREDENTIALS'] || ''
+    }
+    if (!bucket.uri) {
+        throw Error(`Environment variable not set: FALLBACK_BUCKET_URI`)
+    }
+    if (!bucket.credentials) {
+        throw Error(`Environment variable not set: FALLBACK_BUCKET_CREDENTIALS`)
+    }
+    return bucket
+}
 
 const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, verifiedClientId?: NodeId): Promise<InitiateFileUploadResponse> => {
     const { size, hashAlg, hash } = request.payload
@@ -50,7 +66,7 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
     // in the future we will check the owner for authorization
     const client = await getClient(clientId.toString())
 
-    const findFileResponse = await findFile({hash, hashAlg})
+    const findFileResponse = await findFile({hash, hashAlg, noFallback: true})
     if (findFileResponse.found) {
         return {
             type: 'initiateFileUpload',

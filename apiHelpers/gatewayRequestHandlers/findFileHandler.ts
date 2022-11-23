@@ -7,7 +7,7 @@ import firestoreDatabase from '../common/firestoreDatabase'
 import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket } from "./initiateFileUploadHandler"
 import ObjectCache from './ObjectCache'
-import { getSignedDownloadUrl, headObject } from "./s3Helpers"
+import { Bucket, getSignedDownloadUrl, headObject } from "./s3Helpers"
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeId): Promise<FindFileResponse> => {
     const { hashAlg, hash } = request.payload
@@ -56,10 +56,11 @@ const deleteFromFirestoreCache = async (cacheCollection: CollectionReference, ca
     await docRef.delete()
 }
 
-export const findFile = async (o: {hashAlg: string, hash: string}): Promise<FindFileResponse> => {
+export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: boolean}): Promise<FindFileResponse> => {
     const {hashAlg, hash} = o
 
-    const bucket = getBucket()
+    const bucket: Bucket = getBucket()
+    const fallbackBucket: Bucket = getFallbackBucket()
 
     let fileRecord: FileRecord | undefined = undefined
 
@@ -100,57 +101,86 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
         }
     }
     
-    let headObjectOutput: HeadObjectOutputX | undefined = undefined
-    try {
-        headObjectOutput = await headObject(bucket, objectKey)
-    }
-    catch(err) {
-        // continue
-    }
-    if (headObjectOutput) {
-        const size = headObjectOutput.ContentLength
-        if (size === undefined) throw Error('No ContentLength in headObjectOutput')
-        fileRecord = {
-            hashAlg,
-            hash,
-            objectKey,
-            bucketUri: bucket.uri,
-            size,
-            timestamp: Date.now()
+    if (bucket) {
+        let headObjectOutput: HeadObjectOutputX | undefined = undefined
+        try {
+            headObjectOutput = await headObject(bucket, objectKey)
         }
-        const url = bucket.publicBucketUrl ? (
-            `${bucket.publicBucketUrl}/${fileRecord.objectKey}`
-        ) : (
-            await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
-        )
+        catch(err) {
+            // continue
+        }
+        if (headObjectOutput) {
+            const size = headObjectOutput.ContentLength
+            if (size === undefined) throw Error('No ContentLength in headObjectOutput')
+            fileRecord = {
+                hashAlg,
+                hash,
+                objectKey,
+                bucketUri: bucket.uri,
+                size,
+                timestamp: Date.now()
+            }
+            const url = await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
 
-        // store in cache
-        const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}
+            // store in cache
+            const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}
 
-        // first set to in-memory cache
-        signedUrlObjectCache.set(cacheKey, cacheRecord)
-        // second set to firestore cache
-        await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
-    
-        // // report last accessed
-        // const uri = `${hashAlg}:${hash}`
-        // const db = firestoreDatabase()
-        // const collection = db.collection('kachery-gateway.filesAccessed')
-        // await collection.doc(uri).set({
-        //     hashAlg,
-        //     hash,
-        //     size: fileRecord.size,
-        //     timestamp: Date.now()
-        // })
-    
-        return {
-            type: 'findFile',
-            found: true,
-            size: fileRecord.size,
-            bucketUri: fileRecord.bucketUri,
-            objectKey: fileRecord.objectKey,
-            url,
-            cacheHit: false
+            // first set to in-memory cache
+            signedUrlObjectCache.set(cacheKey, cacheRecord)
+            // second set to firestore cache
+            await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+        
+            return {
+                type: 'findFile',
+                found: true,
+                size: fileRecord.size,
+                bucketUri: fileRecord.bucketUri,
+                objectKey: fileRecord.objectKey,
+                url,
+                cacheHit: false
+            }
+        }
+    }
+
+    if ((fallbackBucket) && (!o.noFallback)) {
+        let headObjectOutput: HeadObjectOutputX | undefined = undefined
+        try {
+            headObjectOutput = await headObject(fallbackBucket, objectKey)
+        }
+        catch(err) {
+            // continue
+        }
+        if (headObjectOutput) {
+            const size = headObjectOutput.ContentLength
+            if (size === undefined) throw Error('No ContentLength in headObjectOutput')
+            fileRecord = {
+                hashAlg,
+                hash,
+                objectKey,
+                bucketUri: fallbackBucket.uri,
+                size,
+                timestamp: Date.now()
+            }
+            const url = await getSignedDownloadUrl(fallbackBucket, fileRecord.objectKey, 60 * 60)
+
+            // store in cache
+            const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}
+
+            // first set to in-memory cache
+            signedUrlObjectCache.set(cacheKey, cacheRecord)
+            // second set to firestore cache
+            await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+        
+            return {
+                type: 'findFile',
+                found: true,
+                size: fileRecord.size,
+                bucketUri: fileRecord.bucketUri,
+                objectKey: fileRecord.objectKey,
+                url,
+                cacheHit: false,
+                fallback: true
+            }
         }
     }
 
