@@ -155,10 +155,10 @@ export type UsageRequestUsage = {
     clients: {[key: string]: {clientId: string, ownerId: string, headerInfo: HeaderInfo | undefined}}
     dailyUsage: {
         date: string
-        clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
+        clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, fallbackDownloadCount: number, fallbackDownloadSize: number, ownerId: string}}
     }[]
     totalUsage: {
-        clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
+        clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, fallbackDownloadCount: number, fallbackDownloadSize: number, ownerId: string}}
     }
 }
 

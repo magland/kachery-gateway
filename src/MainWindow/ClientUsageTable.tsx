@@ -3,7 +3,7 @@ import NiceTable from "../components/NiceTable/NiceTable";
 import formatByteCount from "../misc/formatByteCount";
 
 type Props ={
-	clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, ownerId: string}}
+	clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, fallbackDownloadCount: number, fallbackDownloadSize: number, ownerId: string}}
 }
 
 const columns = [
@@ -12,7 +12,9 @@ const columns = [
 	{key: 'numFilesUpload', label: 'Num. files upload'},
 	{key: 'sizeUpload', label: 'Size upload'},
 	{key: 'numFilesDownload', label: 'Num. files download'},
-	{key: 'sizeDownload', label: 'Size download'}
+	{key: 'sizeDownload', label: 'Size download'},
+	{key: 'numFilesFallbackDownload', label: 'Num. files download (fallback)'},
+	{key: 'sizeFallbackDownload', label: 'Size download (fallback)'}
 ]
 
 const ClientUsageTable: FunctionComponent<Props> = ({clientUsage}) => {
@@ -26,7 +28,9 @@ const ClientUsageTable: FunctionComponent<Props> = ({clientUsage}) => {
 				numFilesUpload: clientUsage[clientId].uploadCount,
 				sizeUpload: formatByteCount(clientUsage[clientId].uploadSize),
 				numFilesDownload: clientUsage[clientId].downloadCount,
-				sizeDownload: formatByteCount(clientUsage[clientId].downloadSize)
+				sizeDownload: formatByteCount(clientUsage[clientId].downloadSize),
+				numFilesFallbackDownload: clientUsage[clientId].fallbackDownloadCount,
+				sizeFallbackDownload: clientUsage[clientId].fallbackDownloadSize,
 			}
 		}))
 	), [clientUsage, clientIds])
