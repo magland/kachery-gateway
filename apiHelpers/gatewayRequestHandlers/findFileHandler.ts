@@ -118,7 +118,11 @@ export const findFile = async (o: {hashAlg: string, hash: string}): Promise<Find
             size,
             timestamp: Date.now()
         }
-        const url = await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
+        const url = bucket.publicBucketUrl ? (
+            `${bucket.publicBucketUrl}/${fileRecord.objectKey}`
+        ) : (
+            await getSignedDownloadUrl(bucket, fileRecord.objectKey, 60 * 60)
+        )
 
         // store in cache
         const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}

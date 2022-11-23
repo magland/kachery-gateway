@@ -23,6 +23,7 @@ export const getBucket = () => {
         uri: process.env['BUCKET_URI'] || '',
         credentials: process.env['BUCKET_CREDENTIALS'] || ''
     }
+    bucket.publicBucketUrl = process.env['PUBLIC_BUCKET_URL'] || undefined
     if (!bucket.uri) {
         throw Error(`Environment variable not set: BUCKET_URI`)
     }
