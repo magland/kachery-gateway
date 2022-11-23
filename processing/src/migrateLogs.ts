@@ -17,7 +17,7 @@ const migrateLogs = async () => {
             console.info(`Loading ${a.Key} (${a.Size})`)
             const newKey = 'fallback-logs/' + a.Key.split('/').slice(1).join('/')
             const exists = await objectExists(bucket, newKey)
-            if (!exists) { // ignore empty files
+            if (!exists) {
                 console.info(`Migrating ${a.Key} ${newKey}`)
                 const logItemsJson = await getObjectContent(fallbackBucket, a.Key)
                 await putObject(bucket, {
