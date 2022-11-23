@@ -5,7 +5,7 @@ import { NodeId, sha1OfString } from "../../src/types/keypair"
 import validateObject, { isNumber } from '../../src/types/validateObject'
 import firestoreDatabase from '../common/firestoreDatabase'
 import { HeadObjectOutputX } from "./getS3Client"
-import { getBucket } from "./initiateFileUploadHandler"
+import { getBucket, getFallbackBucket } from "./initiateFileUploadHandler"
 import ObjectCache from './ObjectCache'
 import { Bucket, getSignedDownloadUrl, headObject } from "./s3Helpers"
 
@@ -60,7 +60,7 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
     const {hashAlg, hash} = o
 
     const bucket: Bucket = getBucket()
-    const fallbackBucket: Bucket = getFallbackBucket()
+    const fallbackBucket: Bucket | undefined = getFallbackBucket()
 
     let fileRecord: FileRecord | undefined = undefined
 
