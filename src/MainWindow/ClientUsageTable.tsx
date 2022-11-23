@@ -30,7 +30,7 @@ const ClientUsageTable: FunctionComponent<Props> = ({clientUsage}) => {
 				numFilesDownload: clientUsage[clientId].downloadCount,
 				sizeDownload: formatByteCount(clientUsage[clientId].downloadSize),
 				numFilesFallbackDownload: clientUsage[clientId].fallbackDownloadCount,
-				sizeFallbackDownload: clientUsage[clientId].fallbackDownloadSize,
+				sizeFallbackDownload: formatByteCount(clientUsage[clientId].fallbackDownloadSize),
 			}
 		}))
 	), [clientUsage, clientIds])
