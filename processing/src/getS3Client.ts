@@ -104,7 +104,7 @@ const getS3Client = (bucket: Bucket): S3Client => {
         ret = new AWS.S3(o)
     }
     else {
-        throw Error(`Unsupported bucket service: ${service}`)
+        throw Error(`Unsupported bucket service: ${service} for uri ${bucket.uri}`)
     }
     s3ClientObjectCache.set(k, ret)
     return ret
