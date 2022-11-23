@@ -119,7 +119,7 @@ const analyzeLogs = async () => {
                             hashAlg: req.payload.hashAlg,
                             size: resp.size || 0,
                             timestamp: logItem.requestTimestamp,
-                            fallback: logItem.fallback
+                            fallback: logItem.response.fallback
                         }, headerInfo)   
                     }
                     else if (type0 === 'addClient') {
