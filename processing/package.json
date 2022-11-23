@@ -7,6 +7,7 @@
   "description": "Kachery Gateway processing",
   "scripts": {
     "cleanup-find-file-cache": "node dist/cleanupFindFileCache.js",
+    "migrate-logs": "node dist/migrateLogs.js",
     "process-log-items": "node dist/processLogItems.js",
     "analyze-logs": "node dist/analyzeLogs.js",
     "build": "tsc"

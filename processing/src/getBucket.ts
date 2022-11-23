@@ -13,3 +13,20 @@ export const getBucket = () => {
     }
     return bucket
 }
+
+export const getFallbackBucket = () => {
+    if (!process.env['FALLBACK_BUCKET_URI']) {
+        return undefined
+    }
+    const bucket: Bucket = {
+        uri: process.env['FALLBACK_BUCKET_URI'] || '',
+        credentials: process.env['FALLBACK_BUCKET_CREDENTIALS'] || ''
+    }
+    if (!bucket.uri) {
+        throw Error(`Environment variable not set: FALLBACK_BUCKET_URI`)
+    }
+    if (!bucket.credentials) {
+        throw Error(`Environment variable not set: FALLBACK_BUCKET_CREDENTIALS`)
+    }
+    return bucket
+}

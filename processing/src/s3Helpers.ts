@@ -204,6 +204,9 @@ export const listObjects = async (bucket: Bucket, prefix: string, o: {continuati
 }
 
 export const parseBucketUri = (uri: string) => {
+    if (!uri) {
+        return {region: '', service: '', bucketName: '', path: ''}
+    }
     let ind = uri.indexOf('?')
     if (ind < 0) ind = uri.length
     const aa = uri.slice(0, ind)

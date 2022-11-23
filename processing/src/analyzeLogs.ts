@@ -1,4 +1,4 @@
-import { getBucket } from './getBucket'
+import { getBucket, getFallbackBucket } from './getBucket'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
@@ -87,61 +87,63 @@ const analyzeLogs = async () => {
         clients[clientId].ownerId = ownerId
     }
 
-    let continuationToken: string | undefined = undefined
-    while (true) {
-        const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, 'logs/', {continuationToken, maxObjects: 500})
-        for (let a of logFiles) {
-            console.info(`Loading ${a.Key} (${a.Size})`)
-            if (a.Size > 0) { // ignore empty files
-                console.info('Downloading')
-                const logItemsJson = await getObjectContent(bucket, a.Key)
-                const logItems = JSON.parse(logItemsJson)
-                for (let logItem of logItems) {
-                    const type0 = logItem.request.type || (logItem.request.payload || {}).type
-                    if (type0 === 'finalizeFileUpload') {
-                        const req = logItem.request as FinalizeFileUploadRequest
-                        const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
-                        processUpload({
-                            clientId: req.fromClientId.toString(),
-                            hash: req.payload.hash,
-                            hashAlg: req.payload.hashAlg,
-                            size: req.payload.size,
-                            timestamp: logItem.requestTimestamp
-                        }, headerInfo)
-                    }
-                    else if (type0 === 'findFile') {
-                        const req = logItem.request as FindFileRequest
-                        const resp = logItem.response as FindFileResponse
-                        const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
-                        processFindFile({
-                            clientId: req.fromClientId.toString(),
-                            hash: req.payload.hash,
-                            hashAlg: req.payload.hashAlg,
-                            size: resp.size || 0,
-                            timestamp: logItem.requestTimestamp,
-                            fallback: logItem.response.fallback
-                        }, headerInfo)   
-                    }
-                    else if (type0 === 'addClient') {
-                        const req = logItem.request as AddClientRequest
-                        const clientId = req.clientId
-                        const ownerId = req.ownerId
-                        processAddClient(clientId.toString(), ownerId)
-                    }
-                    else if (type0 === 'migrateClient') {
-                        const req = logItem.request
-                        const clientId = req.client.clientId
-                        const ownerId = req.client.ownerId
-                        processAddClient(clientId, ownerId)
+    for (let logsDirName of ['fallback-logs', 'logs']) {
+        let continuationToken: string | undefined = undefined
+        while (true) {
+            const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, `${logsDirName}/`, {continuationToken, maxObjects: 500})
+            for (let a of logFiles) {
+                console.info(`Loading ${a.Key} (${a.Size})`)
+                if (a.Size > 0) { // ignore empty files
+                    console.info('Downloading')
+                    const logItemsJson = await getObjectContent(bucket, a.Key)
+                    const logItems = JSON.parse(logItemsJson)
+                    for (let logItem of logItems) {
+                        const type0 = logItem.request.type || (logItem.request.payload || {}).type
+                        if (type0 === 'finalizeFileUpload') {
+                            const req = logItem.request as FinalizeFileUploadRequest
+                            const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
+                            processUpload({
+                                clientId: req.fromClientId.toString(),
+                                hash: req.payload.hash,
+                                hashAlg: req.payload.hashAlg,
+                                size: req.payload.size,
+                                timestamp: logItem.requestTimestamp
+                            }, headerInfo)
+                        }
+                        else if (type0 === 'findFile') {
+                            const req = logItem.request as FindFileRequest
+                            const resp = logItem.response as FindFileResponse
+                            const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
+                            processFindFile({
+                                clientId: req.fromClientId.toString(),
+                                hash: req.payload.hash,
+                                hashAlg: req.payload.hashAlg,
+                                size: resp.size || 0,
+                                timestamp: logItem.requestTimestamp,
+                                fallback: logItem.response.fallback || (logsDirName === 'fallback-logs')
+                            }, headerInfo)   
+                        }
+                        else if (type0 === 'addClient') {
+                            const req = logItem.request as AddClientRequest
+                            const clientId = req.clientId
+                            const ownerId = req.ownerId
+                            processAddClient(clientId.toString(), ownerId)
+                        }
+                        else if (type0 === 'migrateClient') {
+                            const req = logItem.request
+                            const clientId = req.client.clientId
+                            const ownerId = req.client.ownerId
+                            processAddClient(clientId, ownerId)
+                        }
                     }
                 }
             }
-        }
-        if (!newContinuationToken) {
-            break
-        }
-        else {
-            continuationToken = newContinuationToken as string
+            if (!newContinuationToken) {
+                break
+            }
+            else {
+                continuationToken = newContinuationToken as string
+            }
         }
     }
 

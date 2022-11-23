@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Cleanup findFile cache
         run: cd /working && npm run cleanup-find-file-cache
+      - name: Migrate logs
+        run: cd /working && npm run migrate-logs
       - name: Process log items
         run: cd /working && npm run process-log-items
       - name: Analyze logs
