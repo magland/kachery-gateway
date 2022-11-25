@@ -9,7 +9,7 @@ import { getBucket, getFallbackBucket } from "./initiateFileUploadHandler"
 import ObjectCache from './ObjectCache'
 import { Bucket, getSignedDownloadUrl, headObject } from "./s3Helpers"
 
-const findFileHandler = async (request: FindFileRequest, verifiedClientId: NodeId): Promise<FindFileResponse> => {
+const findFileHandler = async (request: FindFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FindFileResponse> => {
     const { hashAlg, hash } = request.payload
 
     return findFile({hashAlg, hash})

@@ -6,18 +6,25 @@ import { deleteObject, headObject } from "./s3Helpers";
 
 const bucket = getBucket()
 
-const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, verifiedClientId?: NodeId): Promise<FinalizeFileUploadResponse> => {
+const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FinalizeFileUploadResponse> => {
     const { objectKey, size } = request.payload
 
     const clientId = verifiedClientId
-
-    if (!clientId) {
-        throw Error('No verified client ID')
+    let userId = verifiedUserId
+    if ((!clientId) && (!userId)) {
+        throw Error('No verified client ID or user ID')
     }
 
-    // make sure the client is registered
-    // in the future we will check the owner for authorization
-    const client = await getClient(clientId.toString())
+    if (clientId) {
+        if (userId) {
+            throw Error('Both client ID and user ID provided')
+        }
+        // make sure the client is registered
+        // in the future we will check the owner for authorization
+        const client = await getClient(clientId.toString())
+        userId = client.ownerId
+    }
+    // in the future, we will check the user ID for authorization
 
     const x = await headObject(bucket, objectKey)
     const size0 = x.ContentLength

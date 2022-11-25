@@ -1,4 +1,4 @@
-import { getBucket, getFallbackBucket } from './getBucket'
+import { getBucket } from './getBucket'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
@@ -103,7 +103,7 @@ const analyzeLogs = async () => {
                             const req = logItem.request as FinalizeFileUploadRequest
                             const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
                             processUpload({
-                                clientId: req.fromClientId.toString(),
+                                clientId: req.fromClientId ? req.fromClientId.toString() : req.githubUserId ? req.githubUserId : 'unknown',
                                 hash: req.payload.hash,
                                 hashAlg: req.payload.hashAlg,
                                 size: req.payload.size,
@@ -115,7 +115,7 @@ const analyzeLogs = async () => {
                             const resp = logItem.response as FindFileResponse
                             const headerInfo = getHeaderInfoFromRequestHeaders(logItem.requestHeaders)
                             processFindFile({
-                                clientId: req.fromClientId.toString(),
+                                clientId: req.fromClientId ? req.fromClientId.toString() : req.githubUserId ? req.githubUserId : 'unknown',
                                 hash: req.payload.hash,
                                 hashAlg: req.payload.hashAlg,
                                 size: resp.size || 0,

@@ -14,7 +14,7 @@ const migrateLogs = async () => {
     while (true) {
         const {objects: fallbackLogFiles, continuationToken: newContinuationToken} = await listObjects(fallbackBucket, 'logs/', {continuationToken, maxObjects: 500})
         for (let a of fallbackLogFiles) {
-            console.info(`Loading ${a.Key} (${a.Size})`)
+            console.info(`Checking ${a.Key} (${a.Size})`)
             const newKey = 'fallback-logs/' + a.Key.split('/').slice(1).join('/')
             const exists = await objectExists(bucket, newKey)
             if (!exists) {

@@ -50,21 +50,29 @@ export const getFallbackBucket = () => {
     return bucket
 }
 
-const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, verifiedClientId?: NodeId): Promise<InitiateFileUploadResponse> => {
+const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<InitiateFileUploadResponse> => {
     const { size, hashAlg, hash } = request.payload
 
     const clientId = verifiedClientId
-    if (!clientId) {
-        throw Error('No verified client ID')
+    let userId = verifiedUserId
+    if ((!clientId) && (!userId)) {
+        throw Error('No verified client ID or user ID')
     }
 
     if (size > MAX_UPLOAD_SIZE) {
         throw Error(`File too large: ${size} > ${MAX_UPLOAD_SIZE}`)
     }
 
-    // make sure the client is registered
-    // in the future we will check the owner for authorization
-    const client = await getClient(clientId.toString())
+    if (clientId) {
+        if (userId) {
+            throw Error('Both client ID and user ID provided')
+        }
+        // make sure the client is registered
+        // in the future we will check the owner for authorization
+        const client = await getClient(clientId.toString())
+        userId = client.ownerId
+    }
+    // in the future, we will check the user ID for authorization
 
     const findFileResponse = await findFile({hash, hashAlg, noFallback: true})
     if (findFileResponse.found) {

@@ -1,13 +1,14 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
 import { hexToPublicKey, verifySignature } from '../src/crypto/signatures'
-import { nodeIdToPublicKeyHex } from '../src/types/keypair'
+import { NodeId, nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
 import writeLogItem from '../apiHelpers/writeLogItem'
 import initiateFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/initiateFileUploadHandler'
 import finalizeFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/finalizeFileUploadHandler'
 import getClientInfoHandler from '../apiHelpers/gatewayRequestHandlers/getClientInfoHandler'
 import getZoneInfoHandler from '../apiHelpers/gatewayRequestHandlers/getZoneInfoHandler'
+import githubVerifyAccessToken from '../apiHelpers/common/githubVerifyAccessToken'
 
 module.exports = (req: VercelRequest, res: VercelResponse) => {
     const {body: request} = req
@@ -40,7 +41,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
 
     const requestTimestamp = Date.now()
 
-    const { payload, fromClientId, signature } = request
+    const { payload, fromClientId, signature, githubUserId, githubAccessToken } = request
     const { timestamp } = payload
     const elapsed = Date.now() - timestamp
     if ((elapsed > 30000) || (elapsed < -30000)) { 
@@ -51,19 +52,31 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     }
 
     ;(async () => {
-        if (!(await verifySignature(payload, hexToPublicKey(nodeIdToPublicKeyHex(fromClientId)), signature))) {
-            throw Error('Invalid signature')
+        let verifiedClientId: NodeId | undefined = undefined
+        if (fromClientId) {
+            if (!signature) throw Error('No signature provided with fromClientId')
+            if (!(await verifySignature(payload, hexToPublicKey(nodeIdToPublicKeyHex(fromClientId)), signature))) {
+                throw Error('Invalid signature')
+            }
+            verifiedClientId = fromClientId
         }
-        const verifiedClientId = fromClientId
+
+        let verifiedUserId: string | undefined = undefined
+        if (githubUserId) {
+            if (!(await githubVerifyAccessToken(githubUserId, githubAccessToken))) {
+                throw Error('Unable to verify github user ID')
+            }
+            verifiedUserId = githubUserId
+        }
 
         if (isFindFileRequest(request)) {
-            return await findFileHandler(request, verifiedClientId)
+            return await findFileHandler(request, verifiedClientId, verifiedUserId)
         }
         else if (isInitiateFileUploadRequest(request)) {
-            return await initiateFileUploadHandler(request, verifiedClientId)
+            return await initiateFileUploadHandler(request, verifiedClientId, verifiedUserId)
         }
         else if (isFinalizeFileUploadRequest(request)) {
-            return await finalizeFileUploadHandler(request, verifiedClientId)
+            return await finalizeFileUploadHandler(request, verifiedClientId, verifiedUserId)
         }
         else if (isGetClientInfoRequest(request)) {
             return await getClientInfoHandler(request)
