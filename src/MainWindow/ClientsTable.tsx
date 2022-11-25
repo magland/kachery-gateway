@@ -41,7 +41,7 @@ const ClientsTable: FunctionComponent<Props> = () => {
                             {client.label} ({client.clientId.slice(0, 10)}...)
                         </Hyperlink>
                     },
-                    ownerId: client.ownerId.toString()
+                    ownerId: client.ownerId.toString() || (!isNodeId(client.clientId) ? client.clientId : '')
                 }
             }
         })
