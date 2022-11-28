@@ -7,17 +7,13 @@ env:
   FALLBACK_BUCKET_CREDENTIALS: ${{ secrets.FALLBACK_BUCKET_CREDENTIALS }}
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "37 6,12,18 * * *"
 jobs:
   Processing:
     runs-on: ubuntu-latest
     container:
       image: magland/kachery-gateway-processing:0.1.0
     steps:
-      - name: Cleanup findFile cache
-        run: cd /working && npm run cleanup-find-file-cache
-      - name: Process log items
-        run: cd /working && npm run process-log-items
-      - name: Analyze logs
-        run: cd /working && npm run analyze-logs
+      - name: Migrate logs
+        run: cd /working && npm run migrate-logs
+      - name: Migrate clients
+        run: cd /working && npm run migrate-clients
