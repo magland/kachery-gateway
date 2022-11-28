@@ -3,7 +3,7 @@ import { Client } from "../../src/types/Client";
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
 import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
 import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
-import { objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
+import { getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 // const MAX_NUM_CLIENTS_PER_USER = 25
 
@@ -69,6 +69,17 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
         Key: key,
         Bucket: bucketName,
         Body: JSON.stringify(client, null, 4)
+    })
+    const userKey = `users/${client.ownerId}`
+    let user: {[key: string]: any} = {}
+    if (await objectExists(bucket, userKey)) {
+        user = JSON.parse(await getObjectContent(bucket, userKey))
+    }
+    user['clientIds'] = [...(user['clientIds'] || []), client.clientId]
+    await putObject(bucket, {
+        Key: userKey,
+        Body: JSON.stringify(user, null, 4),
+        Bucket: bucketName
     })
 
     // await clientsCollection.doc(clientId.toString()).set(client)
