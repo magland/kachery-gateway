@@ -1,9 +1,9 @@
-import { Client } from "../../src/types/Client";
 import { hexToPublicKey, verifySignature } from "../../src/crypto/signatures";
+import { Client } from "../../src/types/Client";
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
 import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
-import firestoreDatabase from "../common/firestoreDatabase";
-import { invalidateAllClients } from "../common/getDatabaseItems";
+import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 // const MAX_NUM_CLIENTS_PER_USER = 25
 
@@ -32,12 +32,12 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
     //     throw Error('Client with clientId already exists.')
     // }
 
-    const db = firestoreDatabase()
-    const clientsCollection = db.collection('kachery-gateway.clients')
-    const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
-    if (clientSnapshot.exists) {
-        throw Error('Client clientId already exists.')
-    }
+    // const db = firestoreDatabase()
+    // const clientsCollection = db.collection('kachery-gateway.clients')
+    // const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
+    // if (clientSnapshot.exists) {
+    //     throw Error('Client clientId already exists.')
+    // }
 
     // const result = await clientsCollection.where('ownerId', '==', ownerId).get()
     // if (result.docs.length + 1 > MAX_NUM_CLIENTS_PER_USER) {
@@ -58,9 +58,22 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
     //     Bucket: adminBucketName
     // })
 
-    await clientsCollection.doc(clientId.toString()).set(client)
+    const bucket = getBucket()
+    const {bucketName} = parseBucketUri(bucket.uri)
+    const key = `clients/${clientId}`
+    const exists = await objectExists(bucket, key)
+    if (exists) {
+        throw Error('Client already exists.')
+    }
+    await putObject(bucket, {
+        Key: key,
+        Bucket: bucketName,
+        Body: JSON.stringify(client, null, 4)
+    })
 
-    invalidateAllClients()
+    // await clientsCollection.doc(clientId.toString()).set(client)
+
+    // invalidateAllClients()
     
     return {
         type: 'addClient'

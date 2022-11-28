@@ -80,14 +80,14 @@ export const isDeleteClientResponse = (x: any): x is DeleteClientResponse => {
 
 export type GetClientsRequest = {
     type: 'getClients'
-    userId?: string
+    userId: string
     auth: Auth
 }
 
 export const isGetClientsRequest = (x: any): x is GetClientsRequest => {
     return validateObject(x, {
         type: isEqualTo('getClients'),
-        userId: optional(isString),
+        userId: isString,
         auth: isAuth
     })
 }
