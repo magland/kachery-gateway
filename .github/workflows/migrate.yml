@@ -1,4 +1,4 @@
-name: Process log items
+name: Migrate
 env:
   GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
   BUCKET_URI: ${{ secrets.BUCKET_URI }}
