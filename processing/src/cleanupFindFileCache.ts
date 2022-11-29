@@ -38,7 +38,7 @@ const cleanupFindFileCache = async () => {
             }
             else {
                 console.info('No more expired cache items. Exiting')
-                return
+                break
             }
         }
     }
