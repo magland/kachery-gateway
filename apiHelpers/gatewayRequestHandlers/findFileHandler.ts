@@ -53,7 +53,7 @@ const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): P
         return undefined
     }
     const cacheRecord = {...result}
-    delete cacheRecord['_id']
+    delete (cacheRecord as any)['_id']
     if (!isCacheRecord(cacheRecord)) {
         console.warn('WARNING: Error in cache record')
         return undefined
@@ -68,7 +68,7 @@ const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): P
 
 const setMongoCache = async (cacheCollection: Collection, cacheKey: string, cacheRecord: CacheRecord) => {
     const doc = {...cacheRecord, _id: cacheKey}
-    await cacheCollection.replaceOne({_id: cacheKey}, doc)
+    await cacheCollection.replaceOne({_id: cacheKey}, doc, {upsert: true})
 }
 
 // const deleteFromFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string) => {

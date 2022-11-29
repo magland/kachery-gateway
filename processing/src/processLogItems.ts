@@ -102,7 +102,7 @@ const processLogItems = async () => {
             }
             for (let result of results) {
                 const logItem = {...result}
-                delete logItem['_id']
+                delete (logItem as any)['_id']
                 if (!isLogItem(logItem)) {
                     console.warn(logItem)
                     throw Error('Invalid log item in database')
