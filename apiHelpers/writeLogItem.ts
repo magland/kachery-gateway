@@ -1,5 +1,5 @@
 import { LogItem } from '../src/types/LogItem'
-import firestoreDatabase from './common/firestoreDatabase'
+import { getMongoClient } from './common/getMongoClient'
 
 // const adminBucket = getAdminBucket()
 
@@ -8,9 +8,14 @@ const writeLogItem = async (logItem: LogItem) => {
     logItem2.request = {...logItem2.request}
     delete logItem2.request['signature']
     delete logItem2.request['githubAccessToken']
-    const db = firestoreDatabase()
-    const logItemsCollection = db.collection('kachery-gateway.logItems')
-    await logItemsCollection.add(logItem2)
+
+    const client = await getMongoClient()
+    const logItemsCollection = client.db('kachery-gateway').collection('logItems')
+    logItemsCollection.insertOne(logItem2)
+
+    // const db = firestoreDatabase()
+    // const logItemsCollection = db.collection('kachery-gateway.logItems')
+    // await logItemsCollection.add(logItem2)
 }
 
 export default writeLogItem

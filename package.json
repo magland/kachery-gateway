@@ -55,8 +55,10 @@
   },
   "devDependencies": {
     "@google-cloud/firestore": "^6.4.0",
+    "@types/mongodb": "^3",
     "@vercel/node": "^2.5.25",
     "aws-sdk": "^2.1236.0",
+    "mongodb": "^3",
     "tweetnacl": "^1.0.3"
   }
 }

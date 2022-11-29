@@ -1,13 +1,12 @@
 import { Client } from "../../src/types/Client";
 import { GetClientInfoRequest, GetClientInfoResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
-import firestoreDatabase from '../common/firestoreDatabase';
 import { getClient } from "../common/getDatabaseItems";
 
 const getClientInfoHandler = async (request: GetClientInfoRequest, verifiedClientId?: NodeId): Promise<GetClientInfoResponse> => {
     const { clientId } = request.payload
 
-    const db = firestoreDatabase()
+    // const db = firestoreDatabase()
     let client: Client
     try {
         client = await getClient(clientId.toString())

@@ -1,9 +1,9 @@
-import { CollectionReference } from '@google-cloud/firestore'
+import { Collection } from 'mongodb'
 import { FileRecord, isFileRecord } from '../../src/types/FileRecord'
 import { FindFileRequest, FindFileResponse } from "../../src/types/GatewayRequest"
 import { NodeId, sha1OfString } from "../../src/types/keypair"
 import validateObject, { isNumber } from '../../src/types/validateObject'
-import firestoreDatabase from '../common/firestoreDatabase'
+import { getMongoClient } from '../common/getMongoClient'
 import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket, getFallbackBucket } from "./initiateFileUploadHandler"
 import ObjectCache from './ObjectCache'
@@ -31,12 +31,29 @@ const isCacheRecord = (x: any): x is CacheRecord => {
 
 const signedUrlObjectCache = new ObjectCache<CacheRecord>(1000 * 60 * 30)
 
-const checkFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string): Promise<CacheRecord | undefined> => {
-    const docRef = cacheCollection.doc(cacheKey)
-    const docSnapshot = await docRef.get()
-    if (!docSnapshot.exists) return undefined
-    const cacheRecord = docSnapshot.data()
-    if (!cacheRecord) return undefined
+// const checkFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string): Promise<CacheRecord | undefined> => {
+//     const docRef = cacheCollection.doc(cacheKey)
+//     const docSnapshot = await docRef.get()
+//     if (!docSnapshot.exists) return undefined
+//     const cacheRecord = docSnapshot.data()
+//     if (!cacheRecord) return undefined
+//     if (!isCacheRecord(cacheRecord)) {
+//         console.warn('WARNING: Error in cache record')
+//         return undefined
+//     }
+//     return cacheRecord
+// }
+
+const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): Promise<CacheRecord | undefined> => {
+    let result: any
+    try {
+        result = await cacheCollection.findOne({_id: cacheKey})
+    }
+    catch(err) {
+        return undefined
+    }
+    const cacheRecord = {...result}
+    delete cacheRecord['_id']
     if (!isCacheRecord(cacheRecord)) {
         console.warn('WARNING: Error in cache record')
         return undefined
@@ -44,16 +61,26 @@ const checkFirestoreCache = async (cacheCollection: CollectionReference, cacheKe
     return cacheRecord
 }
 
-const setFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string, cacheRecord: CacheRecord) => {
-    const docRef = cacheCollection.doc(cacheKey)
-    await docRef.set(cacheRecord)
+// const setFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string, cacheRecord: CacheRecord) => {
+//     const docRef = cacheCollection.doc(cacheKey)
+//     await docRef.set(cacheRecord)
+// }
+
+const setMongoCache = async (cacheCollection: Collection, cacheKey: string, cacheRecord: CacheRecord) => {
+    const doc = {...cacheRecord, _id: cacheKey}
+    await cacheCollection.replaceOne({_id: cacheKey}, doc)
 }
 
-const deleteFromFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string) => {
-    const docRef = cacheCollection.doc(cacheKey)
+// const deleteFromFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string) => {
+//     const docRef = cacheCollection.doc(cacheKey)
     
+//     // we are assuming it doesn't throw exception if doesn't exist
+//     await docRef.delete()
+// }
+
+const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey: string) => {
     // we are assuming it doesn't throw exception if doesn't exist
-    await docRef.delete()
+    await cacheCollection.deleteOne({_id: cacheKey})
 }
 
 export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: boolean}): Promise<FindFileResponse> => {
@@ -67,8 +94,10 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
     const h = hash
     const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
 
-    const db = firestoreDatabase()
-    const cacheCollection = db.collection('kachery-gateway.findFileCache')
+    // const db = firestoreDatabase()
+    // const cacheCollection = db.collection('kachery-gateway.findFileCache')
+    const client = await getMongoClient()
+    const cacheCollection = client.db('kachery-gateway').collection('findFileCache')
 
     // check cache
     const cacheKey = sha1OfString(`${bucket.uri}.${objectKey}`).toString()
@@ -76,7 +105,8 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
     let aa = signedUrlObjectCache.get(cacheKey) // check memory cache
     if (!aa) {
         // second check firestore cache
-        aa = await checkFirestoreCache(cacheCollection, cacheKey)
+        // aa = await checkFirestoreCache(cacheCollection, cacheKey)
+        aa = await checkMongoCache(cacheCollection, cacheKey)
     }
 
     if (aa) {
@@ -97,7 +127,8 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
         else {
             // it is not recent enough
             signedUrlObjectCache.delete(cacheKey) // delete from memory cache
-            deleteFromFirestoreCache(cacheCollection, cacheKey) // delete from firestore cache
+            // await deleteFromFirestoreCache(cacheCollection, cacheKey) // delete from firestore cache
+            await deleteFromMongoCache(cacheCollection, cacheKey) // delete from mongo cache
         }
     }
     
@@ -128,7 +159,8 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
             // first set to in-memory cache
             signedUrlObjectCache.set(cacheKey, cacheRecord)
             // second set to firestore cache
-            await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+            // await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+            await setMongoCache(cacheCollection, cacheKey, cacheRecord)
         
             return {
                 type: 'findFile',
@@ -169,7 +201,8 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
             // first set to in-memory cache
             signedUrlObjectCache.set(cacheKey, cacheRecord)
             // second set to firestore cache
-            await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+            // await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+            await setMongoCache(cacheCollection, cacheKey, cacheRecord)
         
             return {
                 type: 'findFile',
