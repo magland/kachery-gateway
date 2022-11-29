@@ -9,7 +9,6 @@
     "cleanup-find-file-cache": "node dist/cleanupFindFileCache.js",
     "migrate-logs": "node dist/migrateLogs.js",
     "migrate-clients": "node dist/migrateClients.js",
-    "mongodb": "^3",
     "process-log-items": "node dist/processLogItems.js",
     "analyze-logs": "node dist/analyzeLogs.js",
     "build": "tsc"
@@ -19,10 +18,11 @@
   "dependencies": {
     "@google-cloud/firestore": "^6.4.1",
     "aws-sdk": "^2.1236.0",
+    "mongodb": "^3.6",
     "typescript": "^4.6.3"
   },
   "devDependencies": {
-    "@types/mongodb": "^3",
+    "@types/mongodb": "^3.6",
     "ts-node": "^10.7.0"
   }
 }
