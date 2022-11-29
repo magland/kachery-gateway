@@ -19,6 +19,12 @@ export const getMongoClient = async (): Promise<MongoClient> => {
     return client
 }
 
+export const closeMongoClient = () => {
+    if (!client) return
+    client.close()
+    client = undefined
+}
+
 export const sleepMsec = async (msec: number): Promise<void> => {
     return new Promise<void>((resolve) => {
         setTimeout(() => {

@@ -4,7 +4,7 @@ import { DocumentSnapshot } from "@google-cloud/firestore"
 import * as fs from 'fs'
 import firestoreDatabase from "./firestoreDatabase"
 import { getBucket } from "./getBucket"
-import { getMongoClient } from "./getMongoClient"
+import { closeMongoClient, getMongoClient } from "./getMongoClient"
 import { parseBucketUri, putObject } from "./s3Helpers"
 import splitIntoBatches from "./splitIntoBatches"
 import { isLogItem, LogItem } from "./types/LogItem"
@@ -157,6 +157,8 @@ const processLogItems = async () => {
             console.info(`Processed ${logItems.length} mongo log items.`)
         }
     }
+
+    closeMongoClient()
 }
 
 processLogItems()

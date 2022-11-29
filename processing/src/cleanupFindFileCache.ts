@@ -2,6 +2,7 @@
 
 import { DocumentSnapshot } from "@google-cloud/firestore"
 import firestoreDatabase from "./firestoreDatabase"
+import { closeMongoClient } from "./getMongoClient"
 import { getMongoClient } from "./getMongoClient"
 
 const cleanupFindFileCache = async () => {
@@ -52,6 +53,8 @@ const cleanupFindFileCache = async () => {
         })
         console.info(`Deleted ${result.deletedCount} mongo documents`)
     }
+
+    closeMongoClient()
 }
 
 cleanupFindFileCache()
