@@ -5,6 +5,7 @@ env:
   BUCKET_CREDENTIALS: ${{ secrets.BUCKET_CREDENTIALS }}
   FALLBACK_BUCKET_URI: ${{ secrets.FALLBACK_BUCKET_URI }}
   FALLBACK_BUCKET_CREDENTIALS: ${{ secrets.FALLBACK_BUCKET_CREDENTIALS }}
+  MONGO_URI: ${{ secrets.MONGO_URI }}
 on:
   workflow_dispatch:
 jobs:
