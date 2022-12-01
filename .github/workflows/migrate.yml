@@ -1,6 +1,5 @@
 name: Migrate
 env:
-  GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
   BUCKET_URI: ${{ secrets.BUCKET_URI }}
   BUCKET_CREDENTIALS: ${{ secrets.BUCKET_CREDENTIALS }}
   FALLBACK_BUCKET_URI: ${{ secrets.FALLBACK_BUCKET_URI }}

@@ -9,7 +9,6 @@ import theme from './theme';
 function App() {
   return (
     <div className="App">
-      {/* <GoogleSignInSetup> */}
       <GithubAuthSetup>
         <MuiThemeProvider theme={theme}>
           <BrowserRouter>
@@ -19,7 +18,6 @@ function App() {
           </BrowserRouter>
         </MuiThemeProvider>
       </GithubAuthSetup>
-      {/* </GoogleSignInSetup> */}
     </div>
   );
 }
