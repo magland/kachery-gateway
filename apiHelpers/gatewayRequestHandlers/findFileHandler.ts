@@ -79,6 +79,12 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
     if (!aa) {
         aa = await checkMongoCache(cacheCollection, cacheKey)
     }
+    if ((aa) && (fallbackBucket) && (o.noFallback) && (aa.fileRecord.bucketUri === fallbackBucket?.uri)) {
+        // if the cached record is a fallback cache record
+        // and o.noFallback is true
+        // then we should not use the cache hit
+        aa = undefined
+    }
 
     if (aa) {
         // we have a cache hit
