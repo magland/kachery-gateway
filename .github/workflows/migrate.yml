@@ -16,5 +16,3 @@ jobs:
     steps:
       - name: Migrate logs
         run: cd /working && npm run migrate-logs
-      - name: Migrate clients
-        run: cd /working && npm run migrate-clients

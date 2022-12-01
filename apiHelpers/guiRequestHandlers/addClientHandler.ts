@@ -23,27 +23,6 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
         throw Error('Invalid verification signature')
     }
 
-    // const adminBucket = getAdminBucket()
-    // const {bucketName: adminBucketName} = parseBucketUri(adminBucket.uri)
-    // const kk = `clients/${clientId}`
-    
-    // const alreadyExists = await objectExists(adminBucket, kk)
-    // if (alreadyExists) {
-    //     throw Error('Client with clientId already exists.')
-    // }
-
-    // const db = firestoreDatabase()
-    // const clientsCollection = db.collection('kachery-gateway.clients')
-    // const clientSnapshot = await clientsCollection.doc(clientId.toString()).get()
-    // if (clientSnapshot.exists) {
-    //     throw Error('Client clientId already exists.')
-    // }
-
-    // const result = await clientsCollection.where('ownerId', '==', ownerId).get()
-    // if (result.docs.length + 1 > MAX_NUM_CLIENTS_PER_USER) {
-    //     throw Error(`User cannot own more than ${MAX_NUM_CLIENTS_PER_USER} clients`)
-    // }
-
     const client: Client = {
         clientId,
         ownerId,

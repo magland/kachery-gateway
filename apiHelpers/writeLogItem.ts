@@ -12,10 +12,6 @@ const writeLogItem = async (logItem: LogItem) => {
     const client = await getMongoClient()
     const logItemsCollection = client.db('kachery-gateway').collection('logItems')
     await logItemsCollection.insertOne(logItem2)
-
-    // const db = firestoreDatabase()
-    // const logItemsCollection = db.collection('kachery-gateway.logItems')
-    // await logItemsCollection.add(logItem2)
 }
 
 export default writeLogItem

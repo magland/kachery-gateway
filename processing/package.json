@@ -8,7 +8,6 @@
   "scripts": {
     "cleanup-find-file-cache": "node dist/cleanupFindFileCache.js",
     "migrate-logs": "node dist/migrateLogs.js",
-    "migrate-clients": "node dist/migrateClients.js",
     "process-log-items": "node dist/processLogItems.js",
     "analyze-logs": "node dist/analyzeLogs.js",
     "build": "tsc"
@@ -16,7 +15,6 @@
   "author": "Jeremy Magland",
   "license": "Apache-2.0",
   "dependencies": {
-    "@google-cloud/firestore": "^6.4.1",
     "aws-sdk": "^2.1236.0",
     "mongodb": "^4.12.1",
     "typescript": "^4.6.3"

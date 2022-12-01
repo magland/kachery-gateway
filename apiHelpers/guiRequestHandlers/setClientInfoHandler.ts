@@ -6,22 +6,6 @@ import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserId?: string): Promise<SetClientInfoResponse> => {
     const { clientId, label } = request
 
-    // const client0 = await getClient(clientId.toString())
-    // const client = {...client0}
-
-    // const db = firestoreDatabase()
-    // const collection = db.collection('kachery-gateway.clients')
-    // let docSnapshot = await collection.doc(clientId.toString()).get()
-
-    // if (!docSnapshot.exists) {
-    //     throw Error('Client does not exist in setClientInfoHandler')
-    // }
-
-    // const client = docSnapshot.data()
-    // if (!isClient(client)) {
-    //     throw Error('Invalid client in database')
-    // }
-
     const client = await getClient(clientId.toString())
 
     if (client.ownerId !== verifiedUserId) {

@@ -10,20 +10,6 @@ const deleteClientHandler = async (request: DeleteClientRequest, verifiedUserId?
         throw Error('Mismatch between ownerId and verifiedUserId')
     }
 
-    // const adminBucket = getAdminBucket()
-    // const kk = `clients/${clientId}`
-
-    // await deleteObject(adminBucket, kk)
-
-    // const db = firestoreDatabase()
-
-    // const batch = db.batch();
-
-    // const clientsCollection = db.collection('kachery-gateway.clients')
-    // batch.delete(clientsCollection.doc(clientId.toString()))
-
-    // await batch.commit()
-
     const client = await getClient(clientId.toString())
     if (client.ownerId !== ownerId) {
         throw Error('Not authorized to delete client. Owner ID does not match.')

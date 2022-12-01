@@ -18,25 +18,6 @@ const getClientsHandler = async (request: GetClientsRequest, verifiedUserId?: st
         clients.push(client)
     }
 
-    // const clients: Client[] = []
-
-    // const db = firestoreDatabase()
-
-    // const clientsCollection = db.collection('kachery-gateway.clients')
-    // const results2 = userId ?
-    //     await clientsCollection.where('ownerId', '==', userId).get() :
-    //     await clientsCollection.get()
-    // for (let doc of results2.docs) {
-    //     const x = doc.data()
-    //     if (isClient(x)) {
-    //         clients.push(x)
-    //     }
-    //     else {
-    //         console.warn('Invalid client', x)
-    //         // await doc.ref.delete() // only do this during development
-    //     }
-    // }
-
     return {
         type: 'getClients',
         clients

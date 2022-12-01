@@ -31,19 +31,6 @@ const isCacheRecord = (x: any): x is CacheRecord => {
 
 const signedUrlObjectCache = new ObjectCache<CacheRecord>(1000 * 60 * 30)
 
-// const checkFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string): Promise<CacheRecord | undefined> => {
-//     const docRef = cacheCollection.doc(cacheKey)
-//     const docSnapshot = await docRef.get()
-//     if (!docSnapshot.exists) return undefined
-//     const cacheRecord = docSnapshot.data()
-//     if (!cacheRecord) return undefined
-//     if (!isCacheRecord(cacheRecord)) {
-//         console.warn('WARNING: Error in cache record')
-//         return undefined
-//     }
-//     return cacheRecord
-// }
-
 const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): Promise<CacheRecord | undefined> => {
     let result: any
     try {
@@ -61,22 +48,10 @@ const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): P
     return cacheRecord
 }
 
-// const setFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string, cacheRecord: CacheRecord) => {
-//     const docRef = cacheCollection.doc(cacheKey)
-//     await docRef.set(cacheRecord)
-// }
-
 const setMongoCache = async (cacheCollection: Collection, cacheKey: string, cacheRecord: CacheRecord) => {
     const doc = {...cacheRecord, _id: cacheKey}
     await cacheCollection.replaceOne({_id: cacheKey}, doc, {upsert: true})
 }
-
-// const deleteFromFirestoreCache = async (cacheCollection: CollectionReference, cacheKey: string) => {
-//     const docRef = cacheCollection.doc(cacheKey)
-    
-//     // we are assuming it doesn't throw exception if doesn't exist
-//     await docRef.delete()
-// }
 
 const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey: string) => {
     // we are assuming it doesn't throw exception if doesn't exist
@@ -94,8 +69,6 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
     const h = hash
     const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
 
-    // const db = firestoreDatabase()
-    // const cacheCollection = db.collection('kachery-gateway.findFileCache')
     const client = await getMongoClient()
     const cacheCollection = client.db('kachery-gateway').collection('findFileCache')
 
@@ -104,8 +77,6 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
     // first check in-memory cache
     let aa = signedUrlObjectCache.get(cacheKey) // check memory cache
     if (!aa) {
-        // second check firestore cache
-        // aa = await checkFirestoreCache(cacheCollection, cacheKey)
         aa = await checkMongoCache(cacheCollection, cacheKey)
     }
 
@@ -127,7 +98,6 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
         else {
             // it is not recent enough
             signedUrlObjectCache.delete(cacheKey) // delete from memory cache
-            // await deleteFromFirestoreCache(cacheCollection, cacheKey) // delete from firestore cache
             await deleteFromMongoCache(cacheCollection, cacheKey) // delete from mongo cache
         }
     }
@@ -158,8 +128,7 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
 
             // first set to in-memory cache
             signedUrlObjectCache.set(cacheKey, cacheRecord)
-            // second set to firestore cache
-            // await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+            // second set to db cache
             await setMongoCache(cacheCollection, cacheKey, cacheRecord)
         
             return {
@@ -200,8 +169,7 @@ export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: b
 
             // first set to in-memory cache
             signedUrlObjectCache.set(cacheKey, cacheRecord)
-            // second set to firestore cache
-            // await setFirestoreCache(cacheCollection, cacheKey, cacheRecord)
+            // second set to db cache
             await setMongoCache(cacheCollection, cacheKey, cacheRecord)
         
             return {
