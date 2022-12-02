@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
+import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetResourceInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
 import { hexToPublicKey, verifySignature } from '../src/crypto/signatures'
 import { NodeId, nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
@@ -9,6 +9,7 @@ import finalizeFileUploadHandler from '../apiHelpers/gatewayRequestHandlers/fina
 import getClientInfoHandler from '../apiHelpers/gatewayRequestHandlers/getClientInfoHandler'
 import getZoneInfoHandler from '../apiHelpers/gatewayRequestHandlers/getZoneInfoHandler'
 import githubVerifyAccessToken from '../apiHelpers/common/githubVerifyAccessToken'
+import getResourceInfoHandler from '../apiHelpers/gatewayRequestHandlers/getResourceInfoHandler'
 
 module.exports = (req: VercelRequest, res: VercelResponse) => {
     const {body: request} = req
@@ -80,6 +81,9 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         else if (isGetClientInfoRequest(request)) {
             return await getClientInfoHandler(request)
+        }
+        else if (isGetResourceInfoRequest(request)) {
+            return await getResourceInfoHandler(request)
         }
         else if (isGetZoneInfoRequest(request)) {
             return await getZoneInfoHandler(request)

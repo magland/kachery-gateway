@@ -1,5 +1,6 @@
 import { Client, isClient } from "./Client"
 import { isNodeId, isSignature, NodeId, Signature } from "./keypair"
+import { isResource, Resource } from "./Resource"
 import validateObject, { isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -209,6 +210,52 @@ export const isGetClientInfoResponse = (x: any): x is GetClientInfoResponse => {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// getResourceInfo
+
+export type GetResourceInfoRequest = {
+    payload: {
+        type: 'getResourceInfo'
+        timestamp: number
+        resourceName: string
+    }
+    fromClientId: NodeId
+    signature: Signature
+    githubUserId?: string
+    githubAccessToken?: string
+}
+
+export const isGetResourceInfoRequest = (x: any): x is GetResourceInfoRequest => {
+    const isPayload = (y: any) => {
+        return validateObject(y, {
+            type: isEqualTo('getResourceInfo'),
+            timestamp: isNumber,
+            resourceName: isString
+        })
+    }
+    return validateObject(x, {
+        payload: isPayload,
+        fromClientId: optional(isNodeId),
+        signature: optional(isSignature),
+        githubUserId: optional(isString),
+        githubAccessToken: optional(isString)
+    })
+}
+
+export type GetResourceInfoResponse = {
+    type: 'getResourceInfo'
+    found: boolean
+    resource?: Resource
+}
+
+export const isGetResourceInfoResponse = (x: any): x is GetResourceInfoResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getResourceInfo'),
+        found: isBoolean,
+        resource: optional(isResource)
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 // getZoneInfo
 
 export type GetZoneInfoRequest = {
@@ -262,6 +309,7 @@ export type GatewayRequest =
     InitiateFileUploadRequest |
     FinalizeFileUploadRequest |
     GetClientInfoRequest |
+    GetResourceInfoRequest |
     GetZoneInfoRequest
 
 export const isGatewayRequest = (x: any): x is GatewayRequest => {
@@ -270,6 +318,7 @@ export const isGatewayRequest = (x: any): x is GatewayRequest => {
         isInitiateFileUploadRequest,
         isFinalizeFileUploadRequest,
         isGetClientInfoRequest,
+        isGetResourceInfoRequest,
         isGetZoneInfoRequest
     ])(x)
 }
@@ -279,6 +328,7 @@ export type GatewayResponse =
     InitiateFileUploadResponse |
     FinalizeFileUploadResponse |
     GetClientInfoResponse |
+    GetResourceInfoResponse |
     GetZoneInfoResponse
 
 export const isGatewayResponse = (x: any): x is GatewayResponse => {
@@ -287,6 +337,7 @@ export const isGatewayResponse = (x: any): x is GatewayResponse => {
         isInitiateFileUploadResponse,
         isFinalizeFileUploadResponse,
         isGetClientInfoResponse,
+        isGetResourceInfoResponse,
         isGetZoneInfoResponse
     ])(x)
 }

@@ -34,6 +34,9 @@ const processLogItems = async () => {
                 "addClient",
                 "deleteClient",
                 "setClientInfo",
+                "addResource",
+                "deleteResource",
+                "setResourceInfo",
                 "migrateClient",
                 "migrateProjectFile"
             ].includes(type0)) {
