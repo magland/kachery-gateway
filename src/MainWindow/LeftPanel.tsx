@@ -25,7 +25,8 @@ const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
             icon?: any
         }[] = [
             {label: 'Home', route: {page: 'home'}, icon: <Home />},
-            {label: 'Clients', route: {page: 'clients'}, icon: <ViewModule />}
+            {label: 'Clients', route: {page: 'clients'}, icon: <ViewModule />},
+            {label: 'Resources', route: {page: 'resources'}, icon: <ViewModule />}
         ]
         if ((userId) && (adminUsers.includes(userId.toString()))) {
             ret.push({

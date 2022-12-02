@@ -1,6 +1,7 @@
 import { Auth, isAuth } from "./Auth"
 import { Client, isClient } from "./Client"
 import { isNodeId, isPrivateKeyHex, isSignature, NodeId, PrivateKeyHex, Signature } from "./keypair"
+import { isResource, Resource } from "./Resource"
 import validateObject, { isArrayOf, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -134,6 +135,124 @@ export const isSetClientInfoResponse = (x: any): x is SetClientInfoResponse => {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// addResource
+
+export type AddResourceRequest = {
+    type: 'addResource'
+    resourceName: string
+    proxyUrl: string
+    ownerId: string
+    auth: Auth
+}
+
+export const isAddResourceRequest = (x: any): x is AddResourceRequest => {
+    return validateObject(x, {
+        type: isEqualTo('addResource'),
+        resourceName: isString,
+        proxyUrl: isString,
+        ownerId: isString,
+        auth: isAuth
+    })
+}
+
+export type AddResourceResponse = {
+    type: 'addResource'
+}
+
+export const isAddResourceResponse = (x: any): x is AddResourceResponse => {
+    return validateObject(x, {
+        type: isEqualTo('addResource')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// deleteResource
+
+export type DeleteResourceRequest = {
+    type: 'deleteResource'
+    resourceName: string
+    ownerId: string
+    auth: Auth
+}
+
+export const isDeleteResourceRequest = (x: any): x is DeleteResourceRequest => {
+    return validateObject(x, {
+        type: isEqualTo('deleteResource'),
+        resourceName: isString,
+        ownerId: isString,
+        auth: isAuth
+    })
+}
+
+export type DeleteResourceResponse = {
+    type: 'deleteResource'
+}
+
+export const isDeleteResourceResponse = (x: any): x is DeleteResourceResponse => {
+    return validateObject(x, {
+        type: isEqualTo('deleteResource')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// getResources
+
+export type GetResourcesRequest = {
+    type: 'getResources'
+    userId: string
+    auth: Auth
+}
+
+export const isGetResourcesRequest = (x: any): x is GetResourcesRequest => {
+    return validateObject(x, {
+        type: isEqualTo('getResources'),
+        userId: isString,
+        auth: isAuth
+    })
+}
+
+export type GetResourcesResponse = {
+    type: 'getResources'
+    resources: Resource[]
+}
+
+export const isGetResourcesResponse = (x: any): x is GetResourcesResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getResources'),
+        resources: isArrayOf(isResource)
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// setResourceInfo
+
+export type SetResourceInfoRequest = {
+    type: 'setResourceInfo'
+    resourceName: string
+    proxyUrl?: string
+    auth: Auth
+}
+
+export const isSetResourceInfoRequest = (x: any): x is SetResourceInfoRequest => {
+    return validateObject(x, {
+        type: isEqualTo('setResourceInfo'),
+        resourceName: isString,
+        proxyUrl: optional(isString),
+        auth: isAuth
+    })
+}
+
+export type SetResourceInfoResponse = {
+    type: 'setResourceInfo'
+}
+
+export const isSetResourceInfoResponse = (x: any): x is SetResourceInfoResponse => {
+    return validateObject(x, {
+        type: isEqualTo('setResourceInfo')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 // getUsage
 
 export type GetUsageRequest = {
@@ -190,6 +309,10 @@ export type GuiRequest =
     DeleteClientRequest |
     GetClientsRequest |
     SetClientInfoRequest |
+    AddResourceRequest |
+    DeleteResourceRequest |
+    GetResourcesRequest |
+    SetResourceInfoRequest |
     GetUsageRequest
 
 export const isGuiRequest = (x: any): x is GuiRequest => {
@@ -198,6 +321,10 @@ export const isGuiRequest = (x: any): x is GuiRequest => {
         isDeleteClientRequest,
         isGetClientsRequest,
         isSetClientInfoRequest,
+        isAddResourceRequest,
+        isDeleteResourceRequest,
+        isGetResourcesRequest,
+        isSetResourceInfoRequest,
         isGetUsageRequest
     ])(x)
 }
@@ -207,6 +334,10 @@ export type GuiResponse =
     DeleteClientResponse |
     GetClientsResponse |
     SetClientInfoResponse |
+    AddResourceResponse |
+    DeleteResourceResponse |
+    GetResourcesResponse |
+    SetResourceInfoResponse |
     GetUsageResponse
 
 export const isGuiResponse = (x: any): x is GuiResponse => {
@@ -215,6 +346,10 @@ export const isGuiResponse = (x: any): x is GuiResponse => {
         isDeleteClientResponse,
         isGetClientsResponse,
         isSetClientInfoResponse,
+        isAddResourceResponse,
+        isDeleteResourceResponse,
+        isGetResourcesResponse,
+        isSetResourceInfoResponse,
         isGetUsageResponse
     ])(x)
 }

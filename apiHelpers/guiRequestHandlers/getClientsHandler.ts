@@ -13,7 +13,7 @@ const getClientsHandler = async (request: GetClientsRequest, verifiedUserId?: st
 
     const user = await getUser(userId)
     const clients: Client[] = []
-    for (let clientId of user.clientIds) {
+    for (let clientId of (user.clientIds || [])) {
         const client = await getClient(clientId)
         clients.push(client)
     }

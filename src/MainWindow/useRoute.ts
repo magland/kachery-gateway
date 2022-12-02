@@ -8,8 +8,13 @@ export type Route = {
 } | {
     page: 'clients'
 } | {
+    page: 'resources'
+} | {
     page: 'client'
     clientId: NodeId
+} | {
+    page: 'resource'
+    resourceName: string
 } | {
     page: 'registerClient',
     clientId: NodeId,
@@ -33,12 +38,26 @@ const useRoute = () => {
             page: 'clients'
         }
     }
+    else if (p === '/resources') {
+        route = {
+            page: 'resources'
+        }
+    }
     else if (p.startsWith('/client/')) {
         const x = p.split('/')
         if (x.length === 3) {
             route = {
                 page: 'client',
                 clientId: x[2] as any as NodeId
+            }
+        }
+    }
+    else if (p.startsWith('/resource/')) {
+        const x = p.split('/')
+        if (x.length === 3) {
+            route = {
+                page: 'resource',
+                resourceName: x[2]
             }
         }
     }
@@ -72,8 +91,8 @@ const useRoute = () => {
     const setRoute = useCallback((route: Route) => {
         const query2 = {...query}
         let pathname2 = '/home'
-        if (route.page === 'clients') {
-            pathname2 = `/clients`
+        if (route.page === 'resources') {
+            pathname2 = `/resources`
         }
         else if (route.page === 'client') {
             pathname2 = `/client/${route.clientId}`

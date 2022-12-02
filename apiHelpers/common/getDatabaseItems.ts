@@ -1,4 +1,5 @@
 import { Client, isClient } from "../../src/types/Client"
+import { isResource, Resource } from "../../src/types/Resource"
 import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler"
 import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers"
 
@@ -31,6 +32,7 @@ export class ObjectCache<ObjectType> {
 
 const expirationMSec = 60 * 1000
 const clientObjectCache = new ObjectCache<Client>(expirationMSec)
+const resourceObjectCache = new ObjectCache<Resource>(expirationMSec)
 // const allClientsObjectCache = new ObjectCache<Client[]>(5 * 60 * 1000)
 const userObjectCache = new ObjectCache<{[key: string]: any}>(expirationMSec)
 
@@ -55,6 +57,27 @@ export const getClient = async (clientId: string, o: {includeSecrets?: boolean}=
 
 export const invalidateClientInCache = (clientId: string) => {
     clientObjectCache.delete(clientId)
+}
+
+export const getResource = async (resourceName: string, o: {includeSecrets?: boolean}={}) => {
+    const x = resourceObjectCache.get(resourceName.toString())
+    if (x) {
+        return x
+    }
+
+    const bucket = getBucket()
+    const key = `resources/${resourceName}`
+    const exists = await objectExists(bucket, key)
+    if (!exists) throw Error('Resource not found.')
+    const resource = JSON.parse(await getObjectContent(bucket, key))
+    if (!isResource(resource)) throw Error('Invalid resource in bucket')
+
+    resourceObjectCache.set(resourceName.toString(), {...resource})
+    return resource
+}
+
+export const invalidateResourceInCache = (resourceName: string) => {
+    resourceObjectCache.delete(resourceName)
 }
 
 export const getUser = async (userId: string) => {

@@ -12,6 +12,8 @@ import LeftPanel from './LeftPanel';
 import logoFull from './logoFull.png';
 import './MainWindow.css';
 import RegisterClientPage from './RegisterClientPage';
+import ResourcePage from './ResourcePage';
+import ResourcesTable from './ResourcesTable';
 import useRoute from './useRoute';
 
 type Props = {
@@ -79,6 +81,8 @@ const MainWindow: FunctionComponent<Props> = () => {
                         ) : signedIn ? (
                             route.page === 'clients' ? (
                                 <ClientsTable />
+                            ) : route.page === 'resources' ? (
+                                <ResourcesTable />
                             ) : route.page === 'admin' ? (
                                 <AdminPage
                                     width={W}
@@ -87,6 +91,10 @@ const MainWindow: FunctionComponent<Props> = () => {
                             ) : route.page === 'client' ? (
                                 <ClientPage
                                     clientId={route.clientId}
+                                />
+                            ) : route.page === 'resource' ? (
+                                <ResourcePage
+                                    resourceName={route.resourceName}
                                 />
                             ) : <span>Unexpected page {(route as any).page}</span>
                         ) : (
