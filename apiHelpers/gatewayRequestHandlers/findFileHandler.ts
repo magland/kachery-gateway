@@ -2,7 +2,7 @@ import { Collection } from 'mongodb'
 import { FileRecord, isFileRecord } from '../../src/types/FileRecord'
 import { FindFileRequest, FindFileResponse } from "../../src/types/GatewayRequest"
 import { NodeId, sha1OfString } from "../../src/types/keypair"
-import validateObject, { isNumber } from '../../src/types/validateObject'
+import validateObject, { isNumber, isString } from '../../src/types/validateObject'
 import { getMongoClient } from '../common/getMongoClient'
 import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket, getFallbackBucket } from "./initiateFileUploadHandler"
@@ -24,7 +24,7 @@ type CacheRecord = {
 const isCacheRecord = (x: any): x is CacheRecord => {
     return validateObject(x, {
         timestampCreated: isNumber,
-        url: isNumber,
+        url: isString,
         fileRecord: isFileRecord
     })
 }
@@ -39,9 +39,12 @@ const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): P
     catch(err) {
         return undefined
     }
+    if (!result) return undefined
     const cacheRecord = {...result}
     delete (cacheRecord as any)['_id']
     if (!isCacheRecord(cacheRecord)) {
+        console.warn(cacheKey)
+        console.warn(cacheRecord)
         console.warn('WARNING: Error in cache record')
         return undefined
     }

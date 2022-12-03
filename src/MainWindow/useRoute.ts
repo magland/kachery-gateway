@@ -97,6 +97,9 @@ const useRoute = () => {
         else if (route.page === 'client') {
             pathname2 = `/client/${route.clientId}`
         }
+        else if (route.page === 'resource') {
+            pathname2 = `/resource/${route.resourceName}`
+        }
         else if (route.page === 'registerClient') {
             pathname2 = `/registerClient/${route.clientId}`
             query2['signature'] = route.signature.toString()
