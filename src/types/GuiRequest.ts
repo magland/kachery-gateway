@@ -2,7 +2,7 @@ import { Auth, isAuth } from "./Auth"
 import { Client, isClient } from "./Client"
 import { isNodeId, isPrivateKeyHex, isSignature, NodeId, PrivateKeyHex, Signature } from "./keypair"
 import { isResource, Resource } from "./Resource"
-import validateObject, { isArrayOf, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
+import validateObject, { isArrayOf, isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
 
 //////////////////////////////////////////////////////////////////////////////////
 // addClient
@@ -303,6 +303,94 @@ export const isGetUsageResponse = (x: any): x is GetUsageResponse => {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// getAdminConfiguration
+
+export type GetAdminConfigurationRequest = {
+    type: 'getAdminConfiguration'
+    auth: Auth
+}
+
+export const isGetAdminConfigurationRequest = (x: any): x is GetAdminConfigurationRequest => {
+    return validateObject(x, {
+        type: isEqualTo('getAdminConfiguration'),
+        auth: isAuth
+    })
+}
+
+export type AdminConfiguration = {
+    bucketUri?: string
+    bucketCredentials?: string
+    fallbackBucketUri?: string
+    fallbackBucketCredentials?: string
+    mongoUri?: string
+    githubClientId?: string,
+    githubClientSecret?: string,
+    adminUsers?: string,
+    kacheryZones?: string,
+    reCaptchaKey?: string,
+    reCaptchaSecretKey?: string
+}
+
+export const isAdminConfiguration = (x: any): x is AdminConfiguration => {
+    return validateObject(x, {
+        bucketUri: optional(isString),
+        bucketCredentials: optional(isString),
+        fallbackBucketUri: optional(isString),
+        fallbackBucketCredentials: optional(isString),
+        mongoUri: optional(isString),
+        githubClientId: optional(isString),
+        githubClientSecret: optional(isString),
+        adminUsers: optional(isString),
+        kacheryZones: optional(isString),
+        reCaptchaKey: optional(isString),
+        reCaptchaSecretKey: optional(isString)
+    })
+}
+
+export type GetAdminConfigurationResponse = {
+    type: 'getAdminConfiguration'
+    adminConfiguration: AdminConfiguration
+}
+
+export const isGetAdminConfigurationResponse = (x: any): x is GetAdminConfigurationResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getAdminConfiguration'),
+        adminConfiguration: isAdminConfiguration
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// testConfiguration
+
+export type TestConfigurationRequest = {
+    type: 'testConfiguration'
+    testType: string
+    auth: Auth
+}
+
+export const isTestConfigurationRequest = (x: any): x is TestConfigurationRequest => {
+    return validateObject(x, {
+        type: isEqualTo('testConfiguration'),
+        testType: isString,
+        auth: isAuth
+    })
+}
+
+export type TestConfigurationResponse = {
+    type: 'testConfiguration'
+    passed: boolean
+    result: any
+}
+
+export const isTestConfigurationResponse = (x: any): x is TestConfigurationResponse => {
+    return validateObject(x, {
+        type: isEqualTo('testConfiguration'),
+        passed: isBoolean,
+        result: () => (true)
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 
 export type GuiRequest =
     AddClientRequest |
@@ -313,7 +401,9 @@ export type GuiRequest =
     DeleteResourceRequest |
     GetResourcesRequest |
     SetResourceInfoRequest |
-    GetUsageRequest
+    GetUsageRequest |
+    GetAdminConfigurationRequest |
+    TestConfigurationRequest
 
 export const isGuiRequest = (x: any): x is GuiRequest => {
     return isOneOf([
@@ -325,7 +415,9 @@ export const isGuiRequest = (x: any): x is GuiRequest => {
         isDeleteResourceRequest,
         isGetResourcesRequest,
         isSetResourceInfoRequest,
-        isGetUsageRequest
+        isGetUsageRequest,
+        isGetAdminConfigurationRequest,
+        isTestConfigurationRequest
     ])(x)
 }
 
@@ -338,7 +430,9 @@ export type GuiResponse =
     DeleteResourceResponse |
     GetResourcesResponse |
     SetResourceInfoResponse |
-    GetUsageResponse
+    GetUsageResponse |
+    GetAdminConfigurationResponse |
+    TestConfigurationResponse
 
 export const isGuiResponse = (x: any): x is GuiResponse => {
     return isOneOf([
@@ -350,6 +444,8 @@ export const isGuiResponse = (x: any): x is GuiResponse => {
         isDeleteResourceResponse,
         isGetResourcesResponse,
         isSetResourceInfoResponse,
-        isGetUsageResponse
+        isGetUsageResponse,
+        isGetAdminConfigurationResponse,
+        isTestConfigurationResponse
     ])(x)
 }

@@ -5,11 +5,13 @@ import addClientHandler from '../apiHelpers/guiRequestHandlers/addClientHandler'
 import addResourceHandler from '../apiHelpers/guiRequestHandlers/addResourceHandler'
 import deleteClientHandler from '../apiHelpers/guiRequestHandlers/deleteClientHandler'
 import deleteResourceHandler from '../apiHelpers/guiRequestHandlers/deleteResourceHandler'
+import getAdminConfigurationHandler from '../apiHelpers/guiRequestHandlers/getAdminConfiguration'
 import getClientsHandler from '../apiHelpers/guiRequestHandlers/getClientsHandler'
 import getResourcesHandler from '../apiHelpers/guiRequestHandlers/getResourcesHandler'
 import getUsageHandler from '../apiHelpers/guiRequestHandlers/getUsageHandler'
 import setClientInfoHandler from '../apiHelpers/guiRequestHandlers/setClientInfoHandler'
 import setResourceInfoHandler from '../apiHelpers/guiRequestHandlers/setResourceInfoHandler'
+import testConfigurationHandler from '../apiHelpers/guiRequestHandlers/testConfiguration'
 import writeLogItem from '../apiHelpers/writeLogItem'
 import { isGuiRequest } from '../src/types/GuiRequest'
 
@@ -94,6 +96,12 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         else if (request.type === 'getUsage') {
             return await getUsageHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getAdminConfiguration') {
+            return await getAdminConfigurationHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'testConfiguration') {
+            return await testConfigurationHandler(request, verifiedUserId)
         }
         else {
             throw Error(`Unexpected request type: ${request.type}`)

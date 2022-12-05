@@ -1,43 +1,34 @@
-import { IconButton } from "@material-ui/core";
-import { Refresh } from "@material-ui/icons";
 import { FunctionComponent } from "react";
-import ClientUsageTable from "./ClientUsageTable";
-import useUsage from "./useUsage";
+import AdminConfigurationTab from "./AdminConfigurationTab/AdminConfigurationTab";
+import AdminUsageTab from "./AdminUsageTab";
+import TabWidget from "./TabWidget";
 
 type Props ={
 	width: number
 	height: number
 }
 
-const AdminPage: FunctionComponent<Props> = () => {
-	const {usage, refreshUsage} = useUsage()
-	console.info("USAGE saved as window['admin-usage']")
-	console.info(usage)
-	;(window as any)['admin-usage'] = usage
+const tabs = [
+	{label: 'Usage'},
+	{label: 'Configuration'}
+]
+
+const AdminPage: FunctionComponent<Props> = ({width, height}) => {
 	return (
-		<div>
-			<IconButton onClick={refreshUsage} title="Refresh usage"><Refresh /></IconButton>
-			{
-				usage && (
-					<div>
-						<h3>Total</h3>
-						<ClientUsageTable
-							clientUsage={usage.totalUsage.clientUsage}
-						/>
-						{
-							[...usage.dailyUsage].reverse().map((x, ii) => (
-								<div key={ii}>
-									<h3>{x.date}</h3>
-									<ClientUsageTable
-										clientUsage={x.clientUsage}
-									/>
-								</div>
-							))
-						}
-					</div>
-				)
-			}
-		</div>
+		<TabWidget
+			tabs={tabs}
+			width={width}
+			height={height}
+		>
+			<AdminUsageTab
+				width={0}
+				height={0}
+			/>
+			<AdminConfigurationTab
+				width={0}
+				height={0}
+			/>
+		</TabWidget>
 	)
 }
 
