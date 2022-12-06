@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
-import guiApiRequest from "../common/guiApiRequest"
-import useErrorMessage from "../errorMessageContext/useErrorMessage"
-import { useGithubAuth } from "../GithubAuth/useGithubAuth"
-import { GetUsageRequest, isGetUsageResponse, UsageRequestUsage } from "../types/GuiRequest"
+import guiApiRequest from "../../common/guiApiRequest"
+import useErrorMessage from "../../errorMessageContext/useErrorMessage"
+import { useGithubAuth } from "../../GithubAuth/useGithubAuth"
+import { GetUsageRequest, isGetUsageResponse, UsageRequestUsage } from "../../types/GuiRequest"
 
 const useUsage = () => {
     const [usage, setUsage] = useState<UsageRequestUsage | undefined>(undefined)

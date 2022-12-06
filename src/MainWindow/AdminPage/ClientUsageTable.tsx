@@ -1,6 +1,6 @@
 import { FunctionComponent, useMemo } from "react";
-import NiceTable from "../components/NiceTable/NiceTable";
-import formatByteCount from "../misc/formatByteCount";
+import NiceTable from "../../components/NiceTable/NiceTable";
+import formatByteCount from "../../misc/formatByteCount";
 
 type Props ={
 	clientUsage: {[key: string]: {uploadCount: number, uploadSize: number, downloadCount: number, downloadSize: number, fallbackDownloadCount: number, fallbackDownloadSize: number, ownerId: string}}

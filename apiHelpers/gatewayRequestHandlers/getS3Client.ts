@@ -3,6 +3,7 @@ import { sha1OfString } from '../../src/types/keypair';
 import { parseBucketUri } from './s3Helpers';
 import ObjectCache from './ObjectCache';
 import { Bucket } from './s3Helpers';
+import { PutBucketCorsRequest } from 'aws-sdk/clients/s3';
 
 interface PutObjectRequestParamsX {
     Bucket: any
@@ -40,6 +41,11 @@ export interface HeadObjectOutputX {
     Metadata?: any
 }
 
+export interface PutBucketCorsParamsX {
+    Bucket: string
+    CORSConfiguration: any
+}
+
 interface S3Client {
     putObject: (params: PutObjectRequestParamsX) => PutObjectRequestX
     headObject: (params: HeadObjectParamsX, callback: (err?: any & {statusCode: number}, data?: HeadObjectOutputX) => void) => void
@@ -48,6 +54,7 @@ interface S3Client {
     getSignedUrl: (operation: string, params: GetSignedUrlParamsX, callback: (err?: any, url?: string) => void) => void
     listObjectsV2: (params: {Bucket: string, Prefix: string, ContinuationToken?: string, MaxKeys?: number}, callback: (err?: any, data?: any) => void) => void
     copyObject: (params: {Bucket: string, CopySource: string, Key: string}, callback: (err?: any, data?: any) => void) => void
+    putBucketCors: (params: PutBucketCorsParamsX, callback: (err?: any, data?: any) => void) => void
 }
 
 // const defaultS3Client = new AWS.S3({

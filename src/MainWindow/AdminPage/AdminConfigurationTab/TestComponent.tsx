@@ -1,8 +1,8 @@
 import { FunctionComponent, useCallback, useState } from "react";
-import Hyperlink from "../../components/Hyperlink/Hyperlink";
-import { useGithubAuth } from "../../GithubAuth/useGithubAuth";
-import { isTestConfigurationResponse, TestConfigurationRequest } from "../../types/GuiRequest";
-import guiApiRequest from "../guiApiRequest";
+import Hyperlink from "../../../components/Hyperlink/Hyperlink";
+import { useGithubAuth } from "../../../GithubAuth/useGithubAuth";
+import { isTestConfigurationResponse, TestConfigurationRequest } from "../../../types/GuiRequest";
+import guiApiRequest from "../../guiApiRequest";
 
 type Props ={
 	label: string

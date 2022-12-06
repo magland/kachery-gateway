@@ -1,5 +1,6 @@
 import { Table, TableBody, TableCell, TableRow } from "@material-ui/core";
 import { FunctionComponent } from "react";
+import BucketCORSActionComponent from "./BucketCORSActionComponent";
 import TestComponent from "./TestComponent";
 import useAdminConfiguration from "./useAdminConfiguration";
 
@@ -62,6 +63,10 @@ const AdminConfigurationTab: FunctionComponent<Props> = ({width, height}) => {
 					</TableRow>
 				</TableBody>
 			</Table>
+			<h2>Actions</h2>
+			<BucketCORSActionComponent
+				bucketUri={adminConfiguration?.bucketUri}
+			/>
 			<h2>Tests</h2>
 			<TestComponent
 				label="Test bucket read/write"

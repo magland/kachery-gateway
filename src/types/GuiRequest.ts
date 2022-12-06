@@ -391,6 +391,91 @@ export const isTestConfigurationResponse = (x: any): x is TestConfigurationRespo
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// adminAction
+
+export type AdminActionRequest = {
+    type: 'adminAction'
+    actionType: string
+    parameters?: string
+    auth: Auth
+}
+
+export const isAdminActionRequest = (x: any): x is AdminActionRequest => {
+    return validateObject(x, {
+        type: isEqualTo('adminAction'),
+        actionType: isString,
+        parameters: optional(() => (true)),
+        auth: isAuth
+    })
+}
+
+export type AdminActionResponse = {
+    type: 'adminAction'
+    success: boolean
+}
+
+export const isAdminActionResponse = (x: any): x is AdminActionResponse => {
+    return validateObject(x, {
+        type: isEqualTo('adminAction'),
+        success: isBoolean
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// getAuthorizationSettingsYaml
+
+export type GetAuthorizationSettingsYamlRequest = {
+    type: 'getAuthorizationSettingsYaml'
+    auth: Auth
+}
+
+export const isGetAuthorizationSettingsYamlRequest = (x: any): x is GetAuthorizationSettingsYamlRequest => {
+    return validateObject(x, {
+        type: isEqualTo('getAuthorizationSettingsYaml'),
+        auth: isAuth
+    })
+}
+
+export type GetAuthorizationSettingsYamlResponse = {
+    type: 'getAuthorizationSettingsYaml'
+    authorizationSettingsYaml?: string
+}
+
+export const isGetAuthorizationSettingsYamlResponse = (x: any): x is GetAuthorizationSettingsYamlResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getAuthorizationSettingsYaml'),
+        authorizationSettingsYaml: optional(isString)
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// setAuthorizationSettingsYaml
+
+export type SetAuthorizationSettingsYamlRequest = {
+    type: 'setAuthorizationSettingsYaml'
+    authorizationSettingsYaml: string
+    auth: Auth
+}
+
+export const isSetAuthorizationSettingsYamlRequest = (x: any): x is SetAuthorizationSettingsYamlRequest => {
+    return validateObject(x, {
+        type: isEqualTo('setAuthorizationSettingsYaml'),
+        authorizationSettingsYaml: isString,
+        auth: isAuth
+    })
+}
+
+export type SetAuthorizationSettingsYamlResponse = {
+    type: 'setAuthorizationSettingsYaml'
+}
+
+export const isSetAuthorizationSettingsYamlResponse = (x: any): x is SetAuthorizationSettingsYamlResponse => {
+    return validateObject(x, {
+        type: isEqualTo('setAuthorizationSettingsYaml')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 
 export type GuiRequest =
     AddClientRequest |
@@ -403,7 +488,10 @@ export type GuiRequest =
     SetResourceInfoRequest |
     GetUsageRequest |
     GetAdminConfigurationRequest |
-    TestConfigurationRequest
+    TestConfigurationRequest |
+    AdminActionRequest |
+    GetAuthorizationSettingsYamlRequest |
+    SetAuthorizationSettingsYamlRequest
 
 export const isGuiRequest = (x: any): x is GuiRequest => {
     return isOneOf([
@@ -417,7 +505,10 @@ export const isGuiRequest = (x: any): x is GuiRequest => {
         isSetResourceInfoRequest,
         isGetUsageRequest,
         isGetAdminConfigurationRequest,
-        isTestConfigurationRequest
+        isTestConfigurationRequest,
+        isAdminActionRequest,
+        isGetAuthorizationSettingsYamlRequest,
+        isSetAuthorizationSettingsYamlRequest
     ])(x)
 }
 
@@ -432,7 +523,10 @@ export type GuiResponse =
     SetResourceInfoResponse |
     GetUsageResponse |
     GetAdminConfigurationResponse |
-    TestConfigurationResponse
+    TestConfigurationResponse |
+    AdminActionResponse |
+    GetAuthorizationSettingsYamlResponse |
+    SetAuthorizationSettingsYamlResponse
 
 export const isGuiResponse = (x: any): x is GuiResponse => {
     return isOneOf([
@@ -446,6 +540,9 @@ export const isGuiResponse = (x: any): x is GuiResponse => {
         isSetResourceInfoResponse,
         isGetUsageResponse,
         isGetAdminConfigurationResponse,
-        isTestConfigurationResponse
+        isTestConfigurationResponse,
+        isAdminActionResponse,
+        isGetAuthorizationSettingsYamlResponse,
+        isSetAuthorizationSettingsYamlResponse
     ])(x)
 }

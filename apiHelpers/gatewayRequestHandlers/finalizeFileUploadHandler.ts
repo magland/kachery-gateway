@@ -1,6 +1,7 @@
 import { FinalizeFileUploadRequest, FinalizeFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from '../../src/types/keypair';
 import { getClient } from "../common/getDatabaseItems";
+import getAuthorizationSettings from "./getAuthorizationSettings";
 import { getBucket, MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
 import { deleteObject, headObject } from "./s3Helpers";
 
@@ -24,7 +25,14 @@ const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, ver
         const client = await getClient(clientId.toString())
         userId = client.ownerId
     }
-    // in the future, we will check the user ID for authorization
+
+    // check the user ID for authorization
+    const authorizationSettings = await getAuthorizationSettings()
+    if (!authorizationSettings.allowPublicUpload) {
+        const u = authorizationSettings.authorizedUsers.find(a => (a.userId === userId))
+        if (!u) throw Error(`User ${userId} is not authorized.`)
+        if (!u.upload) throw Error(`User ${userId} not authorized to upload files.`)
+    }
 
     const x = await headObject(bucket, objectKey)
     const size0 = x.ContentLength

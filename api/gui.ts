@@ -3,12 +3,15 @@ import axios from 'axios'
 import githubVerifyAccessToken from '../apiHelpers/common/githubVerifyAccessToken'
 import addClientHandler from '../apiHelpers/guiRequestHandlers/addClientHandler'
 import addResourceHandler from '../apiHelpers/guiRequestHandlers/addResourceHandler'
+import adminActionHandler from '../apiHelpers/guiRequestHandlers/adminAction'
 import deleteClientHandler from '../apiHelpers/guiRequestHandlers/deleteClientHandler'
 import deleteResourceHandler from '../apiHelpers/guiRequestHandlers/deleteResourceHandler'
 import getAdminConfigurationHandler from '../apiHelpers/guiRequestHandlers/getAdminConfiguration'
+import getAuthorizationSettingsYamlHandler from '../apiHelpers/guiRequestHandlers/getAuthorizationSettingsYamlHandler'
 import getClientsHandler from '../apiHelpers/guiRequestHandlers/getClientsHandler'
 import getResourcesHandler from '../apiHelpers/guiRequestHandlers/getResourcesHandler'
 import getUsageHandler from '../apiHelpers/guiRequestHandlers/getUsageHandler'
+import setAuthorizationSettingsYamlHandler from '../apiHelpers/guiRequestHandlers/setAuthorizationSettingsYamlHandler'
 import setClientInfoHandler from '../apiHelpers/guiRequestHandlers/setClientInfoHandler'
 import setResourceInfoHandler from '../apiHelpers/guiRequestHandlers/setResourceInfoHandler'
 import testConfigurationHandler from '../apiHelpers/guiRequestHandlers/testConfiguration'
@@ -102,6 +105,15 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         else if (request.type === 'testConfiguration') {
             return await testConfigurationHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'adminAction') {
+            return await adminActionHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getAuthorizationSettingsYaml') {
+            return await getAuthorizationSettingsYamlHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'setAuthorizationSettingsYaml') {
+            return await setAuthorizationSettingsYamlHandler(request, verifiedUserId)
         }
         else {
             throw Error(`Unexpected request type: ${request.type}`)

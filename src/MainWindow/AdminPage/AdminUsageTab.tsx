@@ -1,6 +1,6 @@
 import { IconButton } from "@material-ui/core";
 import { Refresh } from "@material-ui/icons";
-import { FunctionComponent } from "react";
+import { FunctionComponent, useEffect } from "react";
 import ClientUsageTable from "./ClientUsageTable";
 import useUsage from "./useUsage";
 
@@ -11,9 +11,11 @@ type Props ={
 
 const AdminUsageTab: FunctionComponent<Props> = ({width, height}) => {
 	const {usage, refreshUsage} = useUsage()
-	console.info("USAGE saved as window['admin-usage']")
-	console.info(usage)
-	;(window as any)['admin-usage'] = usage
+	useEffect(() => {
+		console.info("USAGE saved as window['admin-usage']")
+		console.info(usage)
+		;(window as any)['admin-usage'] = usage
+	}, [usage])
 	return (
 		<div style={{overflowY: 'auto', position: 'absolute', width, height}}>
 			<IconButton onClick={refreshUsage} title="Refresh usage"><Refresh /></IconButton>

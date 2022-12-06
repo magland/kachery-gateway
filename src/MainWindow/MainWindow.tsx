@@ -2,7 +2,7 @@ import { FunctionComponent, useCallback } from 'react';
 import useErrorMessage from '../errorMessageContext/useErrorMessage';
 import { useGithubAuth } from '../GithubAuth/useGithubAuth';
 import useWindowDimensions from '../misc/useWindowDimensions';
-import AdminPage from './AdminPage';
+import AdminPage from './AdminPage/AdminPage';
 import ApplicationBar from './ApplicationBar/ApplicationBar';
 import ClientPage from './ClientPage';
 import ClientsTable from './ClientsTable';

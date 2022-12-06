@@ -4,6 +4,7 @@ import { findFile } from "./findFileHandler";
 import ObjectCache from "./ObjectCache";
 import { Bucket, getSignedUploadUrl } from "./s3Helpers";
 import { getClient } from '../common/getDatabaseItems'
+import getAuthorizationSettings from "./getAuthorizationSettings";
 
 export const MAX_UPLOAD_SIZE = 5 * 1000 * 1000 * 1000
 
@@ -72,7 +73,14 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         const client = await getClient(clientId.toString())
         userId = client.ownerId
     }
-    // in the future, we will check the user ID for authorization
+    
+    // check the user ID for authorization
+    const authorizationSettings = await getAuthorizationSettings()
+    if (!authorizationSettings.allowPublicUpload) {
+        const u = authorizationSettings.authorizedUsers.find(a => (a.userId === userId))
+        if (!u) throw Error(`User ${userId} is not authorized.`)
+        if (!u.upload) throw Error(`User ${userId} not authorized to upload files.`)
+    }
 
     const findFileResponse = await findFile({hash, hashAlg, noFallback: true})
     if (findFileResponse.found) {

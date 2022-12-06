@@ -1,7 +1,8 @@
 import { FunctionComponent } from "react";
 import AdminConfigurationTab from "./AdminConfigurationTab/AdminConfigurationTab";
 import AdminUsageTab from "./AdminUsageTab";
-import TabWidget from "./TabWidget";
+import AuthorizationSettingsTab from "./AuthorizationSettingsTab";
+import TabWidget from "../TabWidget";
 
 type Props ={
 	width: number
@@ -10,7 +11,8 @@ type Props ={
 
 const tabs = [
 	{label: 'Usage'},
-	{label: 'Configuration'}
+	{label: 'Configuration'},
+	{label: 'Authorization Settings'}
 ]
 
 const AdminPage: FunctionComponent<Props> = ({width, height}) => {
@@ -25,6 +27,10 @@ const AdminPage: FunctionComponent<Props> = ({width, height}) => {
 				height={0}
 			/>
 			<AdminConfigurationTab
+				width={0}
+				height={0}
+			/>
+			<AuthorizationSettingsTab
 				width={0}
 				height={0}
 			/>

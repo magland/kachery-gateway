@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react"
-import guiApiRequest from "../../common/guiApiRequest"
-import useErrorMessage from "../../errorMessageContext/useErrorMessage"
-import { useGithubAuth } from "../../GithubAuth/useGithubAuth"
-import { AdminConfiguration, GetAdminConfigurationRequest, isGetAdminConfigurationResponse } from "../../types/GuiRequest"
+import guiApiRequest from "../../../common/guiApiRequest"
+import useErrorMessage from "../../../errorMessageContext/useErrorMessage"
+import { useGithubAuth } from "../../../GithubAuth/useGithubAuth"
+import { AdminConfiguration, GetAdminConfigurationRequest, isGetAdminConfigurationResponse } from "../../../types/GuiRequest"
 
 const useAdminConfiguration = () => {
     const [adminConfiguration, setAdminConfiguration] = useState<AdminConfiguration | undefined>(undefined)
