@@ -74,7 +74,7 @@ const editorOptions = {
 }
 
 const defaultAuthorizationSettingsYaml = YAML.stringify({
-	allowPublicUpload: false,
+	allowPublicUpload: true,
 	authorizedUsers: [
 		{
 			userId: '[test-user]',
