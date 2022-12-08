@@ -1,7 +1,16 @@
-import { GetUsageRequest, GetUsageResponse, isUsageRequestUsage } from "../../src/types/GuiRequest";
+import { GetUsageRequest, GetUsageResponse, isUsageRequestUsage, UsageRequestUsage } from "../../src/types/GuiRequest";
 import { getBucket } from '../gatewayRequestHandlers/initiateFileUploadHandler';
-import { getObjectContent } from "../gatewayRequestHandlers/s3Helpers";
+import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
+
+const emptyUsage: UsageRequestUsage = {
+    timestamp: 0,
+    clients: {},
+    dailyUsage: [],
+    totalUsage: {
+        clientUsage: {}
+    }
+}
 
 const getUsageHandler = async (request: GetUsageRequest, verifiedUserId?: string): Promise<GetUsageResponse> => {
     if (!isAdminUser(verifiedUserId)) {
@@ -10,7 +19,9 @@ const getUsageHandler = async (request: GetUsageRequest, verifiedUserId?: string
 
     const bucket = getBucket()
     
-    const usageJson = await getObjectContent(bucket, `usage/usage.json`)
+    const kk = `usage/usage.json`
+    const exists = await objectExists(bucket, kk)
+    const usageJson = exists ? await getObjectContent(bucket, kk) : JSON.stringify(emptyUsage)
     const usage = JSON.parse(usageJson)
     if (!isUsageRequestUsage(usage)) {
         console.warn(usage)

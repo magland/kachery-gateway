@@ -1,4 +1,5 @@
 import { FunctionComponent } from 'react';
+import Hyperlink from '../components/Hyperlink/Hyperlink';
 import { useGithubAuth } from '../GithubAuth/useGithubAuth';
 
 // const adminUsersJson = process.env.REACT_APP_ADMIN_USERS || "[]"
@@ -22,6 +23,7 @@ const HomePage: FunctionComponent<Props> = () => {
                 )
             }
             <hr />
+            <Hyperlink href="https://github.com/flatironinstitute/kachery-cloud/blob/main/README.md">Read about Kachery</Hyperlink>
             <p />
             <hr />
         </div>
