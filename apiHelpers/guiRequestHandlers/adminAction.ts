@@ -21,12 +21,12 @@ const adminActionHandler = async (request: AdminActionRequest, verifiedUserId?: 
         throw Error('Not admin user.')
     }
 
-    const { actionType } = request
+    const { actionType, zone } = request
 
     let success: boolean
 
     if (actionType === 'setBucketCORS') {
-        const bucket = getBucket()
+        const bucket = await getBucket(zone || 'default')
         const {bucketName} = parseBucketUri(bucket.uri)
         const client = getS3Client(bucket)
 

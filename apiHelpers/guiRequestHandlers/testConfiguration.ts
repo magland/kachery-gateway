@@ -10,8 +10,8 @@ const testConfigurationHandler = async (request: TestConfigurationRequest, verif
         throw Error('Not admin user.')
     }
 
-    const { testType } = request
-    const bucket = getBucket()
+    const { testType, zone } = request
+    const bucket = await getBucket(zone || 'default')
     const {bucketName} = parseBucketUri(bucket.uri)
 
     let passed: boolean

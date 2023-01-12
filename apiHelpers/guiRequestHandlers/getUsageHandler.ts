@@ -17,7 +17,9 @@ const getUsageHandler = async (request: GetUsageRequest, verifiedUserId?: string
         throw Error('Not admin user.')
     }
 
-    const bucket = getBucket()
+    const {zone} = request
+
+    const bucket = await getBucket(zone || 'default')
     
     const kk = `usage/usage.json`
     const exists = await objectExists(bucket, kk)

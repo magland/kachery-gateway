@@ -4,9 +4,9 @@ import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserId?: string): Promise<SetClientInfoResponse> => {
-    const { clientId, label } = request
+    const { clientId, label, zone } = request
 
-    const client = await getClient(clientId.toString())
+    const client = await getClient(zone || 'default', clientId.toString())
 
     if (client.ownerId !== verifiedUserId) {
         throw Error('Not authorized to set client info')
@@ -16,7 +16,7 @@ const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserI
         client.label = label
     }
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone || 'default')
     const {bucketName} = parseBucketUri(bucket.uri)
     const key = `clients/${clientId}`
     await putObject(bucket, {
@@ -37,7 +37,7 @@ const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserI
     //     Bucket: adminBucketName
     // })
 
-    invalidateClientInCache(clientId.toString())
+    invalidateClientInCache(zone || 'default', clientId.toString())
     // invalidateAllClients()
 
     return {

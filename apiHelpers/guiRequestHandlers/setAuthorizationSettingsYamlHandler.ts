@@ -8,9 +8,11 @@ const setAuthorizationSettingsYamlHandler = async (request: SetAuthorizationSett
         throw Error('Not admin user.')
     }
 
+    const { zone } = request
+
     const {authorizationSettingsYaml} = request
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone || 'default')
     const {bucketName} = parseBucketUri(bucket.uri)
 
     await putObject(bucket, {

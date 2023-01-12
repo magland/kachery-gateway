@@ -5,6 +5,8 @@ import ObjectCache from "./ObjectCache";
 import { Bucket, getSignedUploadUrl } from "./s3Helpers";
 import { getClient } from '../common/getDatabaseItems'
 import getAuthorizationSettings from "./getAuthorizationSettings";
+import validateObject, { isArrayOf, isString, optional } from "../../src/types/validateObject";
+import YAML from 'yaml'
 
 export const MAX_UPLOAD_SIZE = 5 * 1000 * 1000 * 1000
 
@@ -19,40 +21,95 @@ export const getPendingUploadKey = ({hash, hashAlg, projectId}: {hash: string, h
 }
 export const pendingUploads = new ObjectCache<PendingUpload>(1000 * 60 * 5)
 
-export const getBucket = () => {
+type GatewayConfig = {
+    zones: {
+        name: string
+        bucketUri: string
+        bucketCredentials: string
+        fallbackBucketUri?: string
+        fallbackBucketCredentials?: string
+    }[]
+}
+
+const isGatewayConfig = (x: any): x is GatewayConfig => {
+    return validateObject(x, {
+        zones: isArrayOf(y => (validateObject(y, {
+            name: isString,
+            bucketUri: isString,
+            bucketCredentials: isString,
+            fallbackBucketUri: optional(isString),
+            fallbackBucketCredentials: optional(isString)
+        })))
+    })
+}
+
+let _gatewayConfig: GatewayConfig | undefined = undefined
+const loadGatewayConfig = async () => {
+    // this is async so that later we can load from a database
+    if (_gatewayConfig) return _gatewayConfig
+    const yaml = process.env['GATEWAY_CONFIG'] || (
+`
+zones:
+  -
+    name: default
+    bucketUri: ${process.env['BUCKET_URI'] || ''}
+    bucketCredentials: ${process.env['BUCKET_CREDENTIALS'] || ''}
+    fallbackBucketUri: ${process.env['FALLBACK_BUCKET_URI'] || ''}
+    fallbackBucketCredentials: ${process.env['FALLBACK_BUCKET_CREDENTIALS'] || ''}
+`
+    )
+    const a = YAML.parse(yaml)
+    if (!isGatewayConfig(a)) {
+        throw Error('Invalid gateway config')
+    }
+    _gatewayConfig = a
+    return _gatewayConfig
+}
+
+export const getBucket = async (zone: string) => {
+    const gatewayConfig = await loadGatewayConfig()
+    const zz = gatewayConfig.zones.filter(z => (z.name === zone))[0]
+    if (!zz) {
+        throw Error(`Zone not found: ${zone}`)
+    }
     const bucket: Bucket = {
-        uri: process.env['BUCKET_URI'] || '',
-        credentials: process.env['BUCKET_CREDENTIALS'] || ''
+        uri: zz.bucketUri,
+        credentials: zz.bucketCredentials
     }
     if (!bucket.uri) {
-        throw Error(`Environment variable not set: BUCKET_URI`)
+        throw Error(`No bucket URI`)
     }
     if (!bucket.credentials) {
-        throw Error(`Environment variable not set: BUCKET_CREDENTIALS`)
+        throw Error(`No bucket credentials`)
     }
     return bucket
 }
-const bucket = getBucket()
 
-export const getFallbackBucket = () => {
-    if (!process.env['FALLBACK_BUCKET_URI']) {
+export const getFallbackBucket = async (zone: string) => {
+    const gatewayConfig = await loadGatewayConfig()
+    const zz = gatewayConfig.zones.filter(z => (z.name === zone))[0]
+    if (!zz) {
+        throw Error(`Zone not found: ${zone}`)
+    }
+
+    if (!zz.fallbackBucketUri) {
         return undefined
     }
     const bucket: Bucket = {
-        uri: process.env['FALLBACK_BUCKET_URI'] || '',
-        credentials: process.env['FALLBACK_BUCKET_CREDENTIALS'] || ''
+        uri: zz.fallbackBucketUri || '',
+        credentials: zz.fallbackBucketCredentials || ''
     }
     if (!bucket.uri) {
-        throw Error(`Environment variable not set: FALLBACK_BUCKET_URI`)
+        throw Error(`No fallback bucket URI`)
     }
     if (!bucket.credentials) {
-        throw Error(`Environment variable not set: FALLBACK_BUCKET_CREDENTIALS`)
+        throw Error(`No fallback bucket credentials`)
     }
     return bucket
 }
 
 const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<InitiateFileUploadResponse> => {
-    const { size, hashAlg, hash } = request.payload
+    const { size, hashAlg, hash, zone } = request.payload
 
     const clientId = verifiedClientId
     let userId = verifiedUserId
@@ -70,19 +127,19 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         }
         // make sure the client is registered
         // in the future we will check the owner for authorization
-        const client = await getClient(clientId.toString())
+        const client = await getClient(zone || 'default', clientId.toString())
         userId = client.ownerId
     }
     
     // check the user ID for authorization
-    const authorizationSettings = await getAuthorizationSettings()
+    const authorizationSettings = await getAuthorizationSettings(zone || 'default')
     if (!authorizationSettings.allowPublicUpload) {
         const u = authorizationSettings.authorizedUsers.find(a => (a.userId === userId))
         if (!u) throw Error(`User ${userId} is not authorized.`)
         if (!u.upload) throw Error(`User ${userId} not authorized to upload files.`)
     }
 
-    const findFileResponse = await findFile({hash, hashAlg, noFallback: true})
+    const findFileResponse = await findFile({hash, hashAlg, noFallback: true, zone})
     if (findFileResponse.found) {
         return {
             type: 'initiateFileUpload',
@@ -96,6 +153,7 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
     // const objectKey = `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
     const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
 
+    const bucket = await getBucket(zone || 'default')
     const signedUploadUrl = await getSignedUploadUrl(bucket, objectKey)
 
     /////////////////////////////////////////////////////////////////////

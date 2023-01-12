@@ -6,10 +6,10 @@ import { getObjectContent } from "./s3Helpers"
 
 const authorizationSettingsCache = new ObjectCache<AuthorizationSettings>(1000 * 60 * 5)
 
-const getAuthorizationSettings = async () => {
+const getAuthorizationSettings = async (zone: string) => {
     const a = authorizationSettingsCache.get('main')
     if (a) return a
-    const bucket = getBucket()
+    const bucket = await getBucket(zone)
     let x = (await getObjectContent(bucket, 'settings/authorizationSettings.yaml')).toString()
     const authorizationSettings = YAML.parse(x)
     if (!isAuthorizationSettings(authorizationSettings)) {

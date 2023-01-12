@@ -5,10 +5,8 @@ import getAuthorizationSettings from "./getAuthorizationSettings";
 import { getBucket, MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
 import { deleteObject, headObject } from "./s3Helpers";
 
-const bucket = getBucket()
-
 const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FinalizeFileUploadResponse> => {
-    const { objectKey, size } = request.payload
+    const { objectKey, size, zone } = request.payload
 
     const clientId = verifiedClientId
     let userId = verifiedUserId
@@ -22,17 +20,19 @@ const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, ver
         }
         // make sure the client is registered
         // in the future we will check the owner for authorization
-        const client = await getClient(clientId.toString())
+        const client = await getClient(zone || 'default', clientId.toString())
         userId = client.ownerId
     }
 
     // check the user ID for authorization
-    const authorizationSettings = await getAuthorizationSettings()
+    const authorizationSettings = await getAuthorizationSettings(zone || 'default')
     if (!authorizationSettings.allowPublicUpload) {
         const u = authorizationSettings.authorizedUsers.find(a => (a.userId === userId))
         if (!u) throw Error(`User ${userId} is not authorized.`)
         if (!u.upload) throw Error(`User ${userId} not authorized to upload files.`)
     }
+
+    const bucket = await getBucket(zone || 'default')
 
     const x = await headObject(bucket, objectKey)
     const size0 = x.ContentLength

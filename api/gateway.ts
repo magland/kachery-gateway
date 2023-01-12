@@ -24,7 +24,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     ].includes(req.headers.origin || '')) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '')
     }
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
+    res.setHeader('Access-Control-Allow-Methods', 'POST')
     res.setHeader(
         'Access-Control-Allow-Headers',
         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -34,6 +34,10 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         return
     }
     ///////////////////////////////////////////
+
+    if (req.method !== 'POST') {
+        res.status(400).send(`Invalid method: ${req.method}`)
+    }
 
     if (!isGatewayRequest(request)) {
         res.status(400).send(`Invalid request: ${JSON.stringify(request)}`)

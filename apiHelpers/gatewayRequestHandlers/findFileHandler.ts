@@ -10,9 +10,9 @@ import ObjectCache from './ObjectCache'
 import { Bucket, getSignedDownloadUrl, headObject } from "./s3Helpers"
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FindFileResponse> => {
-    const { hashAlg, hash } = request.payload
+    const { hashAlg, hash, zone } = request.payload
 
-    return findFile({hashAlg, hash})
+    return findFile({hashAlg, hash, zone})
 }
 
 type CacheRecord = {
@@ -61,11 +61,11 @@ const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey: strin
     await cacheCollection.deleteOne({_id: cacheKey})
 }
 
-export const findFile = async (o: {hashAlg: string, hash: string, noFallback?: boolean}): Promise<FindFileResponse> => {
-    const {hashAlg, hash} = o
+export const findFile = async (o: {hashAlg: string, hash: string, zone: string | undefined, noFallback?: boolean}): Promise<FindFileResponse> => {
+    const {hashAlg, hash, zone} = o
 
-    const bucket: Bucket = getBucket()
-    const fallbackBucket: Bucket | undefined = getFallbackBucket()
+    const bucket: Bucket = await getBucket(zone || 'default')
+    const fallbackBucket: Bucket | undefined = await getFallbackBucket(zone || 'default')
 
     let fileRecord: FileRecord | undefined = undefined
 

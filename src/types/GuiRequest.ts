@@ -17,6 +17,7 @@ export type AddClientRequest = {
     }
     verificationSignature: Signature
     privateKeyHex?: PrivateKeyHex
+    zone?: string
     auth: Auth
 }
 
@@ -33,6 +34,7 @@ export const isAddClientRequest = (x: any): x is AddClientRequest => {
         ),
         verificationSignature: isSignature,
         privateKeyHex: optional(isPrivateKeyHex),
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -54,6 +56,7 @@ export type DeleteClientRequest = {
     type: 'deleteClient'
     clientId: NodeId
     ownerId: string
+    zone?: string
     auth: Auth
 }
 
@@ -62,6 +65,7 @@ export const isDeleteClientRequest = (x: any): x is DeleteClientRequest => {
         type: isEqualTo('deleteClient'),
         clientId: isNodeId,
         ownerId: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -82,6 +86,7 @@ export const isDeleteClientResponse = (x: any): x is DeleteClientResponse => {
 export type GetClientsRequest = {
     type: 'getClients'
     userId: string
+    zone?: string
     auth: Auth
 }
 
@@ -89,6 +94,7 @@ export const isGetClientsRequest = (x: any): x is GetClientsRequest => {
     return validateObject(x, {
         type: isEqualTo('getClients'),
         userId: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -112,6 +118,7 @@ export type SetClientInfoRequest = {
     type: 'setClientInfo'
     clientId: NodeId
     label?: string
+    zone?: string
     auth: Auth
 }
 
@@ -120,6 +127,7 @@ export const isSetClientInfoRequest = (x: any): x is SetClientInfoRequest => {
         type: isEqualTo('setClientInfo'),
         clientId: isNodeId,
         label: optional(isString),
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -142,6 +150,7 @@ export type AddResourceRequest = {
     resourceName: string
     proxyUrl: string
     ownerId: string
+    zone?: string
     auth: Auth
 }
 
@@ -151,6 +160,7 @@ export const isAddResourceRequest = (x: any): x is AddResourceRequest => {
         resourceName: isString,
         proxyUrl: isString,
         ownerId: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -172,6 +182,7 @@ export type DeleteResourceRequest = {
     type: 'deleteResource'
     resourceName: string
     ownerId: string
+    zone?: string
     auth: Auth
 }
 
@@ -180,6 +191,7 @@ export const isDeleteResourceRequest = (x: any): x is DeleteResourceRequest => {
         type: isEqualTo('deleteResource'),
         resourceName: isString,
         ownerId: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -200,6 +212,7 @@ export const isDeleteResourceResponse = (x: any): x is DeleteResourceResponse =>
 export type GetResourcesRequest = {
     type: 'getResources'
     userId: string
+    zone?: string
     auth: Auth
 }
 
@@ -207,6 +220,7 @@ export const isGetResourcesRequest = (x: any): x is GetResourcesRequest => {
     return validateObject(x, {
         type: isEqualTo('getResources'),
         userId: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -230,6 +244,7 @@ export type SetResourceInfoRequest = {
     type: 'setResourceInfo'
     resourceName: string
     proxyUrl?: string
+    zone?: string
     auth: Auth
 }
 
@@ -238,6 +253,7 @@ export const isSetResourceInfoRequest = (x: any): x is SetResourceInfoRequest =>
         type: isEqualTo('setResourceInfo'),
         resourceName: isString,
         proxyUrl: optional(isString),
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -257,12 +273,14 @@ export const isSetResourceInfoResponse = (x: any): x is SetResourceInfoResponse 
 
 export type GetUsageRequest = {
     type: 'getUsage'
+    zone?: string
     auth: Auth
 }
 
 export const isGetUsageRequest = (x: any): x is GetUsageRequest => {
     return validateObject(x, {
         type: isEqualTo('getUsage'),
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -365,6 +383,7 @@ export const isGetAdminConfigurationResponse = (x: any): x is GetAdminConfigurat
 export type TestConfigurationRequest = {
     type: 'testConfiguration'
     testType: string
+    zone?: string
     auth: Auth
 }
 
@@ -372,6 +391,7 @@ export const isTestConfigurationRequest = (x: any): x is TestConfigurationReques
     return validateObject(x, {
         type: isEqualTo('testConfiguration'),
         testType: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -397,6 +417,7 @@ export type AdminActionRequest = {
     type: 'adminAction'
     actionType: string
     parameters?: string
+    zone?: string
     auth: Auth
 }
 
@@ -405,6 +426,7 @@ export const isAdminActionRequest = (x: any): x is AdminActionRequest => {
         type: isEqualTo('adminAction'),
         actionType: isString,
         parameters: optional(() => (true)),
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -426,12 +448,14 @@ export const isAdminActionResponse = (x: any): x is AdminActionResponse => {
 
 export type GetAuthorizationSettingsYamlRequest = {
     type: 'getAuthorizationSettingsYaml'
+    zone?: string
     auth: Auth
 }
 
 export const isGetAuthorizationSettingsYamlRequest = (x: any): x is GetAuthorizationSettingsYamlRequest => {
     return validateObject(x, {
         type: isEqualTo('getAuthorizationSettingsYaml'),
+        zone: optional(isString),
         auth: isAuth
     })
 }
@@ -454,6 +478,7 @@ export const isGetAuthorizationSettingsYamlResponse = (x: any): x is GetAuthoriz
 export type SetAuthorizationSettingsYamlRequest = {
     type: 'setAuthorizationSettingsYaml'
     authorizationSettingsYaml: string
+    zone?: string
     auth: Auth
 }
 
@@ -461,6 +486,7 @@ export const isSetAuthorizationSettingsYamlRequest = (x: any): x is SetAuthoriza
     return validateObject(x, {
         type: isEqualTo('setAuthorizationSettingsYaml'),
         authorizationSettingsYaml: isString,
+        zone: optional(isString),
         auth: isAuth
     })
 }

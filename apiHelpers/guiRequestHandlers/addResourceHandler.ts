@@ -6,7 +6,7 @@ import { getObjectContent, objectExists, parseBucketUri, putObject } from "../ga
 // const MAX_NUM_RESOURCES_PER_USER = 25
 
 const addResourceHandler = async (request: AddResourceRequest, verifiedUserId?: string): Promise<AddResourceResponse> => {
-    const { resourceName, ownerId, proxyUrl } = request
+    const { resourceName, ownerId, proxyUrl, zone } = request
 
     if (ownerId !== verifiedUserId) {
         throw Error('Mismatch between ownerId and verifiedUserId')
@@ -19,7 +19,7 @@ const addResourceHandler = async (request: AddResourceRequest, verifiedUserId?: 
         proxyUrl
     }
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone || 'default')
     const {bucketName} = parseBucketUri(bucket.uri)
     const key = `resources/${resourceName}`
     const exists = await objectExists(bucket, key)

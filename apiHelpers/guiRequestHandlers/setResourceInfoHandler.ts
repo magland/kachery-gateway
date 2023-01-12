@@ -4,9 +4,9 @@ import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const setResourceInfoHandler = async (request: SetResourceInfoRequest, verifiedUserId?: string): Promise<SetResourceInfoResponse> => {
-    const { resourceName, proxyUrl } = request
+    const { resourceName, proxyUrl, zone } = request
 
-    const resource = await getResource(resourceName.toString())
+    const resource = await getResource(zone || 'default', resourceName.toString())
 
     if (resource.ownerId !== verifiedUserId) {
         throw Error('Not authorized to set resource info')
@@ -16,7 +16,7 @@ const setResourceInfoHandler = async (request: SetResourceInfoRequest, verifiedU
         resource.proxyUrl = proxyUrl
     }
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone || 'default')
     const {bucketName} = parseBucketUri(bucket.uri)
     const key = `resources/${resourceName}`
     await putObject(bucket, {
@@ -25,7 +25,7 @@ const setResourceInfoHandler = async (request: SetResourceInfoRequest, verifiedU
         Body: JSON.stringify(resource, null, 4)
     })
 
-    invalidateResourceInCache(resourceName.toString())
+    invalidateResourceInCache(zone || 'default', resourceName.toString())
 
     return {
         type: 'setResourceInfo'

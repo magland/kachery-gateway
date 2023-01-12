@@ -36,66 +36,72 @@ const resourceObjectCache = new ObjectCache<Resource>(expirationMSec)
 // const allClientsObjectCache = new ObjectCache<Client[]>(5 * 60 * 1000)
 const userObjectCache = new ObjectCache<{[key: string]: any}>(expirationMSec)
 
-export const getClient = async (clientId: string, o: {includeSecrets?: boolean}={}) => {
-    const x = clientObjectCache.get(clientId.toString())
+export const getClient = async (zone: string, clientId: string, o: {includeSecrets?: boolean}={}) => {
+    const kk = `${zone}:${clientId}`
+    const x = clientObjectCache.get(kk)
     if (x) {
         if (!o.includeSecrets) x.privateKeyHex = undefined
         return x
     }
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone)
     const key = `clients/${clientId}`
     const exists = await objectExists(bucket, key)
     if (!exists) throw Error('Client not registered. Use kachery-cloud-init to register this kachery-cloud client.')
     const client = JSON.parse(await getObjectContent(bucket, key))
     if (!isClient(client)) throw Error('Invalid client in bucket')
 
-    clientObjectCache.set(clientId.toString(), {...client})
+    clientObjectCache.set(kk, {...client})
     if (!o.includeSecrets) client.privateKeyHex = undefined
     return client
 }
 
-export const invalidateClientInCache = (clientId: string) => {
-    clientObjectCache.delete(clientId)
+export const invalidateClientInCache = (zone: string, clientId: string) => {
+    const kk = `${zone}:${clientId}`
+    clientObjectCache.delete(kk)
 }
 
-export const getResource = async (resourceName: string, o: {includeSecrets?: boolean}={}) => {
-    const x = resourceObjectCache.get(resourceName.toString())
+export const getResource = async (zone: string, resourceName: string, o: {includeSecrets?: boolean}={}) => {
+    const kk = `${zone}:${resourceName}`
+    const x = resourceObjectCache.get(kk)
     if (x) {
         return x
     }
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone)
     const key = `resources/${resourceName}`
     const exists = await objectExists(bucket, key)
     if (!exists) throw Error('Resource not found.')
     const resource = JSON.parse(await getObjectContent(bucket, key))
     if (!isResource(resource)) throw Error('Invalid resource in bucket')
 
-    resourceObjectCache.set(resourceName.toString(), {...resource})
+    resourceObjectCache.set(kk, {...resource})
     return resource
 }
 
-export const invalidateResourceInCache = (resourceName: string) => {
-    resourceObjectCache.delete(resourceName)
+export const invalidateResourceInCache = (zone: string, resourceName: string) => {
+    const kk = `${zone}:${resourceName}`
+    resourceObjectCache.delete(kk)
 }
 
-export const getUser = async (userId: string) => {
-    const x = userObjectCache.get(userId.toString())
+export const getUser = async (zone: string, userId: string) => {
+    const kk = `${zone}:${userId}`
+    const x = userObjectCache.get(kk)
     if (x) {
         return x
     }
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone)
     const key = `users/${userId}`
     const exists = await objectExists(bucket, key)
     if (!exists) throw Error('User not found.')
     const user = JSON.parse(await getObjectContent(bucket, key))
 
-    userObjectCache.set(userId, {...user})
+    userObjectCache.set(kk, {...user})
     return user
 }
 
-export const invalidateUserInCache = (userId: string) => {
-    userObjectCache.delete(userId)
+export const invalidateUserInCache = (zone: string, userId: string) => {
+    const kk = `${zone}:${userId}`
+    userObjectCache.delete(kk)
 }

@@ -12,6 +12,7 @@ export type FindFileRequest = {
         timestamp: number
         hashAlg: 'sha1'
         hash: string
+        zone?: string
     }
     fromClientId?: NodeId
     signature?: Signature
@@ -25,7 +26,8 @@ export const isFindFileRequest = (x: any): x is FindFileRequest => {
             type: isEqualTo('findFile'),
             timestamp: isNumber,
             hashAlg: isOneOf([isEqualTo('sha1')]),
-            hash: isString
+            hash: isString,
+            zone: optional(isString)
         })
     }
     return validateObject(x, {
@@ -71,6 +73,7 @@ export type InitiateFileUploadRequest = {
         size: number
         hashAlg: 'sha1'
         hash: string
+        zone?: string
     }
     fromClientId?: NodeId
     signature?: Signature
@@ -85,7 +88,8 @@ export const isInitiateFileUploadRequest = (x: any): x is InitiateFileUploadRequ
             timestamp: isNumber,
             size: isNumber,
             hashAlg: isOneOf([isEqualTo('sha1')]),
-            hash: isString
+            hash: isString,
+            zone: optional(isString)
         })
     }
     return validateObject(x, {
@@ -126,6 +130,7 @@ export type FinalizeFileUploadRequest = {
         hashAlg: 'sha1'
         hash: string
         size: number
+        zone?: string
     }
     fromClientId?: NodeId
     signature?: Signature
@@ -141,7 +146,8 @@ export const isFinalizeFileUploadRequest = (x: any): x is FinalizeFileUploadRequ
             objectKey: isString,
             hashAlg: isOneOf([isEqualTo('sha1')]),
             hash: isString,
-            size: isNumber
+            size: isNumber,
+            zone: optional(isString)
         })
     }
     return validateObject(x, {
@@ -171,6 +177,7 @@ export type GetClientInfoRequest = {
         type: 'getClientInfo'
         timestamp: number
         clientId: NodeId
+        zone?: string
     }
     fromClientId: NodeId
     signature: Signature
@@ -183,7 +190,8 @@ export const isGetClientInfoRequest = (x: any): x is GetClientInfoRequest => {
         return validateObject(y, {
             type: isEqualTo('getClientInfo'),
             timestamp: isNumber,
-            clientId: isNodeId
+            clientId: isNodeId,
+            zone: optional(isString)
         })
     }
     return validateObject(x, {
@@ -217,6 +225,7 @@ export type GetResourceInfoRequest = {
         type: 'getResourceInfo'
         timestamp: number
         resourceName: string
+        zone?: string
     }
     fromClientId: NodeId
     signature: Signature
@@ -229,7 +238,8 @@ export const isGetResourceInfoRequest = (x: any): x is GetResourceInfoRequest =>
         return validateObject(y, {
             type: isEqualTo('getResourceInfo'),
             timestamp: isNumber,
-            resourceName: isString
+            resourceName: isString,
+            zone: optional(isString)
         })
     }
     return validateObject(x, {

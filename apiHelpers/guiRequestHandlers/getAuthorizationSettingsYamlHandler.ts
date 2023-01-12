@@ -7,8 +7,9 @@ const getAuthorizationSettingsYamlHandler = async (request: GetAuthorizationSett
     if (!isAdminUser(verifiedUserId)) {
         throw Error('Not admin user.')
     }
+    const { zone } = request
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone || 'default')
     
     let authorizationSettingsYaml: string
     try {

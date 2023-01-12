@@ -8,7 +8,7 @@ import { getObjectContent, objectExists, parseBucketUri, putObject } from "../ga
 // const MAX_NUM_CLIENTS_PER_USER = 25
 
 const addClientHandler = async (request: AddClientRequest, verifiedUserId?: string): Promise<AddClientResponse> => {
-    const { clientId, ownerId, label, privateKeyHex } = request
+    const { clientId, ownerId, label, privateKeyHex, zone } = request
 
     if (ownerId !== verifiedUserId) {
         throw Error('Mismatch between ownerId and verifiedUserId')
@@ -37,7 +37,7 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
     //     Bucket: adminBucketName
     // })
 
-    const bucket = getBucket()
+    const bucket = await getBucket(zone || 'default')
     const {bucketName} = parseBucketUri(bucket.uri)
     const key = `clients/${clientId}`
     const exists = await objectExists(bucket, key)
