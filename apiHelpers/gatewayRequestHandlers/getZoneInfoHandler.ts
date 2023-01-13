@@ -1,17 +1,34 @@
 import { GetZoneInfoRequest, GetZoneInfoResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
+import YAML from 'yaml'
+import validateObject, { isArrayOf, isString } from "../../src/types/validateObject";
 
-const zonesConfigJson = process.env['KACHERY_ZONES']
-const zonesConfig: {
-    zoneName: string
-    kacheryGatewayUrl: string
-}[] | undefined = zonesConfigJson ? JSON.parse(zonesConfigJson) : undefined
+type ZoneDirectory = {
+    zones: {
+        name: string
+        gatewayUrl: string
+    }[]
+}
+const isZoneDirectory = (x: any): x is ZoneDirectory => {
+    return validateObject(x, {
+        zones: isArrayOf(y => (validateObject(y, {
+            name: isString,
+            gatewayUrl: isString
+        })))
+    })
+}
+
+const zoneDirectoryYaml = process.env['ZONE_DIRECTORY']
+const zoneDirectory = zoneDirectoryYaml ? YAML.parse(zoneDirectoryYaml) : {zones: []}
+if (!isZoneDirectory(zoneDirectory)) {
+    throw Error('Invalid zone directory')
+}
 
 const getZoneInfoHandler = async (request: GetZoneInfoRequest, verifiedClientId?: NodeId): Promise<GetZoneInfoResponse> => {
     const { zoneName } = request.payload
 
-    const a = zonesConfig ? (
-        zonesConfig.filter(z => (z.zoneName === zoneName))[0]
+    const a = zoneDirectory ? (
+        (zoneDirectory.zones || []).filter(z => (z.name === zoneName))[0]
     ) : undefined
 
     if (!a) {
@@ -24,7 +41,7 @@ const getZoneInfoHandler = async (request: GetZoneInfoRequest, verifiedClientId?
     return {
         type: 'getZoneInfo',
         found: true,
-        kacheryGatewayUrl: a.kacheryGatewayUrl
+        kacheryGatewayUrl: a.gatewayUrl
     }
 }
 
