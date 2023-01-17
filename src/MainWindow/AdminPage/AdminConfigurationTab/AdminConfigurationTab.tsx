@@ -18,22 +18,6 @@ const AdminConfigurationTab: FunctionComponent<Props> = ({width, height}) => {
 			<Table>
 				<TableBody>
 					<TableRow>
-						<TableCell>BUCKET_URI</TableCell>
-						<TableCell>{adminConfiguration?.bucketUri}</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>BUCKET_CREDENTIALS</TableCell>
-						<TableCell>{abbreviate(adminConfiguration?.bucketCredentials)}</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>FALLBACK BUCKET_URI</TableCell>
-						<TableCell>{adminConfiguration?.fallbackBucketUri}</TableCell>
-					</TableRow>
-					<TableRow>
-						<TableCell>FALLBACK_BUCKET_CREDENTIALS</TableCell>
-						<TableCell>{abbreviate(adminConfiguration?.fallbackBucketCredentials)}</TableCell>
-					</TableRow>
-					<TableRow>
 						<TableCell>MONGO_URI</TableCell>
 						<TableCell>{abbreviate(adminConfiguration?.mongoUri)}</TableCell>
 					</TableRow>
@@ -50,8 +34,8 @@ const AdminConfigurationTab: FunctionComponent<Props> = ({width, height}) => {
 						<TableCell>{adminConfiguration?.adminUsers}</TableCell>
 					</TableRow>
 					<TableRow>
-						<TableCell>KACHERY_ZONES</TableCell>
-						<TableCell>{adminConfiguration?.kacheryZones}</TableCell>
+						<TableCell>ZONE_DIRECTORY</TableCell>
+						<TableCell>{adminConfiguration?.zoneDirectory}</TableCell>
 					</TableRow>
 					<TableRow>
 						<TableCell>REACT_APP_RECAPTCHA_KEY</TableCell>
@@ -65,7 +49,6 @@ const AdminConfigurationTab: FunctionComponent<Props> = ({width, height}) => {
 			</Table>
 			<h2>Actions</h2>
 			<BucketCORSActionComponent
-				bucketUri={adminConfiguration?.bucketUri}
 			/>
 			<h2>Tests</h2>
 			<TestComponent

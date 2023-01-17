@@ -3,6 +3,7 @@ import guiApiRequest from "../../common/guiApiRequest"
 import useErrorMessage from "../../errorMessageContext/useErrorMessage"
 import { useGithubAuth } from "../../GithubAuth/useGithubAuth"
 import { GetUsageRequest, isGetUsageResponse, UsageRequestUsage } from "../../types/GuiRequest"
+import useRoute from "../useRoute"
 
 const useUsage = () => {
     const [usage, setUsage] = useState<UsageRequestUsage | undefined>(undefined)
@@ -12,6 +13,7 @@ const useUsage = () => {
         setRefreshCode(c => (c + 1))
     }, [])
     const {setErrorMessage} = useErrorMessage()
+    const {route} = useRoute()
 
     useEffect(() => {
         ; (async () => {
@@ -21,6 +23,7 @@ const useUsage = () => {
             let canceled = false
             const req: GetUsageRequest = {
                 type: 'getUsage',
+                zone: route.zone,
                 auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
@@ -34,7 +37,7 @@ const useUsage = () => {
             setUsage(resp.usage)
             return () => { canceled = true }
         })()
-    }, [userId, accessToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     return { usage, refreshUsage }
 }

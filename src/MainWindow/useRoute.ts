@@ -5,16 +5,21 @@ import { isNodeId, isSignature, NodeId, Signature } from '../types/keypair'
 
 export type Route = {
     page: 'home'
+    zone: string
 } | {
     page: 'clients'
+    zone: string
 } | {
     page: 'resources'
+    zone: string
 } | {
     page: 'client'
     clientId: NodeId
+    zone: string
 } | {
     page: 'resource'
     resourceName: string
+    zone: string
 } | {
     page: 'registerClient',
     clientId: NodeId,
@@ -23,25 +28,30 @@ export type Route = {
     zone: string
 } | {
     page: 'admin'
+    zone: string
 } | {
     page: 'github-auth'
+    zone: string
 }
 
 const useRoute = () => {
     const location = useLocation()
     const navigate = useNavigate()
     const query = useMemo(() => (QueryString.parse(location.search.slice(1))), [location.search]);
+    const zone = (query.zone as string) || 'default'
 
     const p = location.pathname
-    let route: Route = {page: 'home'}
+    let route: Route = {page: 'home', zone}
     if (p === '/clients') {
         route = {
-            page: 'clients'
+            page: 'clients',
+            zone
         }
     }
     else if (p === '/resources') {
         route = {
-            page: 'resources'
+            page: 'resources',
+            zone
         }
     }
     else if (p.startsWith('/client/')) {
@@ -49,7 +59,8 @@ const useRoute = () => {
         if (x.length === 3) {
             route = {
                 page: 'client',
-                clientId: x[2] as any as NodeId
+                clientId: x[2] as any as NodeId,
+                zone
             }
         }
     }
@@ -58,7 +69,8 @@ const useRoute = () => {
         if (x.length === 3) {
             route = {
                 page: 'resource',
-                resourceName: x[2]
+                resourceName: x[2],
+                zone
             }
         }
     }
@@ -68,7 +80,7 @@ const useRoute = () => {
             const clientId = x[2]
             const signature = query.signature
             const label = query.label as string
-            const zone = query.zone || 'default'
+            
             if ((isNodeId(clientId)) && (isSignature(signature))) {
                 route = {
                     page: 'registerClient',
@@ -82,12 +94,14 @@ const useRoute = () => {
     }
     else if (p === '/admin') {
         route = {
-            page: 'admin'
+            page: 'admin',
+            zone
         }
     }
     else if (p === '/github/auth') {
         route = {
-            page: 'github-auth'
+            page: 'github-auth',
+            zone
         }
     }
 
@@ -96,15 +110,19 @@ const useRoute = () => {
         let pathname2 = '/home'
         if (route.page === 'resources') {
             pathname2 = `/resources`
+            query2['zone'] = route.zone
         }
         else if (route.page === 'clients') {
             pathname2 = '/clients'
+            query2['zone'] = route.zone
         }
         else if (route.page === 'client') {
             pathname2 = `/client/${route.clientId}`
+            query2['zone'] = route.zone
         }
         else if (route.page === 'resource') {
             pathname2 = `/resource/${route.resourceName}`
+            query2['zone'] = route.zone
         }
         else if (route.page === 'registerClient') {
             pathname2 = `/registerClient/${route.clientId}`
@@ -114,9 +132,11 @@ const useRoute = () => {
         }
         else if (route.page === 'admin') {
             pathname2 = `/admin`
+            query2['zone'] = route.zone
         }
         else if (route.page === 'github-auth') {
             pathname2 = '/github/auth'
+            query2['zone'] = route.zone
         }
         const search2 = queryString(query2)
         navigate({...location, pathname: pathname2, search: search2})

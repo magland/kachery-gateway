@@ -24,8 +24,8 @@ const MainWindow: FunctionComponent<Props> = () => {
     const {width, height} = useWindowDimensions()
 
     const handleHome = useCallback(() => {
-        setRoute({page: 'home'})
-    }, [setRoute])
+        setRoute({page: 'home', zone: route.zone})
+    }, [setRoute, route.zone])
 
     const {errorMessage} = useErrorMessage()
 

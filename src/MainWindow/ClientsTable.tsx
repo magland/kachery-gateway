@@ -15,7 +15,7 @@ type Props = {
 const ClientsTable: FunctionComponent<Props> = () => {
     const createClientVisible = useVisible()
 
-    const {setRoute} = useRoute()
+    const {route, setRoute} = useRoute()
 
     const { clients, refreshClients, deleteClient, createClient } = useClients()
 
@@ -37,7 +37,7 @@ const ClientsTable: FunctionComponent<Props> = () => {
                 columnValues: {
                     client: {
                         text: client.clientId.toString(),
-                        element: <Hyperlink onClick={() => {setRoute({page: 'client', clientId: client.clientId})}}>
+                        element: <Hyperlink onClick={() => {setRoute({page: 'client', clientId: client.clientId, zone: route.zone})}}>
                             {client.label} ({client.clientId.slice(0, 10)}...)
                         </Hyperlink>
                     },
@@ -45,7 +45,7 @@ const ClientsTable: FunctionComponent<Props> = () => {
                 }
             }
         })
-    ), [clients, setRoute])
+    ), [clients, setRoute, route.zone])
 
     const handleDeleteClient = useCallback((clientId: string) => {
         if (!isNodeId(clientId)) return

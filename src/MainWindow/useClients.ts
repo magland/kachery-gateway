@@ -9,6 +9,7 @@ import { NodeId, PrivateKeyHex, Signature } from "../types/keypair"
 import useRoute from "./useRoute"
 
 const useClients = () => {
+    const {route} = useRoute()
     const [clients, setClients] = useState<Client[] | undefined>(undefined)
     const { userId, accessToken } = useGithubAuth()
     const [refreshCode, setRefreshCode] = useState<number>(0)
@@ -26,6 +27,7 @@ const useClients = () => {
             const req: GetClientsRequest = {
                 type: 'getClients',
                 userId,
+                zone: route.zone,
                 auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
@@ -39,7 +41,7 @@ const useClients = () => {
             setClients(resp.clients)
             return () => { canceled = true }
         })()
-    }, [userId, accessToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     const {setRoute} = useRoute()
 
@@ -51,6 +53,7 @@ const useClients = () => {
                     clientId,
                     ownerId: userId,
                     label,
+                    zone: route.zone,
                     auth: { userId, githubAccessToken: accessToken },
                     verificationDocument,
                     verificationSignature
@@ -64,11 +67,11 @@ const useClients = () => {
                     throw Error('Unexpected response')
                 }
                 if (o.navigateToClientPage) {
-                    setRoute({page: 'client', clientId})
+                    setRoute({page: 'client', clientId, zone: route.zone})
                 }
                 refreshClients()
             })()
-    }, [userId, accessToken, refreshClients, setErrorMessage, setRoute])
+    }, [userId, accessToken, refreshClients, setErrorMessage, setRoute, route.zone])
 
     const createClient = useCallback((label: string, o: {navigateToClientPage?: boolean}={}) => {
         ;(async () => {
@@ -86,6 +89,7 @@ const useClients = () => {
                 const req: DeleteClientRequest = {
                     type: 'deleteClient',
                     clientId,
+                    zone: route.zone,
                     ownerId: userId,
                     auth: { userId, githubAccessToken: accessToken }
                 }
@@ -96,7 +100,7 @@ const useClients = () => {
                 }
                 refreshClients()
             })()
-    }, [userId, accessToken, refreshClients, setErrorMessage])
+    }, [userId, accessToken, refreshClients, setErrorMessage, route.zone])
 
     return { clients, refreshClients, addClient, createClient, deleteClient }
 }

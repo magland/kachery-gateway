@@ -14,7 +14,7 @@ type Props = {
 const ResourcesTable: FunctionComponent<Props> = () => {
     const createResourceVisible = useVisible()
 
-    const {setRoute} = useRoute()
+    const {route, setRoute} = useRoute()
 
     const { resources, refreshResources, deleteResource, addResource } = useResources()
 
@@ -36,7 +36,7 @@ const ResourcesTable: FunctionComponent<Props> = () => {
                 columnValues: {
                     resource: {
                         text: resource.resourceName,
-                        element: <Hyperlink onClick={() => {setRoute({page: 'resource', resourceName: resource.resourceName})}}>
+                        element: <Hyperlink onClick={() => {setRoute({page: 'resource', resourceName: resource.resourceName, zone: route.zone})}}>
                             {resource.resourceName}
                         </Hyperlink>
                     },
@@ -44,7 +44,7 @@ const ResourcesTable: FunctionComponent<Props> = () => {
                 }
             }
         })
-    ), [resources, setRoute])
+    ), [resources, setRoute, route.zone])
 
     const handleDeleteResource = useCallback((resourceName: string) => {
         deleteResource(resourceName)

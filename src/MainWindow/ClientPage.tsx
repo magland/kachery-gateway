@@ -17,7 +17,7 @@ type Props = {
 
 const ClientPage: FunctionComponent<Props> = ({clientId}) => {
     const { clients, refreshClients } = useClients()
-    const { setRoute } = useRoute()
+    const { route, setRoute } = useRoute()
 
     const client = useMemo(() => (
         (clients || []).filter(client => (client.clientId === clientId))[0]
@@ -35,6 +35,7 @@ const ClientPage: FunctionComponent<Props> = ({clientId}) => {
                 type: 'setClientInfo',
                 clientId,
                 label,
+                zone: route.zone,
                 auth: {
                     userId, githubAccessToken: accessToken
                 }
@@ -42,7 +43,7 @@ const ClientPage: FunctionComponent<Props> = ({clientId}) => {
             await guiApiRequest(req, {reCaptcha: true, setErrorMessage})
             refreshClients()
         })()
-    }, [clientId, userId, accessToken, refreshClients, setErrorMessage])
+    }, [clientId, route.zone, userId, accessToken, refreshClients, setErrorMessage])
 
     const tableData = useMemo(() => {
         if (!client) return undefined
@@ -71,8 +72,8 @@ const ClientPage: FunctionComponent<Props> = ({clientId}) => {
     }, [client, handleLabelChange])
 
     const handleBack = useCallback(() => {
-        setRoute({page: 'clients'})
-    }, [setRoute])
+        setRoute({page: 'clients', zone: route.zone})
+    }, [setRoute, route.zone])
 
     if (!clients) {
         return <span>Loading...</span>

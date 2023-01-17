@@ -15,7 +15,7 @@ type Props = {
 
 const ResourcePage: FunctionComponent<Props> = ({resourceName}) => {
     const { resources, refreshResources } = useResources()
-    const { setRoute } = useRoute()
+    const { route, setRoute } = useRoute()
 
     const resource = useMemo(() => (
         (resources || []).filter(resource => (resource.resourceName === resourceName))[0]
@@ -33,6 +33,7 @@ const ResourcePage: FunctionComponent<Props> = ({resourceName}) => {
                 type: 'setResourceInfo',
                 resourceName,
                 proxyUrl,
+                zone: route.zone,
                 auth: {
                     userId, githubAccessToken: accessToken
                 }
@@ -40,7 +41,7 @@ const ResourcePage: FunctionComponent<Props> = ({resourceName}) => {
             await guiApiRequest(req, {reCaptcha: true, setErrorMessage})
             refreshResources()
         })()
-    }, [resourceName, userId, accessToken, refreshResources, setErrorMessage])
+    }, [resourceName, route.zone, userId, accessToken, refreshResources, setErrorMessage])
 
     const tableData = useMemo(() => {
         if (!resource) return undefined
@@ -62,8 +63,8 @@ const ResourcePage: FunctionComponent<Props> = ({resourceName}) => {
     }, [resource, handleProxyUrlChange])
 
     const handleBack = useCallback(() => {
-        setRoute({page: 'resources'})
-    }, [setRoute])
+        setRoute({page: 'resources', zone: route.zone})
+    }, [setRoute, route.zone])
 
     if (!resources) {
         return <span>Loading...</span>

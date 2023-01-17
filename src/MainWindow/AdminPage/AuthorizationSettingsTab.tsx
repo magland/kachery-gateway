@@ -7,6 +7,7 @@ import MonacoEditor from 'react-monaco-editor';
 import YAML from 'yaml'
 import { Button } from "@material-ui/core";
 import { isAuthorizationSettings } from "../../types/AuthorizationSettings";
+import useRoute from "../useRoute";
 
 type Props ={
 	width: number
@@ -23,6 +24,7 @@ const useAuthorizationSettingsYaml = () => {
         setRefreshCode(c => (c + 1))
     }, [])
     const {setErrorMessage} = useErrorMessage()
+	const {route} = useRoute()
 
     useEffect(() => {
         ; (async () => {
@@ -32,6 +34,7 @@ const useAuthorizationSettingsYaml = () => {
             let canceled = false
             const req: GetAuthorizationSettingsYamlRequest = {
                 type: 'getAuthorizationSettingsYaml',
+				zone: route.zone,
                 auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
@@ -46,7 +49,7 @@ const useAuthorizationSettingsYaml = () => {
 			setLoaded(true)
             return () => { canceled = true }
         })()
-    }, [userId, accessToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
 	const saveAuthorizationSettingsYaml = useMemo(() => (
 		async (x: string) => {
@@ -54,6 +57,7 @@ const useAuthorizationSettingsYaml = () => {
 			const req: SetAuthorizationSettingsYamlRequest = {
 				type: 'setAuthorizationSettingsYaml',
 				authorizationSettingsYaml: x,
+				zone: route.zone,
 				auth: { userId, githubAccessToken: accessToken }
 			}
 			const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
@@ -64,7 +68,7 @@ const useAuthorizationSettingsYaml = () => {
             }
 			setAuthorizationSettingsYaml(x)
 		}
-	), [userId, accessToken, setErrorMessage])
+	), [userId, accessToken, setErrorMessage, route.zone])
 
     return { authorizationSettingsYaml, refreshUsage: refreshAuthorizationSettings, saveAuthorizationSettingsYaml, loaded }
 }

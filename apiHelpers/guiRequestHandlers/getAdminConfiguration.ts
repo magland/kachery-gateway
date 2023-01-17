@@ -6,16 +6,14 @@ const getAdminConfigurationHandler = async (request: GetAdminConfigurationReques
         throw Error('Not admin user.')
     }
 
+    // const {zone} = request
+
     const adminConfiguration: AdminConfiguration = {
-        bucketUri: process.env['BUCKET_URI'],
-        bucketCredentials: replaceWithStars(process.env['BUCKET_CREDENTIALS']),
-        fallbackBucketUri: process.env['FALLBACK_BUCKET_URI'],
-        fallbackBucketCredentials: replaceWithStars(process.env['FALLBACK_BUCKET_CREDENTIALS']),
         mongoUri: replaceWithStars(process.env['MONGO_URI']),
         githubClientId: process.env['REACT_APP_GITHUB_CLIENT_ID'],
         githubClientSecret: replaceWithStars(process.env['GITHUB_CLIENT_SECRET']),
         adminUsers: process.env['REACT_APP_ADMIN_USERS'],
-        kacheryZones: process.env['KACHERY_ZONES'],
+        zoneDirectory: process.env['ZONE_DIRECTORY'],
         reCaptchaKey: process.env['REACT_APP_RECAPTCHA_KEY'],
         reCaptchaSecretKey: replaceWithStars(process.env['RECAPTCHA_SECRET_KEY'])
     }

@@ -14,6 +14,7 @@ const useResources = () => {
         setRefreshCode(c => (c + 1))
     }, [])
     const {setErrorMessage} = useErrorMessage()
+    const {route} = useRoute()
 
     useEffect(() => {
         ; (async () => {
@@ -23,6 +24,7 @@ const useResources = () => {
             let canceled = false
             const req: GetResourcesRequest = {
                 type: 'getResources',
+                zone: route.zone,
                 userId,
                 auth: { userId, githubAccessToken: accessToken }
             }
@@ -37,7 +39,7 @@ const useResources = () => {
             setResources(resp.resources)
             return () => { canceled = true }
         })()
-    }, [userId, accessToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     const {setRoute} = useRoute()
 
@@ -49,6 +51,7 @@ const useResources = () => {
                     resourceName,
                     ownerId: userId,
                     proxyUrl,
+                    zone: route.zone,
                     auth: { userId, githubAccessToken: accessToken }
                 }
                 const resp = await guiApiRequest(req, { reCaptcha: true, setErrorMessage })
@@ -57,11 +60,11 @@ const useResources = () => {
                     throw Error('Unexpected response')
                 }
                 if (o.navigateToResourcePage) {
-                    setRoute({page: 'resource', resourceName})
+                    setRoute({page: 'resource', resourceName, zone: route.zone})
                 }
                 refreshResources()
             })()
-    }, [userId, accessToken, refreshResources, setErrorMessage, setRoute])
+    }, [userId, accessToken, refreshResources, setErrorMessage, setRoute, route.zone])
 
     const deleteResource = useCallback((resourceName: string) => {
         if (!userId) return
@@ -69,6 +72,7 @@ const useResources = () => {
                 const req: DeleteResourceRequest = {
                     type: 'deleteResource',
                     resourceName,
+                    zone: route.zone,
                     ownerId: userId,
                     auth: { userId, githubAccessToken: accessToken }
                 }
@@ -79,7 +83,7 @@ const useResources = () => {
                 }
                 refreshResources()
             })()
-    }, [userId, accessToken, refreshResources, setErrorMessage])
+    }, [userId, accessToken, refreshResources, setErrorMessage, route.zone])
 
     return { resources, refreshResources, addResource, deleteResource }
 }

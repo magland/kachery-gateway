@@ -325,26 +325,24 @@ export const isGetUsageResponse = (x: any): x is GetUsageResponse => {
 
 export type GetAdminConfigurationRequest = {
     type: 'getAdminConfiguration'
+    zone?: string
     auth: Auth
 }
 
 export const isGetAdminConfigurationRequest = (x: any): x is GetAdminConfigurationRequest => {
     return validateObject(x, {
         type: isEqualTo('getAdminConfiguration'),
+        zone: optional(isString),
         auth: isAuth
     })
 }
 
 export type AdminConfiguration = {
-    bucketUri?: string
-    bucketCredentials?: string
-    fallbackBucketUri?: string
-    fallbackBucketCredentials?: string
     mongoUri?: string
     githubClientId?: string,
     githubClientSecret?: string,
     adminUsers?: string,
-    kacheryZones?: string,
+    zoneDirectory?: string,
     reCaptchaKey?: string,
     reCaptchaSecretKey?: string
 }

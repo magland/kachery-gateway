@@ -3,6 +3,7 @@ import Hyperlink from "../../../components/Hyperlink/Hyperlink";
 import { useGithubAuth } from "../../../GithubAuth/useGithubAuth";
 import { isTestConfigurationResponse, TestConfigurationRequest } from "../../../types/GuiRequest";
 import guiApiRequest from "../../guiApiRequest";
+import useRoute from "../../useRoute";
 
 type Props ={
 	label: string
@@ -17,6 +18,9 @@ const TestComponent: FunctionComponent<Props> = ({label, testType}) => {
 
 	const [result, setResult] = useState<string>('')
 	const [passed, setPassed] = useState<boolean>()
+
+	const {route} = useRoute()
+
 	const handleTest = useCallback(() => {
 		;(async () => {
 			setStatus('running')
@@ -26,6 +30,7 @@ const TestComponent: FunctionComponent<Props> = ({label, testType}) => {
 			const req: TestConfigurationRequest = {
                 type: 'testConfiguration',
 				testType,
+				zone: route.zone,
                 auth: { userId, githubAccessToken: accessToken }
             }
 			const timer = Date.now()
@@ -40,7 +45,7 @@ const TestComponent: FunctionComponent<Props> = ({label, testType}) => {
 			setResult(resp.result)
 			setStatus('completed')
 		})()
-	}, [accessToken, userId, testType])
+	}, [accessToken, userId, testType, route.zone])
 
 	return (
 		<div>

@@ -3,6 +3,7 @@ import guiApiRequest from "../../../common/guiApiRequest"
 import useErrorMessage from "../../../errorMessageContext/useErrorMessage"
 import { useGithubAuth } from "../../../GithubAuth/useGithubAuth"
 import { AdminConfiguration, GetAdminConfigurationRequest, isGetAdminConfigurationResponse } from "../../../types/GuiRequest"
+import useRoute from "../../useRoute"
 
 const useAdminConfiguration = () => {
     const [adminConfiguration, setAdminConfiguration] = useState<AdminConfiguration | undefined>(undefined)
@@ -12,6 +13,7 @@ const useAdminConfiguration = () => {
         setRefreshCode(c => (c + 1))
     }, [])
     const {setErrorMessage} = useErrorMessage()
+    const {route} = useRoute()
 
     useEffect(() => {
         ; (async () => {
@@ -21,6 +23,7 @@ const useAdminConfiguration = () => {
             let canceled = false
             const req: GetAdminConfigurationRequest = {
                 type: 'getAdminConfiguration',
+                zone: route.zone,
                 auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
@@ -34,7 +37,7 @@ const useAdminConfiguration = () => {
             setAdminConfiguration(resp.adminConfiguration)
             return () => { canceled = true }
         })()
-    }, [userId, accessToken, refreshCode, setErrorMessage])
+    }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     return { adminConfiguration, refreshAdminConfiguration }
 }

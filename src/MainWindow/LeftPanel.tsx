@@ -24,17 +24,17 @@ const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
             route: Route
             icon?: any
         }[] = [
-            {label: 'Home', route: {page: 'home'}, icon: <Home />},
-            {label: 'Clients', route: {page: 'clients'}, icon: <ViewModule />},
-            {label: 'Resources', route: {page: 'resources'}, icon: <ViewModule />}
+            {label: 'Home', route: {page: 'home', zone: route.zone}, icon: <Home />},
+            {label: 'Clients', route: {page: 'clients', zone: route.zone}, icon: <ViewModule />},
+            {label: 'Resources', route: {page: 'resources', zone: route.zone}, icon: <ViewModule />}
         ]
         if ((userId) && (adminUsers.includes(userId.toString()))) {
             ret.push({
-                label: 'Admin', route: {page: 'admin'}, icon: <CropSquare />
+                label: 'Admin', route: {page: 'admin', zone: route.zone}, icon: <CropSquare />
             })
         }
         return ret
-    }, [userId])
+    }, [userId, route.zone])
 
     return (
         <div className="LeftPanel" style={{position: 'absolute', width, height}}>
