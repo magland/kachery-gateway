@@ -73,6 +73,7 @@ const MainWindow: FunctionComponent<Props> = () => {
                                 clientId={route.clientId}
                                 signature={route.signature}
                                 label={route.label}
+                                zone={route.zone}
                             />
                         ) : (route.page === 'home') ? (
                             <HomePage />

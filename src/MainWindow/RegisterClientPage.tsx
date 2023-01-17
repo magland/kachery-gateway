@@ -12,11 +12,12 @@ type Props = {
     clientId: NodeId
     signature: Signature
     label: string
+    zone: string
 }
 
 type Status = 'waiting' | 'starting' | 'running' | 'error' | 'finished'
 
-const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, label}) => {
+const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, label, zone}) => {
     const {userId, accessToken, signedIn} = useGithubAuth()
     const [status, setStatus] = useState<Status>('waiting')
     const { errorMessage, setErrorMessage } = useErrorMessage()
@@ -45,6 +46,7 @@ const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, labe
                     clientId,
                     ownerId: userId,
                     label: editLabel,
+                    zone,
                     verificationDocument: {
                         type: 'addClient'
                     },
@@ -63,7 +65,7 @@ const RegisterClientPage: FunctionComponent<Props> = ({clientId, signature, labe
                 }
             }
         })()
-    }, [status, userId, clientId, setErrorMessage, signature, accessToken, setRoute, editLabel])
+    }, [status, userId, clientId, zone, setErrorMessage, signature, accessToken, setRoute, editLabel])
 
     const submitOkay = useMemo(() => {
         if (!userId) return false

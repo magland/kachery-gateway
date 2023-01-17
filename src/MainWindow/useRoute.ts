@@ -19,7 +19,8 @@ export type Route = {
     page: 'registerClient',
     clientId: NodeId,
     signature: Signature,
-    label: string
+    label: string,
+    zone: string
 } | {
     page: 'admin'
 } | {
@@ -67,12 +68,14 @@ const useRoute = () => {
             const clientId = x[2]
             const signature = query.signature
             const label = query.label as string
+            const zone = query.zone || 'default'
             if ((isNodeId(clientId)) && (isSignature(signature))) {
                 route = {
                     page: 'registerClient',
                     clientId,
                     signature,
-                    label
+                    label,
+                    zone: zone as string
                 }
             }
         }
@@ -94,6 +97,9 @@ const useRoute = () => {
         if (route.page === 'resources') {
             pathname2 = `/resources`
         }
+        else if (route.page === 'clients') {
+            pathname2 = '/clients'
+        }
         else if (route.page === 'client') {
             pathname2 = `/client/${route.clientId}`
         }
@@ -104,6 +110,7 @@ const useRoute = () => {
             pathname2 = `/registerClient/${route.clientId}`
             query2['signature'] = route.signature.toString()
             query2['label'] = route.label.toString()
+            query2['zone'] = route.zone
         }
         else if (route.page === 'admin') {
             pathname2 = `/admin`
