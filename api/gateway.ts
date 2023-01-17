@@ -24,7 +24,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     ].includes(req.headers.origin || '')) {
         res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '')
     }
-    res.setHeader('Access-Control-Allow-Methods', 'POST')
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
     res.setHeader(
         'Access-Control-Allow-Headers',
         'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
@@ -116,7 +116,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         if (shouldWriteLogItem) {
             const elapsed = Date.now() - requestTimestamp
-            writeLogItem({request, zone, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+            writeLogItem({request, zone: zone || 'default', response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
                 res.json(response)
             }).catch((err2: Error) => {
                 console.warn(`Error writing log item: ${err2.message}`)
