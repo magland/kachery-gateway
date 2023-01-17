@@ -35,9 +35,10 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     }
     ///////////////////////////////////////////
 
-    if (req.method !== 'POST') {
-        res.status(400).send(`Invalid method: ${req.method}`)
-    }
+    // if (req.method !== 'POST') {
+    //     res.status(400).send(`Invalid method: ${req.method}`)
+    //     return
+    // }
 
     if (!isGatewayRequest(request)) {
         res.status(400).send(`Invalid request: ${JSON.stringify(request)}`)
