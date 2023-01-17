@@ -1,6 +1,6 @@
 import { SetClientInfoRequest, SetClientInfoResponse } from "../../src/types/GuiRequest";
 import { getClient, invalidateClientInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserId?: string): Promise<SetClientInfoResponse> => {

@@ -2,7 +2,7 @@ import { hexToPublicKey, verifySignature } from "../../src/crypto/signatures";
 import { Client } from "../../src/types/Client";
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
 import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 // const MAX_NUM_CLIENTS_PER_USER = 25

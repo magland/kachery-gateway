@@ -1,6 +1,6 @@
 import { SetResourceInfoRequest, SetResourceInfoResponse } from "../../src/types/GuiRequest";
 import { getResource, invalidateResourceInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const setResourceInfoHandler = async (request: SetResourceInfoRequest, verifiedUserId?: string): Promise<SetResourceInfoResponse> => {

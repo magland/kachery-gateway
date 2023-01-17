@@ -1,5 +1,5 @@
 import { GetUsageRequest, GetUsageResponse, isUsageRequestUsage, UsageRequestUsage } from "../../src/types/GuiRequest";
-import { getBucket } from '../gatewayRequestHandlers/initiateFileUploadHandler';
+import { getBucket } from '../gatewayRequestHandlers/getBucket';
 import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 

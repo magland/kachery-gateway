@@ -4,11 +4,11 @@ import { NodeId } from "../../src/types/keypair";
 import { getResource } from "../common/getDatabaseItems";
 
 const getResourceInfoHandler = async (request: GetResourceInfoRequest, verifiedClientId?: NodeId): Promise<GetResourceInfoResponse> => {
-    const { resourceName } = request.payload
+    const { resourceName, zone } = request.payload
 
     let resource: Resource
     try {
-        resource = await getResource(resourceName.toString())
+        resource = await getResource(zone || 'default', resourceName.toString())
     }
     catch {
         return {

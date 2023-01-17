@@ -1,6 +1,6 @@
 import { DeleteClientRequest, DeleteClientResponse } from "../../src/types/GuiRequest";
 import { getClient, getUser, invalidateClientInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { deleteObject, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const deleteClientHandler = async (request: DeleteClientRequest, verifiedUserId?: string): Promise<DeleteClientResponse> => {

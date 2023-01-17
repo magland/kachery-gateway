@@ -1,5 +1,5 @@
 import { SetAuthorizationSettingsYamlRequest, SetAuthorizationSettingsYamlResponse } from "../../src/types/GuiRequest";
-import { getBucket } from '../gatewayRequestHandlers/initiateFileUploadHandler';
+import { getBucket } from '../gatewayRequestHandlers/getBucket';
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 

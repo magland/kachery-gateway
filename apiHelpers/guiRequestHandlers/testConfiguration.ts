@@ -1,7 +1,7 @@
 import { TestConfigurationRequest, TestConfigurationResponse } from "../../src/types/GuiRequest";
 import { getMongoClient } from "../common/getMongoClient";
 import randomAlphaString from "../common/randomAlphaString";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { getObjectContent, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 

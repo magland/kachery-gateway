@@ -1,11 +1,9 @@
-import { UserId } from "../../../src/commonInterface/kacheryTypes"
-
 const adminUsersJson = process.env.REACT_APP_ADMIN_USERS || "[]"
 const adminUsers = JSON.parse(adminUsersJson) as any as string[]
 
-const isAdminUser = (userId?: UserId) => {
+const isAdminUser = (userId?: string) => {
     if (!userId) return false
-    return adminUsers.includes(userId.toString())
+    return adminUsers.includes(userId)
 }
 
 export default isAdminUser

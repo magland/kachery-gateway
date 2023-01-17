@@ -1,6 +1,6 @@
 import YAML from 'yaml'
 import { AuthorizationSettings, isAuthorizationSettings } from '../../src/types/AuthorizationSettings'
-import { getBucket } from "./initiateFileUploadHandler"
+import { getBucket } from "./getBucket"
 import ObjectCache from "./ObjectCache"
 import { getObjectContent } from "./s3Helpers"
 

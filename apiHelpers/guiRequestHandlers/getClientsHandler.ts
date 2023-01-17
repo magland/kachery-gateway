@@ -3,7 +3,7 @@ import { GetClientsRequest, GetClientsResponse } from "../../src/types/GuiReques
 import { getClient, getUser } from "../common/getDatabaseItems";
 
 const getClientsHandler = async (request: GetClientsRequest, verifiedUserId?: string): Promise<GetClientsResponse> => {
-    const { userId } = request
+    const { userId, zone } = request
     if (verifiedUserId !== request.userId) {
         throw Error('Not authorized')
     }
@@ -11,10 +11,10 @@ const getClientsHandler = async (request: GetClientsRequest, verifiedUserId?: st
     // const allClients = await getAllClients()
     // const clients = userId ? allClients.filter(c => (c.ownerId === userId)) : allClients
 
-    const user = await getUser(userId)
+    const user = await getUser(zone || 'default', userId)
     const clients: Client[] = []
     for (let clientId of (user.clientIds || [])) {
-        const client = await getClient(clientId)
+        const client = await getClient(zone || 'default', clientId)
         clients.push(client)
     }
 

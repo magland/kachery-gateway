@@ -2,7 +2,8 @@ import { FinalizeFileUploadRequest, FinalizeFileUploadResponse } from "../../src
 import { NodeId } from '../../src/types/keypair';
 import { getClient } from "../common/getDatabaseItems";
 import getAuthorizationSettings from "./getAuthorizationSettings";
-import { getBucket, MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
+import { getBucket } from "./getBucket";
+import { MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
 import { deleteObject, headObject } from "./s3Helpers";
 
 const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FinalizeFileUploadResponse> => {

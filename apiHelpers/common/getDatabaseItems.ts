@@ -1,6 +1,6 @@
 import { Client, isClient } from "../../src/types/Client"
 import { isResource, Resource } from "../../src/types/Resource"
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler"
+import { getBucket } from "../gatewayRequestHandlers/getBucket"
 import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers"
 
 export class ObjectCache<ObjectType> {

@@ -4,11 +4,11 @@ import { NodeId } from "../../src/types/keypair";
 import { getClient } from "../common/getDatabaseItems";
 
 const getClientInfoHandler = async (request: GetClientInfoRequest, verifiedClientId?: NodeId): Promise<GetClientInfoResponse> => {
-    const { clientId } = request.payload
+    const { clientId, zone } = request.payload
 
     let client: Client
     try {
-        client = await getClient(clientId.toString())
+        client = await getClient(zone || 'default', clientId.toString())
     }
     catch {
         return {

@@ -1,6 +1,6 @@
 import { DeleteResourceRequest, DeleteResourceResponse } from "../../src/types/GuiRequest";
 import { getResource, getUser, invalidateResourceInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { deleteObject, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const deleteResourceHandler = async (request: DeleteResourceRequest, verifiedUserId?: string): Promise<DeleteResourceResponse> => {

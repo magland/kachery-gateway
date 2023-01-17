@@ -1,6 +1,6 @@
 import { AddResourceRequest, AddResourceResponse } from "../../src/types/GuiRequest";
 import { Resource } from "../../src/types/Resource";
-import { getBucket } from "../gatewayRequestHandlers/initiateFileUploadHandler";
+import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 // const MAX_NUM_RESOURCES_PER_USER = 25
