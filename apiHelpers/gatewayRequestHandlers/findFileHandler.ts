@@ -64,8 +64,6 @@ const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey: strin
 export const findFile = async (o: {hashAlg: string, hash: string, zone: string | undefined, noFallback?: boolean}): Promise<FindFileResponse> => {
     const {hashAlg, hash, zone} = o
 
-    console.log('--- findFile', hashAlg, hash, zone)
-
     const bucket: Bucket = await getBucket(zone || 'default')
     const fallbackBucket: Bucket | undefined = await getFallbackBucket(zone || 'default')
 
