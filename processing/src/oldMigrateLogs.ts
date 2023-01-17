@@ -1,9 +1,9 @@
 import { getBucket, getFallbackBucket } from './getBucket'
 import { getObjectContent, listObjects, objectExists, parseBucketUri, putObject } from "./s3Helpers"
 
-const migrateLogs = async () => {
-    const bucket = getBucket()
-    const fallbackBucket = getFallbackBucket()
+const oldMigrateLogs = async () => {
+    const bucket = await getBucket('')
+    const fallbackBucket = await getFallbackBucket('')
     if (!fallbackBucket) {
         console.info('No fallback bucket. Exiting.')
         return
@@ -36,4 +36,4 @@ const migrateLogs = async () => {
     }
 }
 
-migrateLogs()
+oldMigrateLogs()

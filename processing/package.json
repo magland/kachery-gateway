@@ -7,7 +7,7 @@
   "description": "Kachery Gateway processing",
   "scripts": {
     "cleanup-find-file-cache": "node dist/cleanupFindFileCache.js",
-    "migrate-logs": "node dist/migrateLogs.js",
+    "old-migrate-logs": "node dist/oldMigrateLogs.js",
     "process-log-items": "node dist/processLogItems.js",
     "analyze-logs": "node dist/analyzeLogs.js",
     "build": "tsc"
@@ -17,7 +17,8 @@
   "dependencies": {
     "aws-sdk": "^2.1236.0",
     "mongodb": "^4.12.1",
-    "typescript": "^4.6.3"
+    "typescript": "^4.6.3",
+    "yaml": "^2.2.1"
   },
   "devDependencies": {
     "@types/mongodb": "^4.0.7",

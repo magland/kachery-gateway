@@ -1,5 +1,5 @@
 import YAML from 'yaml'
-import validateObject, { isArrayOf, isString, optional } from "../../src/types/validateObject"
+import validateObject, { isArrayOf, isString, optional } from './types/validateObject'
 
 export type GatewayConfig = {
     zones: {
