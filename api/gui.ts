@@ -125,7 +125,8 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             if (requestForLog['auth']) {
                 delete (requestForLog as any)['auth']
             }
-            writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+            const zone = request.zone
+            writeLogItem({request, response, zone, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
                 res.json(response)
             }).catch((err2: Error) => {
                 console.warn(`Error writing log item: ${err2.message}`)

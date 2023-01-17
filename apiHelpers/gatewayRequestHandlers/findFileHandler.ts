@@ -5,7 +5,7 @@ import { NodeId, sha1OfString } from "../../src/types/keypair"
 import validateObject, { isNumber, isString } from '../../src/types/validateObject'
 import { getMongoClient } from '../common/getMongoClient'
 import { HeadObjectOutputX } from "./getS3Client"
-import { getBucket, getFallbackBucket } from "./initiateFileUploadHandler"
+import { getBucket, getFallbackBucket } from "./getBucket"
 import ObjectCache from './ObjectCache'
 import { Bucket, getSignedDownloadUrl, headObject } from "./s3Helpers"
 
@@ -76,7 +76,7 @@ export const findFile = async (o: {hashAlg: string, hash: string, zone: string |
     const cacheCollection = client.db('kachery-gateway').collection('findFileCache')
 
     // check cache
-    const cacheKey = sha1OfString(`${bucket.uri}.${objectKey}`).toString()
+    const cacheKey = sha1OfString(`${zone}.${bucket.uri}.${objectKey}`).toString()
     // first check in-memory cache
     let aa = signedUrlObjectCache.get(cacheKey) // check memory cache
     if (!aa) {

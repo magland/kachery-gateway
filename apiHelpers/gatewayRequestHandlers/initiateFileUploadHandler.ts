@@ -1,12 +1,13 @@
+import YAML from 'yaml';
 import { InitiateFileUploadRequest, InitiateFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
+import { getClient } from '../common/getDatabaseItems';
 import { findFile } from "./findFileHandler";
+import { GatewayConfig, isGatewayConfig, loadGatewayConfig } from "./GatewayConfig";
+import getAuthorizationSettings from "./getAuthorizationSettings";
+import { getBucket } from './getBucket';
 import ObjectCache from "./ObjectCache";
 import { Bucket, getSignedUploadUrl } from "./s3Helpers";
-import { getClient } from '../common/getDatabaseItems'
-import getAuthorizationSettings from "./getAuthorizationSettings";
-import validateObject, { isArrayOf, isString, optional } from "../../src/types/validateObject";
-import YAML from 'yaml'
 
 export const MAX_UPLOAD_SIZE = 5 * 1000 * 1000 * 1000
 
@@ -20,93 +21,6 @@ export const getPendingUploadKey = ({hash, hashAlg, projectId}: {hash: string, h
     return `${projectId}::${hashAlg}://${hash}`
 }
 export const pendingUploads = new ObjectCache<PendingUpload>(1000 * 60 * 5)
-
-type GatewayConfig = {
-    zones: {
-        name: string
-        bucketUri: string
-        bucketCredentials: string
-        fallbackBucketUri?: string
-        fallbackBucketCredentials?: string
-    }[]
-}
-
-const isGatewayConfig = (x: any): x is GatewayConfig => {
-    return validateObject(x, {
-        zones: isArrayOf(y => (validateObject(y, {
-            name: isString,
-            bucketUri: isString,
-            bucketCredentials: isString,
-            fallbackBucketUri: optional(isString),
-            fallbackBucketCredentials: optional(isString)
-        })))
-    })
-}
-
-let _gatewayConfig: GatewayConfig | undefined = undefined
-const loadGatewayConfig = async () => {
-    // this is async so that later we can load from a database
-    if (_gatewayConfig) return _gatewayConfig
-    const yaml = process.env['GATEWAY_CONFIG'] || (
-`
-zones:
-  -
-    name: default
-    bucketUri: ${process.env['BUCKET_URI'] || ''}
-    bucketCredentials: ${process.env['BUCKET_CREDENTIALS'] || ''}
-    fallbackBucketUri: ${process.env['FALLBACK_BUCKET_URI'] || ''}
-    fallbackBucketCredentials: ${process.env['FALLBACK_BUCKET_CREDENTIALS'] || ''}
-`
-    )
-    const a = YAML.parse(yaml)
-    if (!isGatewayConfig(a)) {
-        throw Error('Invalid gateway config')
-    }
-    _gatewayConfig = a
-    return _gatewayConfig
-}
-
-export const getBucket = async (zone: string) => {
-    const gatewayConfig = await loadGatewayConfig()
-    const zz = gatewayConfig.zones.filter(z => (z.name === zone))[0]
-    if (!zz) {
-        throw Error(`Zone not found: ${zone}`)
-    }
-    const bucket: Bucket = {
-        uri: zz.bucketUri,
-        credentials: zz.bucketCredentials
-    }
-    if (!bucket.uri) {
-        throw Error(`No bucket URI`)
-    }
-    if (!bucket.credentials) {
-        throw Error(`No bucket credentials`)
-    }
-    return bucket
-}
-
-export const getFallbackBucket = async (zone: string) => {
-    const gatewayConfig = await loadGatewayConfig()
-    const zz = gatewayConfig.zones.filter(z => (z.name === zone))[0]
-    if (!zz) {
-        throw Error(`Zone not found: ${zone}`)
-    }
-
-    if (!zz.fallbackBucketUri) {
-        return undefined
-    }
-    const bucket: Bucket = {
-        uri: zz.fallbackBucketUri || '',
-        credentials: zz.fallbackBucketCredentials || ''
-    }
-    if (!bucket.uri) {
-        throw Error(`No fallback bucket URI`)
-    }
-    if (!bucket.credentials) {
-        throw Error(`No fallback bucket credentials`)
-    }
-    return bucket
-}
 
 const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<InitiateFileUploadResponse> => {
     const { size, hashAlg, hash, zone } = request.payload

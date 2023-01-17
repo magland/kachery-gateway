@@ -56,6 +56,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         throw Error(`Invalid timestamp. ${timestamp} ${Date.now()} ${elapsed}`)
     }
 
+    let zone: string | undefined = undefined
     ;(async () => {
         let verifiedClientId: NodeId | undefined = undefined
         if (fromClientId) {
@@ -75,21 +76,27 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
 
         if (isFindFileRequest(request)) {
+            zone = request.payload.zone
             return await findFileHandler(request, verifiedClientId, verifiedUserId)
         }
         else if (isInitiateFileUploadRequest(request)) {
+            zone = request.payload.zone
             return await initiateFileUploadHandler(request, verifiedClientId, verifiedUserId)
         }
         else if (isFinalizeFileUploadRequest(request)) {
+            zone = request.payload.zone
             return await finalizeFileUploadHandler(request, verifiedClientId, verifiedUserId)
         }
         else if (isGetClientInfoRequest(request)) {
+            zone = request.payload.zone
             return await getClientInfoHandler(request)
         }
         else if (isGetResourceInfoRequest(request)) {
+            zone = request.payload.zone
             return await getResourceInfoHandler(request)
         }
         else if (isGetZoneInfoRequest(request)) {
+            zone = request.payload.zoneName
             return await getZoneInfoHandler(request)
         }
         else {
@@ -108,7 +115,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         }
         if (shouldWriteLogItem) {
             const elapsed = Date.now() - requestTimestamp
-            writeLogItem({request, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
+            writeLogItem({request, zone, response, requestTimestamp, elapsed, requestHeaders: req.headers}).then(() => {
                 res.json(response)
             }).catch((err2: Error) => {
                 console.warn(`Error writing log item: ${err2.message}`)
