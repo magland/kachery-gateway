@@ -24,7 +24,7 @@ const processLogItems = async () => {
             let cursor = logItemsCollection.find({zone}).sort('requestTimestamp', 1).limit(1000)
             const results = await cursor.toArray()
             if (results.length === 0) {
-                console.info('No more mongo log items to process. Exiting.')
+                console.info('No more mongo log items to process.')
                 break
             }
             for (let result of results) {
@@ -69,7 +69,7 @@ const processLogItems = async () => {
             const objectKey = `logs/${fname}`
             console.info(`Writing ${fname}`)
             fs.writeFileSync(fname, logItemsJson)
-            console.info(`Uploading log to admin bucket ${objectKey}`)
+            console.info(`Uploading log to bucket ${objectKey}`)
             await putObject(bucket, {
                 Body: logItemsJson,
                 Key: objectKey,
