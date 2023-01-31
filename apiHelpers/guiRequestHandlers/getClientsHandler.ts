@@ -13,9 +13,11 @@ const getClientsHandler = async (request: GetClientsRequest, verifiedUserId?: st
 
     const user = await getUser(zone || 'default', userId)
     const clients: Client[] = []
-    for (let clientId of (user.clientIds || [])) {
-        const client = await getClient(zone || 'default', clientId)
-        clients.push(client)
+    if (user) {
+        for (let clientId of (user.clientIds || [])) {
+            const client = await getClient(zone || 'default', clientId, {includeSecrets: true})
+            clients.push(client)
+        }
     }
 
     return {

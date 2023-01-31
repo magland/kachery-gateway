@@ -84,7 +84,7 @@ export const invalidateResourceInCache = (zone: string, resourceName: string) =>
     resourceObjectCache.delete(kk)
 }
 
-export const getUser = async (zone: string, userId: string) => {
+export const getUser = async (zone: string, userId: string): Promise<{[key: string]: any} | undefined> => {
     const kk = `${zone}:${userId}`
     const x = userObjectCache.get(kk)
     if (x) {
@@ -94,7 +94,7 @@ export const getUser = async (zone: string, userId: string) => {
     const bucket = await getBucket(zone)
     const key = `users/${userId}`
     const exists = await objectExists(bucket, key)
-    if (!exists) throw Error('User not found.')
+    if (!exists) return undefined
     const user = JSON.parse(await getObjectContent(bucket, key))
 
     userObjectCache.set(kk, {...user})

@@ -15,6 +15,7 @@ const deleteResourceHandler = async (request: DeleteResourceRequest, verifiedUse
         throw Error('Not authorized to delete resource. Owner ID does not match.')
     }
     const user = await getUser(zone || 'default', ownerId)
+    if (!user) throw Error(`User not found in zone ${zone || 'default'}: ${ownerId}`)
     user['resourceNames'] = user['resourceNames'].filter(id => (id !== resourceName))
 
     const bucket = await getBucket(zone || 'default')

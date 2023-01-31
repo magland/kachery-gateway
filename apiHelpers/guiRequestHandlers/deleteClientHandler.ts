@@ -15,6 +15,7 @@ const deleteClientHandler = async (request: DeleteClientRequest, verifiedUserId?
         throw Error('Not authorized to delete client. Owner ID does not match.')
     }
     const user = await getUser(zone || 'default', ownerId)
+    if (!user) throw Error(`User not found in zone ${zone || 'default'}: ${ownerId}`)
     user['clientIds'] = user['clientIds'].filter(id => (id !== clientId))
 
     const bucket = await getBucket(zone || 'default')

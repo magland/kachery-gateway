@@ -10,9 +10,11 @@ const getResourcesHandler = async (request: GetResourcesRequest, verifiedUserId?
 
     const user = await getUser(zone || 'default', userId)
     const resources: Resource[] = []
-    for (let resourceName of (user.resourceNames || [])) {
-        const resource = await getResource(zone || 'default', resourceName)
-        resources.push(resource)
+    if (user) {
+        for (let resourceName of (user.resourceNames || [])) {
+            const resource = await getResource(zone || 'default', resourceName)
+            resources.push(resource)
+        }
     }
 
     return {

@@ -53,7 +53,7 @@ const ClientsTable: FunctionComponent<Props> = () => {
     }, [deleteClient])
 
     const handleCreateClient = useCallback((label: string) => {
-        createClient(label, {navigateToClientPage: true})
+        createClient(label, {navigateToClientPage: false})
     }, [createClient])
 
     return (
