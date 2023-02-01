@@ -4,6 +4,7 @@ import getS3Client from "../gatewayRequestHandlers/getS3Client";
 import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { parseBucketUri } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
+import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
 
 const corsXmlBody = `<?xml version="1.0" encoding="UTF-8"?>  
 <CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">  
@@ -18,7 +19,11 @@ const corsXmlBody = `<?xml version="1.0" encoding="UTF-8"?>
 
 const adminActionHandler = async (request: AdminActionRequest, verifiedUserId?: string): Promise<AdminActionResponse> => {
     if (!isAdminUser(verifiedUserId)) {
-        throw Error('Not admin user.')
+        const authorizationSettings = await getAuthorizationSettings(request.zone || 'default')
+        const u = authorizationSettings.authorizedUsers.find(a => (a.userId === verifiedUserId))
+        if ((!u) || (!u.admin)) {
+            throw Error('User not authorized on this zone')
+        }
     }
 
     const { actionType, zone } = request

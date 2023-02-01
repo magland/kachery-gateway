@@ -1,13 +1,18 @@
 import { TestConfigurationRequest, TestConfigurationResponse } from "../../src/types/GuiRequest";
 import { getMongoClient } from "../common/getMongoClient";
 import randomAlphaString from "../common/randomAlphaString";
+import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
 import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { getObjectContent, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 
 const testConfigurationHandler = async (request: TestConfigurationRequest, verifiedUserId?: string): Promise<TestConfigurationResponse> => {
     if (!isAdminUser(verifiedUserId)) {
-        throw Error('Not admin user.')
+        const authorizationSettings = await getAuthorizationSettings(request.zone || 'default')
+        const u = authorizationSettings.authorizedUsers.find(a => (a.userId === verifiedUserId))
+        if ((!u) || (!u.admin)) {
+            throw Error('User not authorized on this zone')
+        }
     }
 
     const { testType, zone } = request

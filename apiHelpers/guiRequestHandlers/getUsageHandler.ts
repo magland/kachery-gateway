@@ -1,6 +1,8 @@
 import { GetUsageRequest, GetUsageResponse, isUsageRequestUsage, UsageRequestUsage } from "../../src/types/GuiRequest";
+import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
 import { getBucket } from '../gatewayRequestHandlers/getBucket';
 import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers";
+import getUserInfoHandler from "./getUserInfoHandler";
 import isAdminUser from "./helpers/isAdminUser";
 
 const emptyUsage: UsageRequestUsage = {
@@ -14,7 +16,11 @@ const emptyUsage: UsageRequestUsage = {
 
 const getUsageHandler = async (request: GetUsageRequest, verifiedUserId?: string): Promise<GetUsageResponse> => {
     if (!isAdminUser(verifiedUserId)) {
-        throw Error('Not admin user.')
+        const authorizationSettings = await getAuthorizationSettings(request.zone || 'default')
+        const u = authorizationSettings.authorizedUsers.find(a => (a.userId === verifiedUserId))
+        if ((!u) || (!u.admin)) {
+            throw Error('Not authorized to get usage for zone')
+        }
     }
 
     const {zone} = request

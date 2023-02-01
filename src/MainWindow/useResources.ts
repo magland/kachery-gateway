@@ -17,11 +17,11 @@ const useResources = () => {
     const {route} = useRoute()
 
     useEffect(() => {
+        let canceled = false
         ; (async () => {
             setErrorMessage('')
             setResources(undefined)
             if (!userId) return
-            let canceled = false
             const req: GetResourcesRequest = {
                 type: 'getResources',
                 zone: route.zone,
@@ -37,8 +37,8 @@ const useResources = () => {
             console.log(resp)
             if (canceled) return
             setResources(resp.resources)
-            return () => { canceled = true }
         })()
+        return () => { canceled = true }
     }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     const {setRoute} = useRoute()

@@ -22,6 +22,4 @@ function App() {
   );
 }
 
-console.info('Test github action deploy 2')
-
 export default App;

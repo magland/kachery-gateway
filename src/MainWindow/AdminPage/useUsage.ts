@@ -16,11 +16,11 @@ const useUsage = () => {
     const {route} = useRoute()
 
     useEffect(() => {
+        let canceled = false
         ; (async () => {
             setErrorMessage('')
             setUsage(undefined)
             if (!userId) return
-            let canceled = false
             const req: GetUsageRequest = {
                 type: 'getUsage',
                 zone: route.zone,
@@ -35,8 +35,8 @@ const useUsage = () => {
             console.log(resp)
             if (canceled) return
             setUsage(resp.usage)
-            return () => { canceled = true }
         })()
+        return () => { canceled = true }
     }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     return { usage, refreshUsage }

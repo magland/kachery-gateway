@@ -1,10 +1,11 @@
-import validateObject, { isArrayOf, isBoolean, isString } from "./validateObject"
+import validateObject, { isArrayOf, isBoolean, isString, optional } from "./validateObject"
 
 export type AuthorizationSettings = {
     allowPublicUpload: boolean
     authorizedUsers: {
         userId: string
-        upload: boolean
+        upload?: boolean
+        admin?: boolean
     }[]
 }
 
@@ -13,7 +14,8 @@ export const isAuthorizationSettings = (x: any): x is AuthorizationSettings => {
         allowPublicUpload: isBoolean,
         authorizedUsers: isArrayOf(y => (validateObject(y, {
             userId: isString,
-            upload: isBoolean
+            upload: optional(isBoolean),
+            admin: optional(isBoolean)
         })))
     })
 }

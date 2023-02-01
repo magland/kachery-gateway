@@ -19,11 +19,11 @@ const useClients = () => {
     const {setErrorMessage} = useErrorMessage()
 
     useEffect(() => {
+        let canceled = false
         ; (async () => {
             setErrorMessage('')
             setClients(undefined)
             if (!userId) return
-            let canceled = false
             const req: GetClientsRequest = {
                 type: 'getClients',
                 userId,
@@ -39,8 +39,8 @@ const useClients = () => {
             console.log(resp)
             if (canceled) return
             setClients(resp.clients)
-            return () => { canceled = true }
         })()
+        return () => { canceled = true }
     }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     const {setRoute} = useRoute()

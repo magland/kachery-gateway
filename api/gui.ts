@@ -11,6 +11,7 @@ import getAuthorizationSettingsYamlHandler from '../apiHelpers/guiRequestHandler
 import getClientsHandler from '../apiHelpers/guiRequestHandlers/getClientsHandler'
 import getResourcesHandler from '../apiHelpers/guiRequestHandlers/getResourcesHandler'
 import getUsageHandler from '../apiHelpers/guiRequestHandlers/getUsageHandler'
+import getUserInfoHandler from '../apiHelpers/guiRequestHandlers/getUserInfoHandler'
 import setAuthorizationSettingsYamlHandler from '../apiHelpers/guiRequestHandlers/setAuthorizationSettingsYamlHandler'
 import setClientInfoHandler from '../apiHelpers/guiRequestHandlers/setClientInfoHandler'
 import setResourceInfoHandler from '../apiHelpers/guiRequestHandlers/setResourceInfoHandler'
@@ -96,6 +97,9 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
                 throw Error('ReCaptcha required')
             }
             return await setResourceInfoHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getUserInfo') {
+            return await getUserInfoHandler(request, verifiedUserId)
         }
         else if (request.type === 'getUsage') {
             return await getUsageHandler(request, verifiedUserId)

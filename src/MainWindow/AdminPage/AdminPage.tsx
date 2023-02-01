@@ -3,6 +3,7 @@ import AdminConfigurationTab from "./AdminConfigurationTab/AdminConfigurationTab
 import AdminUsageTab from "./AdminUsageTab";
 import AuthorizationSettingsTab from "./AuthorizationSettingsTab";
 import TabWidget from "../TabWidget";
+import { useIsAdminForZone } from "../LeftPanel";
 
 type Props ={
 	width: number
@@ -16,6 +17,11 @@ const tabs = [
 ]
 
 const AdminPage: FunctionComponent<Props> = ({width, height}) => {
+	const isAdminForZone = useIsAdminForZone()
+
+	if (!isAdminForZone) {
+		return <div>User does not have admin access to zone.</div>
+	}
 	return (
 		<TabWidget
 			tabs={tabs}

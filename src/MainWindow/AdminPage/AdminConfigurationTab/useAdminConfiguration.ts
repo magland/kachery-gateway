@@ -3,6 +3,7 @@ import guiApiRequest from "../../../common/guiApiRequest"
 import useErrorMessage from "../../../errorMessageContext/useErrorMessage"
 import { useGithubAuth } from "../../../GithubAuth/useGithubAuth"
 import { AdminConfiguration, GetAdminConfigurationRequest, isGetAdminConfigurationResponse } from "../../../types/GuiRequest"
+import { adminUsers } from "../../LeftPanel"
 import useRoute from "../../useRoute"
 
 const useAdminConfiguration = () => {
@@ -16,11 +17,12 @@ const useAdminConfiguration = () => {
     const {route} = useRoute()
 
     useEffect(() => {
+        let canceled = false
         ; (async () => {
             setErrorMessage('')
             setAdminConfiguration(undefined)
             if (!userId) return
-            let canceled = false
+            if (!adminUsers.includes(userId)) return
             const req: GetAdminConfigurationRequest = {
                 type: 'getAdminConfiguration',
                 zone: route.zone,
@@ -35,8 +37,8 @@ const useAdminConfiguration = () => {
             console.log(resp)
             if (canceled) return
             setAdminConfiguration(resp.adminConfiguration)
-            return () => { canceled = true }
         })()
+        return () => { canceled = true }
     }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     return { adminConfiguration, refreshAdminConfiguration }

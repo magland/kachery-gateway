@@ -112,6 +112,39 @@ export const isGetClientsResponse = (x: any): x is GetClientsResponse => {
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// getUserInfo
+
+export type GetUserInfoRequest = {
+    type: 'getUserInfo'
+    userId: string
+    zone?: string
+    auth: Auth
+}
+
+export const isGetUserInfoRequest = (x: any): x is GetUserInfoRequest => {
+    return validateObject(x, {
+        type: isEqualTo('getUserInfo'),
+        userId: isString,
+        zone: optional(isString),
+        auth: isAuth
+    })
+}
+
+export type GetUserInfoResponse = {
+    type: 'getUserInfo'
+    userId: string
+    isAdmin: boolean
+}
+
+export const isGetUserInfoResponse = (x: any): x is GetUserInfoResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getUserInfo'),
+        userId: isString,
+        isAdmin: isBoolean
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 // setClientInfo
 
 export type SetClientInfoRequest = {
@@ -511,6 +544,7 @@ export type GuiRequest =
     GetResourcesRequest |
     SetResourceInfoRequest |
     GetUsageRequest |
+    GetUserInfoRequest |
     GetAdminConfigurationRequest |
     TestConfigurationRequest |
     AdminActionRequest |
@@ -527,6 +561,7 @@ export const isGuiRequest = (x: any): x is GuiRequest => {
         isDeleteResourceRequest,
         isGetResourcesRequest,
         isSetResourceInfoRequest,
+        isGetUserInfoRequest,
         isGetUsageRequest,
         isGetAdminConfigurationRequest,
         isTestConfigurationRequest,
@@ -545,6 +580,7 @@ export type GuiResponse =
     DeleteResourceResponse |
     GetResourcesResponse |
     SetResourceInfoResponse |
+    GetUserInfoResponse |
     GetUsageResponse |
     GetAdminConfigurationResponse |
     TestConfigurationResponse |
@@ -562,6 +598,7 @@ export const isGuiResponse = (x: any): x is GuiResponse => {
         isDeleteResourceResponse,
         isGetResourcesResponse,
         isSetResourceInfoResponse,
+        isGetUserInfoResponse,
         isGetUsageResponse,
         isGetAdminConfigurationResponse,
         isTestConfigurationResponse,

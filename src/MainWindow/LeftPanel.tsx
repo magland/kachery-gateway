@@ -1,6 +1,9 @@
 import { CropSquare, Home, ViewModule } from "@material-ui/icons";
-import { FunctionComponent, useMemo } from "react";
+import { FunctionComponent, useEffect, useMemo, useState } from "react";
+import useErrorMessage from "../errorMessageContext/useErrorMessage";
 import { useGithubAuth } from "../GithubAuth/useGithubAuth";
+import { GetUserInfoRequest, isGetUserInfoResponse } from "../types/GuiRequest";
+import guiApiRequest from "./guiApiRequest";
 import './LeftPanel.css';
 import LeftPanelItem from "./LeftPanelItem";
 import useRoute, { Route } from "./useRoute";
@@ -11,12 +14,47 @@ type Props = {
 }
 
 const adminUsersJson = process.env.REACT_APP_ADMIN_USERS || "[]"
-const adminUsers = JSON.parse(adminUsersJson) as any as string[]
+export const adminUsers = JSON.parse(adminUsersJson) as any as string[]
+
+export const useIsAdminForZone = () => {
+    const {route} = useRoute()
+    const {userId, accessToken} = useGithubAuth()
+    const [isAdminForZone, setIsAdminForZone] = useState<boolean | undefined>()
+    const {setErrorMessage} = useErrorMessage()
+
+    useEffect(() => {
+        if (userId && adminUsers.includes(userId.toString())) {
+            setIsAdminForZone(true)
+            return
+        }
+        let canceled = false
+        ; (async () => {
+            setIsAdminForZone(undefined)
+            if (!userId) return
+            const req: GetUserInfoRequest = {
+                type: 'getUserInfo',
+                userId,
+				zone: route.zone,
+                auth: { userId, githubAccessToken: accessToken }
+            }
+            const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
+            if (!resp) return
+            if (!isGetUserInfoResponse(resp)) {
+                console.warn(resp)
+                throw Error('Unexpected response')
+            }
+            if (canceled) return
+            setIsAdminForZone(resp.isAdmin)
+        })()
+        return () => { canceled = true }
+    }, [userId, accessToken, setErrorMessage, route.zone])
+    return isAdminForZone
+}
 
 const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
     const {route, setRoute} = useRoute()
 
-    const {userId} = useGithubAuth()
+    const isAdminForZone = useIsAdminForZone()
 
     const items = useMemo(() => {
         const ret: {
@@ -28,13 +66,13 @@ const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
             {label: 'Clients', route: {page: 'clients', zone: route.zone}, icon: <ViewModule />},
             {label: 'Resources', route: {page: 'resources', zone: route.zone}, icon: <ViewModule />}
         ]
-        if ((userId) && (adminUsers.includes(userId.toString()))) {
+        if (isAdminForZone) {
             ret.push({
                 label: 'Admin', route: {page: 'admin', zone: route.zone}, icon: <CropSquare />
             })
         }
         return ret
-    }, [userId, route.zone])
+    }, [route.zone, isAdminForZone])
 
     return (
         <div className="LeftPanel" style={{position: 'absolute', width, height}}>
