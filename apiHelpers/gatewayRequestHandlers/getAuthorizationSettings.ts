@@ -4,7 +4,7 @@ import { getBucket } from "./getBucket"
 import ObjectCache from "./ObjectCache"
 import { getObjectContent } from "./s3Helpers"
 
-const authorizationSettingsCache = new ObjectCache<AuthorizationSettings>(1000 * 60 * 5)
+const authorizationSettingsCache = new ObjectCache<AuthorizationSettings>(1000 * 60 * 3)
 
 const getAuthorizationSettings = async (zone: string) => {
     const a = authorizationSettingsCache.get('main')

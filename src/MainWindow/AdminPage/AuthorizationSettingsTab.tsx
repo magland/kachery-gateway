@@ -134,6 +134,7 @@ const AuthorizationSettingsTab: FunctionComponent<Props> = ({width, height}) => 
 	return (
 		<div style={{overflowY: 'auto', position: 'absolute', width, height}}>
 			<h3>Authorization Settings</h3>
+			<p>Changes may take up to 3 minutes to take effect.</p>
 			<div>
 				<Button disabled={!saveEnabled} onClick={handleSave}>Save</Button>
 				&nbsp;
