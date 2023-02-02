@@ -18,6 +18,14 @@ const AdminUsageTab: FunctionComponent<Props> = ({width, height}) => {
 	}, [usage])
 	return (
 		<div style={{overflowY: 'auto', position: 'absolute', width, height}}>
+			<p>
+				Usage statistics are updated every few hours.
+			</p>
+			<p>
+				Download numbers only reflect the newly-issued pre-signed download URLs.
+				Since those URLs are cached for up to 30 minutes, the actual download
+				numbers could be much higher.
+			</p>
 			<IconButton onClick={refreshUsage} title="Refresh usage"><Refresh /></IconButton>
 			{
 				usage && (
