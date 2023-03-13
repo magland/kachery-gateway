@@ -1,9 +1,7 @@
 import AWS from 'aws-sdk';
 import { sha1OfString } from '../../src/types/keypair';
-import { parseBucketUri } from './s3Helpers';
 import ObjectCache from './ObjectCache';
-import { Bucket } from './s3Helpers';
-import { PutBucketCorsRequest } from 'aws-sdk/clients/s3';
+import { Bucket, parseBucketUri } from './s3Helpers';
 
 interface PutObjectRequestParamsX {
     Bucket: any

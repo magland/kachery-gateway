@@ -1,4 +1,3 @@
-import axios from "axios";
 import { AdminActionRequest, AdminActionResponse } from "../../src/types/GuiRequest";
 import getS3Client from "../gatewayRequestHandlers/getS3Client";
 import { getBucket } from "../gatewayRequestHandlers/getBucket";

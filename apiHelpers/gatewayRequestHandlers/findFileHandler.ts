@@ -8,9 +8,36 @@ import { HeadObjectOutputX } from "./getS3Client"
 import { getBucket, getFallbackBucket } from "./getBucket"
 import ObjectCache from './ObjectCache'
 import { Bucket, getSignedDownloadUrl, headObject } from "./s3Helpers"
+import getAuthorizationSettings from './getAuthorizationSettings'
+import { getClient } from '../common/getDatabaseItems'
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FindFileResponse> => {
     const { hashAlg, hash, zone } = request.payload
+
+    // check the user ID for authorization
+    // but only do all of this is allowPublicDownload is false for this zone
+    const authorizationSettings = await getAuthorizationSettings(zone || 'default')
+    if (authorizationSettings.allowPublicDownload === false) { // be default (when undefined) this is true
+        const clientId = verifiedClientId
+        let userId = verifiedUserId
+        if ((!clientId) && (!userId)) {
+            throw Error('No verified client ID or user ID')
+        }
+
+        if (clientId) {
+            if (userId) {
+                throw Error('Both client ID and user ID provided')
+            }
+            // make sure the client is registered
+            // in the future we will check the owner for authorization
+            const client = await getClient(zone || 'default', clientId.toString())
+            userId = client.ownerId
+        }
+        
+        const u = authorizationSettings.authorizedUsers.find(a => (a.userId === userId))
+        if (!u) throw Error(`User ${userId} is not authorized.`)
+        if (!u.download) throw Error(`User ${userId} not authorized to download files.`)
+    }
 
     return findFile({hashAlg, hash, zone})
 }

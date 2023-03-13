@@ -6,7 +6,7 @@ import { getObjectContent } from "./s3Helpers"
 
 const authorizationSettingsCache = new ObjectCache<AuthorizationSettings>(1000 * 60 * 3)
 
-const getAuthorizationSettings = async (zone: string) => {
+const getAuthorizationSettings = async (zone: string): Promise<AuthorizationSettings> => {
     const a = authorizationSettingsCache.get('main')
     if (a) return a
     const bucket = await getBucket(zone)

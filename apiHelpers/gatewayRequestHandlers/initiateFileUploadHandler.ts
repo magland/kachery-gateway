@@ -1,13 +1,11 @@
-import YAML from 'yaml';
 import { InitiateFileUploadRequest, InitiateFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from "../../src/types/keypair";
 import { getClient } from '../common/getDatabaseItems';
 import { findFile } from "./findFileHandler";
-import { GatewayConfig, isGatewayConfig, loadGatewayConfig } from "./GatewayConfig";
 import getAuthorizationSettings from "./getAuthorizationSettings";
 import { getBucket } from './getBucket';
 import ObjectCache from "./ObjectCache";
-import { Bucket, getSignedUploadUrl } from "./s3Helpers";
+import { getSignedUploadUrl } from "./s3Helpers";
 
 export const MAX_UPLOAD_SIZE = 5 * 1000 * 1000 * 1000
 
