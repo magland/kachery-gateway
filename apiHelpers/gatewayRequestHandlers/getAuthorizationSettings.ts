@@ -7,7 +7,7 @@ import { getObjectContent } from "./s3Helpers"
 const authorizationSettingsCache = new ObjectCache<AuthorizationSettings>(1000 * 60 * 3)
 
 const getAuthorizationSettings = async (zone: string): Promise<AuthorizationSettings> => {
-    const a = authorizationSettingsCache.get('main')
+    const a = authorizationSettingsCache.get(zone)
     if (a) return a
     const bucket = await getBucket(zone)
     let x = (await getObjectContent(bucket, 'settings/authorizationSettings.yaml')).toString()
@@ -15,7 +15,7 @@ const getAuthorizationSettings = async (zone: string): Promise<AuthorizationSett
     if (!isAuthorizationSettings(authorizationSettings)) {
         throw Error('Invalid authorization settings')
     }
-    authorizationSettingsCache.set('main', authorizationSettings)
+    authorizationSettingsCache.set(zone, authorizationSettings)
     return authorizationSettings
 }
 
