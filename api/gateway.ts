@@ -1,5 +1,5 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetResourceInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
+import { isDeleteFileRequest, isFinalizeFileUploadRequest, isFindFileRequest, isGatewayRequest, isGetClientInfoRequest, isGetResourceInfoRequest, isGetZoneInfoRequest, isInitiateFileUploadRequest } from '../src/types/GatewayRequest'
 import { hexToPublicKey, verifySignature } from '../src/crypto/signatures'
 import { NodeId, nodeIdToPublicKeyHex } from '../src/types/keypair'
 import findFileHandler from '../apiHelpers/gatewayRequestHandlers/findFileHandler'
@@ -10,6 +10,7 @@ import getClientInfoHandler from '../apiHelpers/gatewayRequestHandlers/getClient
 import getZoneInfoHandler from '../apiHelpers/gatewayRequestHandlers/getZoneInfoHandler'
 import githubVerifyAccessToken from '../apiHelpers/common/githubVerifyAccessToken'
 import getResourceInfoHandler from '../apiHelpers/gatewayRequestHandlers/getResourceInfoHandler'
+import deleteFileHandler from '../apiHelpers/gatewayRequestHandlers/deleteFileHandler'
 
 module.exports = (req: VercelRequest, res: VercelResponse) => {
     const {body: request} = req
@@ -88,6 +89,10 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             zone = request.payload.zone
             return await finalizeFileUploadHandler(request, verifiedClientId, verifiedUserId)
         }
+        else if (isDeleteFileRequest(request)) {
+            zone = request.payload.zone
+            return await deleteFileHandler(request, verifiedClientId, verifiedUserId)
+        }
         else if (isGetClientInfoRequest(request)) {
             zone = request.payload.zone
             return await getClientInfoHandler(request)
@@ -112,6 +117,9 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             shouldWriteLogItem = true
         }
         if ((request.payload.type === 'findFile') && (response.type === 'findFile') && (!response.cacheHit)) {
+            shouldWriteLogItem = true
+        }
+        if (request.payload.type === 'deleteFile') {
             shouldWriteLogItem = true
         }
         if (shouldWriteLogItem) {

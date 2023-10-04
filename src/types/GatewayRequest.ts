@@ -170,6 +170,57 @@ export const isFinalizeFileUploadResponse = (x: any): x is FinalizeFileUploadRes
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// deleteFile
+
+export type DeleteFileRequest = {
+    payload: {
+        type: 'deleteFile'
+        timestamp: number
+        hashAlg: 'sha1'
+        hash: string
+        zone?: string
+    }
+    fromClientId?: NodeId
+    signature?: Signature
+    githubUserId?: string
+    githubAccessToken?: string
+}
+
+export const isDeleteFileRequest = (x: any): x is DeleteFileRequest => {
+    const isPayload = (y: any) => {
+        return validateObject(y, {
+            type: isEqualTo('deleteFile'),
+            timestamp: isNumber,
+            hashAlg: isEqualTo('sha1'),
+            hash: isString,
+            zone: optional(isString)
+        })
+    }
+    return validateObject(x, {
+        payload: isPayload,
+        fromClientId: optional(isNodeId),
+        signature: optional(isSignature),
+        githubUserId: optional(isString),
+        githubAccessToken: optional(isString)
+    })
+}
+
+export type DeleteFileResponse = {
+    type: 'deleteFile'
+    success: boolean
+    error?: string
+}
+
+export const isDeleteFileResponse = (x: any): x is DeleteFileResponse => {
+    return validateObject(x, {
+        type: isEqualTo('deleteFile'),
+        success: isBoolean,
+        error: optional(isString)
+    })
+}
+
+
+//////////////////////////////////////////////////////////////////////////////////
 // getClientInfo
 
 export type GetClientInfoRequest = {
@@ -318,6 +369,7 @@ export type GatewayRequest =
     FindFileRequest |
     InitiateFileUploadRequest |
     FinalizeFileUploadRequest |
+    DeleteFileRequest |
     GetClientInfoRequest |
     GetResourceInfoRequest |
     GetZoneInfoRequest
@@ -327,6 +379,7 @@ export const isGatewayRequest = (x: any): x is GatewayRequest => {
         isFindFileRequest,
         isInitiateFileUploadRequest,
         isFinalizeFileUploadRequest,
+        isDeleteFileRequest,
         isGetClientInfoRequest,
         isGetResourceInfoRequest,
         isGetZoneInfoRequest
@@ -337,6 +390,7 @@ export type GatewayResponse =
     FindFileResponse |
     InitiateFileUploadResponse |
     FinalizeFileUploadResponse |
+    DeleteFileResponse |
     GetClientInfoResponse |
     GetResourceInfoResponse |
     GetZoneInfoResponse
@@ -346,6 +400,7 @@ export const isGatewayResponse = (x: any): x is GatewayResponse => {
         isFindFileResponse,
         isInitiateFileUploadResponse,
         isFinalizeFileUploadResponse,
+        isDeleteFileResponse,
         isGetClientInfoResponse,
         isGetResourceInfoResponse,
         isGetZoneInfoResponse
