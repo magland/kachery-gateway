@@ -99,6 +99,11 @@ export const copyObject = async (bucket: Bucket, srcKey: string, dstKey: string)
     })
 }
 
+export const renameObject = async (bucket: Bucket, srcKey: string, dstKey: string): Promise<void> => {
+    await copyObject(bucket, srcKey, dstKey)
+    await deleteObject(bucket, srcKey)
+}
+
 export const objectExists = async (bucket: Bucket, key: string): Promise<boolean> => {
     return new Promise<boolean>((resolve, reject) => {
         const s3 = getS3Client(bucket)

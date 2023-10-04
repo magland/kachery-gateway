@@ -6,7 +6,7 @@ import { deleteFromMongoCache, signedUrlObjectCache } from "./findFileHandler";
 import getAuthorizationSettings from "./getAuthorizationSettings";
 import { getBucket, getFallbackBucket } from "./getBucket";
 import { HeadObjectOutputX } from "./getS3Client";
-import { Bucket, deleteObject, headObject } from "./s3Helpers";
+import { Bucket, renameObject, headObject } from "./s3Helpers";
 
 const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<DeleteFileResponse> => {
     const { hash, hashAlg, zone } = request.payload
@@ -66,7 +66,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
         const size = headObjectOutput.ContentLength
         if (size === undefined) throw Error('No ContentLength in headObjectOutput')
 
-        await deleteObject(bucket, objectKey)
+        await renameObject(bucket, objectKey, `trash/${objectKey}`)
         await doDeleteFromCache(bucket.uri)
         return {
             type: 'deleteFile',
@@ -86,7 +86,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
             const size = headObjectOutput.ContentLength
             if (size === undefined) throw Error('No ContentLength in headObjectOutput in fallback bucket')
 
-            await deleteObject(fallbackBucket, objectKey)
+            await renameObject(bucket, objectKey, `trash/${objectKey}`)
             await doDeleteFromCache(fallbackBucket.uri)
             return {
                 type: 'deleteFile',
