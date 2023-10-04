@@ -2,7 +2,7 @@ import { DeleteFileRequest, DeleteFileResponse } from "../../src/types/GatewayRe
 import { NodeId, sha1OfString } from '../../src/types/keypair';
 import { getClient } from "../common/getDatabaseItems";
 import { getMongoClient } from "../common/getMongoClient";
-import { signedUrlObjectCache } from "./findFileHandler";
+import { deleteFromMongoCache, signedUrlObjectCache } from "./findFileHandler";
 import getAuthorizationSettings from "./getAuthorizationSettings";
 import { getBucket, getFallbackBucket } from "./getBucket";
 import { HeadObjectOutputX } from "./getS3Client";
@@ -51,6 +51,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
         if (aa) {
             signedUrlObjectCache.delete(cacheKey)
         }
+        await deleteFromMongoCache(cacheCollection, cacheKey)
     }
 
     // check in Bucket

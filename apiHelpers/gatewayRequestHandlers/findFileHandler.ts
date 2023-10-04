@@ -83,7 +83,7 @@ const setMongoCache = async (cacheCollection: Collection, cacheKey: string, cach
     await cacheCollection.replaceOne({_id: cacheKey}, doc, {upsert: true})
 }
 
-const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey: string) => {
+export const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey: string) => {
     // we are assuming it doesn't throw exception if doesn't exist
     await cacheCollection.deleteOne({_id: cacheKey})
 }
