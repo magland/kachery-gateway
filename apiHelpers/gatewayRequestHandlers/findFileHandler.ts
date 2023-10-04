@@ -56,7 +56,7 @@ const isCacheRecord = (x: any): x is CacheRecord => {
     })
 }
 
-const signedUrlObjectCache = new ObjectCache<CacheRecord>(1000 * 60 * 30)
+export const signedUrlObjectCache = new ObjectCache<CacheRecord>(1000 * 60 * 30)
 
 const checkMongoCache = async (cacheCollection: Collection, cacheKey: string): Promise<CacheRecord | undefined> => {
     let result: any

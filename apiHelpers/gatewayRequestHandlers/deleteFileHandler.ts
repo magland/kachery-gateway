@@ -1,6 +1,8 @@
 import { DeleteFileRequest, DeleteFileResponse } from "../../src/types/GatewayRequest";
-import { NodeId } from '../../src/types/keypair';
+import { NodeId, sha1OfString } from '../../src/types/keypair';
 import { getClient } from "../common/getDatabaseItems";
+import { getMongoClient } from "../common/getMongoClient";
+import { signedUrlObjectCache } from "./findFileHandler";
 import getAuthorizationSettings from "./getAuthorizationSettings";
 import { getBucket, getFallbackBucket } from "./getBucket";
 import { HeadObjectOutputX } from "./getS3Client";
@@ -37,6 +39,20 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
     const h = hash
     const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
 
+    const doDeleteFromCache = async (bucketUri: string) => {
+        // delete from cache
+        const client = await getMongoClient()
+        const cacheCollection = client.db('kachery-gateway').collection('findFileCache')
+
+        // check cache
+        const cacheKey = sha1OfString(`${zone}.${bucketUri}.${objectKey}`).toString()
+        // first check in-memory cache
+        let aa = signedUrlObjectCache.get(cacheKey) // check memory cache
+        if (aa) {
+            signedUrlObjectCache.delete(cacheKey)
+        }
+    }
+
     // check in Bucket
     let headObjectOutput: HeadObjectOutputX | undefined = undefined
     try {
@@ -50,6 +66,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
         if (size === undefined) throw Error('No ContentLength in headObjectOutput')
 
         await deleteObject(bucket, objectKey)
+        await doDeleteFromCache(bucket.uri)
         return {
             type: 'deleteFile',
             success: true
@@ -69,6 +86,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
             if (size === undefined) throw Error('No ContentLength in headObjectOutput in fallback bucket')
 
             await deleteObject(fallbackBucket, objectKey)
+            await doDeleteFromCache(fallbackBucket.uri)
             return {
                 type: 'deleteFile',
                 success: true
