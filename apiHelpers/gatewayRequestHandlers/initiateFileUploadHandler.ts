@@ -42,6 +42,11 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         const client = await getClient(zone || 'default', clientId.toString())
         userId = client.ownerId
     }
+
+    if (userId === 'lmfrnk@gmail.com') {
+        // a one-off ban to force migration to franklab zone
+        throw Error('User banned: please configure to use the appropriate franklab zone')
+    }
     
     // check the user ID for authorization
     const authorizationSettings = await getAuthorizationSettings(zone || 'default')
