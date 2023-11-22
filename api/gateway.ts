@@ -52,10 +52,24 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     const { timestamp } = payload
     const elapsed = Date.now() - timestamp
     if ((elapsed > 30000) || (elapsed < -30000)) { 
-        // Note the range used to be narrower, but was running into problems
-        // For example, got elapsed = -662
-        // Not sure the best way to do this check
-        throw Error(`Invalid timestamp. ${timestamp} ${Date.now()} ${elapsed}`)
+
+        // Vercel started being off by 24 hours! For now let's allow that
+        let okay = false
+        const elapsed2 = Date.now() - timestamp + 24 * 60 * 60 * 1000
+        if ((-30000 < elapsed2) && (elapsed2 < 30000)) {
+            okay = true
+        }
+        const elapsed3 = Date.now() - timestamp - 24 * 60 * 60 * 1000
+        if ((-30000 < elapsed3) && (elapsed3 < 30000)) {
+            okay = true
+        }
+
+        if (!okay) {
+            // Note the range used to be narrower, but was running into problems
+            // For example, got elapsed = -662
+            // Not sure the best way to do this check
+            throw Error(`Invalid timestamp. ${timestamp} ${Date.now()} ${elapsed}`)
+        }
     }
 
     let zone: string | undefined = undefined
