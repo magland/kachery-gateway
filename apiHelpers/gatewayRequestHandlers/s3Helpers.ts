@@ -18,7 +18,7 @@ export const putObject = async (bucket: Bucket, params: PutObjectRequest): Promi
         request.on('error', (err: Error) => {
             reject(new Error(`Error uploading to bucket: ${err.message}`)) 
         })
-        request.on('httpHeaders', (statusCode, headers, response, statusMessage) => {
+        request.on('httpHeaders', (statusCode: any, headers: any, response: any, statusMessage: any) => {
             if (statusCode !== 200) {
                 reject(`Error uploading to bucket * (${statusCode}): ${statusMessage}`)
                 return
@@ -116,7 +116,8 @@ export const objectExists = async (bucket: Bucket, key: string): Promise<boolean
                     resolve(false)
                 }
                 else {
-                    reject(new Error('Unexpected status code for headObject'))
+                    console.warn(err)
+                    reject(new Error(`Unexpected error checking if object exists. It's possible that credentials have expired. Status code ${err.statusCode}`))
                 }
             }
             else {
