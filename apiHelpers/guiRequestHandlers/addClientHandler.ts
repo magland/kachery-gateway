@@ -2,7 +2,7 @@ import { hexToPublicKey, verifySignature } from "../../src/crypto/signatures";
 import { Client } from "../../src/types/Client";
 import { AddClientRequest, AddClientResponse } from "../../src/types/GuiRequest";
 import { nodeIdToPublicKeyHex } from "../../src/types/keypair";
-import { getBucket } from "../gatewayRequestHandlers/getBucket";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 // const MAX_NUM_CLIENTS_PER_USER = 25
@@ -37,9 +37,11 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
     //     Bucket: adminBucketName
     // })
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     const {bucketName} = parseBucketUri(bucket.uri)
-    const key = `clients/${clientId}`
+    const key = joinKeys(zoneInfo.directory, `clients/${clientId}`)
     const exists = await objectExists(bucket, key)
     if (exists) {
         throw Error('Client already exists.')
@@ -49,7 +51,7 @@ const addClientHandler = async (request: AddClientRequest, verifiedUserId?: stri
         Bucket: bucketName,
         Body: JSON.stringify(client, null, 4)
     })
-    const userKey = `users/${client.ownerId}`
+    const userKey = joinKeys(zoneInfo.directory, `users/${ownerId}`)
     let user: {[key: string]: any} = {}
     if (await objectExists(bucket, userKey)) {
         user = JSON.parse(await getObjectContent(bucket, userKey))

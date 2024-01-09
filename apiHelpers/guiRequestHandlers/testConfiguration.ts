@@ -1,8 +1,8 @@
 import { TestConfigurationRequest, TestConfigurationResponse } from "../../src/types/GuiRequest";
 import { getMongoClient } from "../common/getMongoClient";
 import randomAlphaString from "../common/randomAlphaString";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
-import { getBucket } from "../gatewayRequestHandlers/getBucket";
 import { getObjectContent, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 
@@ -16,7 +16,10 @@ const testConfigurationHandler = async (request: TestConfigurationRequest, verif
     }
 
     const { testType, zone } = request
-    const bucket = await getBucket(zone || 'default')
+
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     const {bucketName} = parseBucketUri(bucket.uri)
 
     let passed: boolean
@@ -24,7 +27,7 @@ const testConfigurationHandler = async (request: TestConfigurationRequest, verif
 
     if (testType === 'bucketReadWrite') {
         const x = randomAlphaString(10)
-        const k = 'tests/testReadWrite.txt'
+        const k = joinKeys(zoneInfo.directory, 'tests/testReadWrite.txt')
         await putObject(bucket, {
             Key: k,
             Bucket: bucketName,

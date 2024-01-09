@@ -1,5 +1,5 @@
 import { loadGatewayConfig } from './GatewayConfig'
-import { getBucket } from './getBucket'
+import { getZoneInfo, joinKeys } from './getZoneInfo'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
@@ -9,10 +9,20 @@ type HeaderInfo = {userAgent: string, ip: string, ipCity: string, ipCountry: str
 const analyzeLogs = async () => {
     const gatewayConfig = await loadGatewayConfig()
 
-    for (let zz of gatewayConfig.zones) {
-        const zone = zz.name
-        console.info(`ZONE: ${zone}`)
-        const bucket = await getBucket(zone)
+    const configBuckets = gatewayConfig.buckets || gatewayConfig.zones // .zones is obsolete
+    if (!configBuckets) {
+        throw Error(`No buckets in gateway config`)
+    }
+
+    // hard-coded for now
+    const zoneNames = [
+        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind'
+    ]
+
+    for (const zoneName of zoneNames) {
+        console.info(`ZONE: ${zoneName}`)
+        const zoneInfo = await getZoneInfo(zoneName)
+        const bucket = zoneInfo.bucket
         const { bucketName } = parseBucketUri(bucket.uri)
 
         const clients: {[key: string]: {clientId: string, ownerId: string, headerInfo: HeaderInfo | undefined}} = {}
@@ -96,7 +106,8 @@ const analyzeLogs = async () => {
         for (let logsDirName of ['fallback-logs', 'logs']) {
             let continuationToken: string | undefined = undefined
             while (true) {
-                const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, `${logsDirName}/`, {continuationToken, maxObjects: 500})
+                const dirKey = joinKeys(zoneInfo.directory, logsDirName)
+                const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, `${dirKey}/`, {continuationToken, maxObjects: 500})
                 for (let a of logFiles) {
                     console.info(`Loading ${a.Key} (${a.Size})`)
                     if (a.Size > 0) { // ignore empty files
@@ -194,8 +205,9 @@ const analyzeLogs = async () => {
             totalUsage
         }
 
+        const usageJsonKey = joinKeys(zoneInfo.directory, `usage/usage.json`)
         putObject(bucket, {
-            Key: `usage/usage.json`,
+            Key: usageJsonKey,
             Bucket: bucketName,
             Body: JSON.stringify(usage, null, 4)
         })

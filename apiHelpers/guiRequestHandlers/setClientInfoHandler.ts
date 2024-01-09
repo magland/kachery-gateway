@@ -1,6 +1,6 @@
 import { SetClientInfoRequest, SetClientInfoResponse } from "../../src/types/GuiRequest";
 import { getClient, invalidateClientInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/getBucket";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserId?: string): Promise<SetClientInfoResponse> => {
@@ -16,9 +16,11 @@ const setClientInfoHandler = async (request: SetClientInfoRequest, verifiedUserI
         client.label = label
     }
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     const {bucketName} = parseBucketUri(bucket.uri)
-    const key = `clients/${clientId}`
+    const key = joinKeys(zoneInfo.directory, `clients/${clientId}`)
     await putObject(bucket, {
         Key: key,
         Bucket: bucketName,

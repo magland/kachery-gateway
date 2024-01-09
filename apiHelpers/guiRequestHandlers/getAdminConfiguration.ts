@@ -13,7 +13,8 @@ const getAdminConfigurationHandler = async (request: GetAdminConfigurationReques
         githubClientId: process.env['REACT_APP_GITHUB_CLIENT_ID'],
         githubClientSecret: replaceWithStars(process.env['GITHUB_CLIENT_SECRET']),
         adminUsers: process.env['REACT_APP_ADMIN_USERS'],
-        zoneDirectory: process.env['ZONE_DIRECTORY'],
+        // zoneDirectory: process.env['ZONE_DIRECTORY'],
+        zoneDirectory: 'no-longer-used',
         reCaptchaKey: process.env['REACT_APP_RECAPTCHA_KEY'],
         reCaptchaSecretKey: replaceWithStars(process.env['RECAPTCHA_SECRET_KEY'])
     }

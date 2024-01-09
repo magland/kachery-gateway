@@ -1,27 +1,30 @@
 import * as fs from 'fs'
-import { loadGatewayConfig } from './GatewayConfig'
-import { getBucket } from "./getBucket"
 import { closeMongoClient, getMongoClient } from "./getMongoClient"
+import { getZoneInfo, joinKeys } from './getZoneInfo'
 import { parseBucketUri, putObject } from "./s3Helpers"
 import splitIntoBatches from "./splitIntoBatches"
-import { isLogItem, LogItem } from "./types/LogItem"
+import { LogItem, isLogItem } from "./types/LogItem"
 
 const processLogItems = async () => {
-    const gatewayConfig = await loadGatewayConfig()
-
     const client = await getMongoClient()
 
-    for (let zz of gatewayConfig.zones) {
-        const zone = zz.name
-        console.info(`ZONE: ${zone}`)
+    // hard-coded for now
+    const zoneNames = [
+        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind'
+    ]
 
-        const bucket = await getBucket(zone)
+    for (const zoneName of zoneNames) {
+        console.info(`ZONE: ${zoneName}`)
+
+        const zoneInfo = await getZoneInfo(zoneName)
+
+        const bucket = zoneInfo.bucket
         const {bucketName} = parseBucketUri(bucket.uri)
 
         const logItemsCollection = client.db('kachery-gateway').collection('logItems')
         while (true) {
             const logItems: LogItem[] = []
-            let cursor = logItemsCollection.find({zone}).sort('requestTimestamp', 1).limit(1000)
+            let cursor = logItemsCollection.find({zone: zoneName}).sort('requestTimestamp', 1).limit(1000)
             const results = await cursor.toArray()
             if (results.length === 0) {
                 console.info('No more mongo log items to process.')
@@ -67,7 +70,7 @@ const processLogItems = async () => {
             const logItemsJson = JSON.stringify(logItems) // deterministic stringify can be slow here
             const ts = new Date().toISOString()
             const fname = `log-${ts}.json`
-            const objectKey = `logs/${fname}`
+            const objectKey = joinKeys(zoneInfo.directory, `logs/${fname}`)
             console.info(`Writing ${fname}`)
             fs.writeFileSync(fname, logItemsJson)
             console.info(`Uploading log to bucket ${objectKey}`)

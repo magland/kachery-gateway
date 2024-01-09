@@ -1,6 +1,6 @@
 import { DeleteClientRequest, DeleteClientResponse } from "../../src/types/GuiRequest";
 import { getClient, getUser, invalidateClientInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/getBucket";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { deleteObject, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const deleteClientHandler = async (request: DeleteClientRequest, verifiedUserId?: string): Promise<DeleteClientResponse> => {
@@ -18,10 +18,12 @@ const deleteClientHandler = async (request: DeleteClientRequest, verifiedUserId?
     if (!user) throw Error(`User not found in zone ${zone || 'default'}: ${ownerId}`)
     user['clientIds'] = user['clientIds'].filter(id => (id !== clientId))
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     const {bucketName} = parseBucketUri(bucket.uri)
-    const key = `clients/${clientId}`
-    const userKey = `users/${ownerId}`
+    const key = joinKeys(zoneInfo.directory, `clients/${clientId}`)
+    const userKey = joinKeys(zoneInfo.directory, `users/${ownerId}`)
     await putObject(bucket, {
         Bucket: bucketName,
         Key: userKey,

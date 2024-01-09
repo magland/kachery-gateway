@@ -1,8 +1,7 @@
 import { GetUsageRequest, GetUsageResponse, isUsageRequestUsage, UsageRequestUsage } from "../../src/types/GuiRequest";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
-import { getBucket } from '../gatewayRequestHandlers/getBucket';
 import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers";
-import getUserInfoHandler from "./getUserInfoHandler";
 import isAdminUser from "./helpers/isAdminUser";
 
 const emptyUsage: UsageRequestUsage = {
@@ -25,9 +24,11 @@ const getUsageHandler = async (request: GetUsageRequest, verifiedUserId?: string
 
     const {zone} = request
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     
-    const kk = `usage/usage.json`
+    const kk = joinKeys(zoneInfo.directory, `usage/usage.json`)
     const exists = await objectExists(bucket, kk)
     const usageJson = exists ? await getObjectContent(bucket, kk) : JSON.stringify(emptyUsage)
     const usage = JSON.parse(usageJson)

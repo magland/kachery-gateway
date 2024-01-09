@@ -1,6 +1,6 @@
 import { GetAuthorizationSettingsYamlRequest, GetAuthorizationSettingsYamlResponse } from "../../src/types/GuiRequest";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
-import { getBucket } from '../gatewayRequestHandlers/getBucket';
 import { getObjectContent } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 
@@ -15,11 +15,14 @@ const getAuthorizationSettingsYamlHandler = async (request: GetAuthorizationSett
 
     const { zone } = request
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     
     let authorizationSettingsYaml: string
+    const key = joinKeys(zoneInfo.directory, `settings/authorizationSettings.yaml`)
     try {
-        authorizationSettingsYaml = (await getObjectContent(bucket, `settings/authorizationSettings.yaml`)).toString()
+        authorizationSettingsYaml = (await getObjectContent(bucket, key)).toString()
     }
     catch(err) {
         return {

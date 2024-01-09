@@ -116,6 +116,7 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
             return await getResourceInfoHandler(request)
         }
         else if (isGetZoneInfoRequest(request)) {
+            // obsolete, but still used by old python clients
             zone = request.payload.zoneName
             return await getZoneInfoHandler(request)
         }

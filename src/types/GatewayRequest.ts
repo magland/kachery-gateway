@@ -319,6 +319,8 @@ export const isGetResourceInfoResponse = (x: any): x is GetResourceInfoResponse 
 //////////////////////////////////////////////////////////////////////////////////
 // getZoneInfo
 
+// obsolete, but still needed for now to support old python clients
+
 export type GetZoneInfoRequest = {
     payload: {
         type: 'getZoneInfo'

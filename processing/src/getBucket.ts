@@ -1,15 +1,19 @@
 import { loadGatewayConfig } from "./GatewayConfig"
 import { Bucket } from "./s3Helpers"
 
-export const getBucket = async (zone: string) => {
+export const getBucket = async (bucketName: string) => {
     const gatewayConfig = await loadGatewayConfig()
-    const zz = gatewayConfig.zones.filter(z => (z.name === zone))[0]
-    if (!zz) {
-        throw Error(`Zone not found: ${zone}`)
+    const configBuckets = gatewayConfig.buckets || gatewayConfig.zones // .zones is obsolete
+    if (!configBuckets) {
+        throw Error(`No buckets in gateway config`)
+    }
+    const bb = configBuckets.filter(buck => (buck.name === bucketName))[0]
+    if (!bb) {
+        throw Error(`Bucket not found: ${bucketName}`)
     }
     const bucket: Bucket = {
-        uri: zz.bucketUri,
-        credentials: zz.bucketCredentials
+        uri: bb.bucketUri,
+        credentials: bb.bucketCredentials
     }
     if (!bucket.uri) {
         throw Error(`No bucket URI`)
@@ -20,19 +24,23 @@ export const getBucket = async (zone: string) => {
     return bucket
 }
 
-export const getFallbackBucket = async (zone: string) => {
+export const getFallbackBucket = async (bucketName: string) => {
     const gatewayConfig = await loadGatewayConfig()
-    const zz = gatewayConfig.zones.filter(z => (z.name === zone))[0]
-    if (!zz) {
-        throw Error(`Zone not found: ${zone}`)
+    const configBuckets = gatewayConfig.buckets || gatewayConfig.zones // .zones is obsolete
+    if (!configBuckets) {
+        throw Error(`No buckets in gateway config`)
+    }
+    const bb = configBuckets.filter(buck => (buck.name === bucketName))[0]
+    if (!bb) {
+        throw Error(`Zone not found: ${bucketName}`)
     }
 
-    if (!zz.fallbackBucketUri) {
+    if (!bb.fallbackBucketUri) {
         return undefined
     }
     const bucket: Bucket = {
-        uri: zz.fallbackBucketUri || '',
-        credentials: zz.fallbackBucketCredentials || ''
+        uri: bb.fallbackBucketUri || '',
+        credentials: bb.fallbackBucketCredentials || ''
     }
     if (!bucket.uri) {
         throw Error(`No fallback bucket URI`)

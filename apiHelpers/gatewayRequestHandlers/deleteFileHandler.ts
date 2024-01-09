@@ -4,9 +4,9 @@ import { getClient } from "../common/getDatabaseItems";
 import { getMongoClient } from "../common/getMongoClient";
 import { deleteFromMongoCache, signedUrlObjectCache } from "./findFileHandler";
 import getAuthorizationSettings from "./getAuthorizationSettings";
-import { getBucket, getFallbackBucket } from "./getBucket";
 import { HeadObjectOutputX } from "./getS3Client";
-import { Bucket, renameObject, headObject } from "./s3Helpers";
+import { getZoneInfo, joinKeys } from "./getZoneInfo";
+import { Bucket, headObject, renameObject } from "./s3Helpers";
 
 const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<DeleteFileResponse> => {
     const { hash, hashAlg, zone } = request.payload
@@ -33,11 +33,14 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
     if (!u) throw Error(`User ${userId} is not authorized.`)
     if (!u.admin) throw Error(`User ${userId} not authorized to delete files.`)
 
-    const bucket = await getBucket(zone || 'default')
-    const fallbackBucket: Bucket | undefined = await getFallbackBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
+    const fallbackBucket: Bucket | undefined = zoneInfo.fallbackBucket
 
     const h = hash
-    const objectKey = `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+    const objectKey = joinKeys(zoneInfo.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
+    const trashObjectKey = joinKeys(zoneInfo.directory, `trash/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
 
     const doDeleteFromCache = async (bucketUri: string) => {
         // delete from cache
@@ -66,7 +69,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
         const size = headObjectOutput.ContentLength
         if (size === undefined) throw Error('No ContentLength in headObjectOutput')
 
-        await renameObject(bucket, objectKey, `trash/${objectKey}`)
+        await renameObject(bucket, objectKey, trashObjectKey)
         await doDeleteFromCache(bucket.uri)
         return {
             type: 'deleteFile',
@@ -86,7 +89,7 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
             const size = headObjectOutput.ContentLength
             if (size === undefined) throw Error('No ContentLength in headObjectOutput in fallback bucket')
 
-            await renameObject(bucket, objectKey, `trash/${objectKey}`)
+            await renameObject(bucket, objectKey, trashObjectKey)
             await doDeleteFromCache(fallbackBucket.uri)
             return {
                 type: 'deleteFile',

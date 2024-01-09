@@ -1,9 +1,9 @@
 import { AdminActionRequest, AdminActionResponse } from "../../src/types/GuiRequest";
+import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
 import getS3Client from "../gatewayRequestHandlers/getS3Client";
-import { getBucket } from "../gatewayRequestHandlers/getBucket";
+import { getZoneInfo } from "../gatewayRequestHandlers/getZoneInfo";
 import { parseBucketUri } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
-import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
 
 const corsXmlBody = `<?xml version="1.0" encoding="UTF-8"?>  
 <CORSConfiguration xmlns="http://s3.amazonaws.com/doc/2006-03-01/">  
@@ -30,7 +30,8 @@ const adminActionHandler = async (request: AdminActionRequest, verifiedUserId?: 
     let success: boolean
 
     if (actionType === 'setBucketCORS') {
-        const bucket = await getBucket(zone || 'default')
+        const zoneInfo = await getZoneInfo(zone || 'default')
+        const bucket = zoneInfo.bucket
         const {bucketName} = parseBucketUri(bucket.uri)
         const client = getS3Client(bucket)
 

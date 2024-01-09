@@ -1,8 +1,8 @@
 import { FinalizeFileUploadRequest, FinalizeFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from '../../src/types/keypair';
 import { getClient } from "../common/getDatabaseItems";
+import { getZoneInfo } from "./getZoneInfo";
 import getAuthorizationSettings from "./getAuthorizationSettings";
-import { getBucket } from "./getBucket";
 import { MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
 import { deleteObject, headObject } from "./s3Helpers";
 
@@ -33,7 +33,14 @@ const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, ver
         if (!u.upload) throw Error(`User ${userId} not authorized to upload files.`)
     }
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+    const bucket = zoneInfo.bucket
+
+    if (zoneInfo.directory) {
+        if (!objectKey.startsWith(zoneInfo.directory + '/')) {
+            throw Error(`Unexpected objectKey for zone with directory: ${objectKey}`)
+        }
+    }
 
     const x = await headObject(bucket, objectKey)
     const size0 = x.ContentLength
@@ -51,7 +58,7 @@ const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, ver
 
     // in case we want to copy it on finalize
     // const h = hash
-    // const newObjectKey = `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`
+    // const newObjectKey = joinKeys(zoneInfo.directory, `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
     // await copyObject(bucket, objectKey, newObjectKey)
     // await deleteObject(bucket, objectKey)
 

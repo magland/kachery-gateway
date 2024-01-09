@@ -1,6 +1,6 @@
 import { SetResourceInfoRequest, SetResourceInfoResponse } from "../../src/types/GuiRequest";
 import { getResource, invalidateResourceInCache } from "../common/getDatabaseItems";
-import { getBucket } from "../gatewayRequestHandlers/getBucket";
+import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const setResourceInfoHandler = async (request: SetResourceInfoRequest, verifiedUserId?: string): Promise<SetResourceInfoResponse> => {
@@ -16,9 +16,11 @@ const setResourceInfoHandler = async (request: SetResourceInfoRequest, verifiedU
         resource.proxyUrl = proxyUrl
     }
 
-    const bucket = await getBucket(zone || 'default')
+    const zoneInfo = await getZoneInfo(zone || 'default')
+
+    const bucket = zoneInfo.bucket
     const {bucketName} = parseBucketUri(bucket.uri)
-    const key = `resources/${resourceName}`
+    const key = joinKeys(zoneInfo.directory, `resources/${resourceName}`)
     await putObject(bucket, {
         Key: key,
         Bucket: bucketName,
