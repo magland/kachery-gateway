@@ -16,6 +16,7 @@ import ResourcePage from './ResourcePage';
 import ResourcesTable from './ResourcesTable';
 import useRoute from './useRoute';
 import ZonesTable from './ZonesTable';
+import ZonePage from './ZonePage';
 
 type Props = {
 }
@@ -99,6 +100,10 @@ const MainWindow: FunctionComponent<Props> = () => {
                             ) : route.page === 'resource' ? (
                                 <ResourcePage
                                     resourceName={route.resourceName}
+                                />
+                            ) : route.page === 'zone' ? (
+                                <ZonePage
+                                    zoneName={route.zone}
                                 />
                             ) : <span>Unexpected page {(route as any).page}</span>
                         ) : (

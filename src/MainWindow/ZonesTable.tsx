@@ -14,9 +14,9 @@ type Props = {
 const ZonesTable: FunctionComponent<Props> = () => {
     const createZoneVisible = useVisible()
 
-    const {route, setRoute} = useRoute()
+    const {setRoute} = useRoute()
 
-    const { zones, refreshZones, deleteZone, addZone } = useZones()
+    const { zoneInfos, refreshZones, deleteZone, addZone } = useZones()
 
     const columns = useMemo(() => ([
         {
@@ -28,7 +28,7 @@ const ZonesTable: FunctionComponent<Props> = () => {
             label: 'Owner'
         },
         {
-            kay: 'bucketName',
+            key: 'bucketName',
             label: 'Bucket'
         },
         {
@@ -38,30 +38,30 @@ const ZonesTable: FunctionComponent<Props> = () => {
     ]), [])
 
     const rows = useMemo(() => (
-        (zones || []).map((zone) => {
+        (zoneInfos || []).map((zoneInfo) => {
             return {
-                key: zone.zone,
+                key: zoneInfo.zone,
                 columnValues: {
                     zone: {
-                        text: zone.zoneName,
-                        element: <Hyperlink onClick={() => {setRoute({page: 'zone', zoneName: zone.zone})}}>
-                            {zone.zone}
+                        text: zoneInfo.zone,
+                        element: <Hyperlink onClick={() => {setRoute({page: 'zone', zone: zoneInfo.zone})}}>
+                            {zoneInfo.zone}
                         </Hyperlink>
                     },
-                    ownerId: zone.ownerId,
-                    bucketName: zone.bucketName,
-                    directory: zone.directory
+                    ownerId: zoneInfo.ownerId,
+                    bucketName: zoneInfo.bucketName,
+                    directory: zoneInfo.directory
                 }
             }
         })
-    ), [zones, setRoute, route.zone])
+    ), [zoneInfos, setRoute])
 
     const handleDeleteZone = useCallback((zoneName: string) => {
         deleteZone(zoneName)
     }, [deleteZone])
 
-    const handleCreateZone = useCallback((zoneName: string, proxyUrl: string) => {
-        addZone(zoneName, proxyUrl, {navigateToZonePage: true})
+    const handleCreateZone = useCallback((zoneName: string, directory: string) => {
+        addZone(zoneName, directory, {navigateToZonePage: true})
     }, [addZone])
 
     return (
@@ -85,7 +85,7 @@ const ZonesTable: FunctionComponent<Props> = () => {
                 onDeleteRow={handleDeleteZone}
             />
             {
-                !zones ? (
+                !zoneInfos ? (
                     <div>Loading zones...</div>
                 ) : <span />
             }

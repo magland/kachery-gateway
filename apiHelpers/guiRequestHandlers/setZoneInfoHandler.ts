@@ -14,11 +14,19 @@ const setZoneInfoHandler = async (request: SetZoneInfoRequest, verifiedUserId?: 
     let somethingChanged = false
 
     if (bucketName !== undefined) {
+        if (bucketName !== 'default') {
+            throw Error('Only default bucket is supported')
+        }
         somethingChanged = true
         zoneInfo.bucketName = bucketName
     }
 
+    const newZone = zone || zoneInfo.zone
+
     if (directory !== undefined) {
+        if (directory !== `zones/${newZone}`) {
+            throw Error(`Invalid directory. Must be zones/${newZone}`)
+        }
         somethingChanged = true
         zoneInfo.directory = directory
     }

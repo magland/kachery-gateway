@@ -4,12 +4,13 @@ import useErrorMessage from "../errorMessageContext/useErrorMessage"
 import { useGithubAuth } from "../GithubAuth/useGithubAuth"
 import { AddZoneRequest, DeleteZoneRequest, GetZonesRequest, isAddZoneResponse, isDeleteZoneResponse, isGetZonesResponse } from "../types/GuiRequest"
 import useRoute from "./useRoute"
+import { ZoneInfo } from "../types/ZoneInfo"
 
 const useZones = () => {
     const [zoneInfos, setZoneInfos] = useState<ZoneInfo[] | undefined>(undefined)
     const { userId, accessToken } = useGithubAuth()
     const [refreshCode, setRefreshCode] = useState<number>(0)
-    const refreshResources = useCallback(() => {
+    const refreshZones = useCallback(() => {
         setRefreshCode(c => (c + 1))
     }, [])
     const {setErrorMessage} = useErrorMessage()
@@ -19,72 +20,69 @@ const useZones = () => {
         let canceled = false
         ; (async () => {
             setErrorMessage('')
-            setResources(undefined)
+            setZoneInfos(undefined)
             if (!userId) return
-            const req: GetResourcesRequest = {
-                type: 'getResources',
-                zone: route.zone,
+            const req: GetZonesRequest = {
+                type: 'getZones',
                 userId,
                 auth: { userId, githubAccessToken: accessToken }
             }
             const resp = await guiApiRequest(req, { reCaptcha: false, setErrorMessage })
             if (!resp) return
-            if (!isGetResourcesResponse(resp)) {
+            if (!isGetZonesResponse(resp)) {
                 console.warn(resp)
                 throw Error('Unexpected response')
             }
             console.log(resp)
             if (canceled) return
-            setResources(resp.resources)
+            setZoneInfos(resp.zones)
         })()
         return () => { canceled = true }
     }, [userId, accessToken, refreshCode, setErrorMessage, route.zone])
 
     const {setRoute} = useRoute()
 
-    const addResource = useCallback((resourceName: string, proxyUrl: string, o: {navigateToResourcePage?: boolean}) => {
+    const addZone = useCallback((zoneName: string, directory: string, o: {navigateToZonePage?: boolean}) => {
         if (!userId) return
             ; (async () => {
-                const req: AddResourceRequest = {
-                    type: 'addResource',
-                    resourceName,
+                const req: AddZoneRequest = {
+                    type: 'addZone',
+                    zone: zoneName,
                     ownerId: userId,
-                    proxyUrl,
-                    zone: route.zone,
+                    bucketName: 'default',
+                    directory,
                     auth: { userId, githubAccessToken: accessToken }
                 }
                 const resp = await guiApiRequest(req, { reCaptcha: true, setErrorMessage })
                 if (!resp) return
-                if (!isAddResourceResponse(resp)) {
+                if (!isAddZoneResponse(resp)) {
                     throw Error('Unexpected response')
                 }
-                if (o.navigateToResourcePage) {
-                    setRoute({page: 'resource', resourceName, zone: route.zone})
+                if (o.navigateToZonePage) {
+                    setRoute({page: 'zone', zone: zoneName})
                 }
-                refreshResources()
+                refreshZones()
             })()
-    }, [userId, accessToken, refreshResources, setErrorMessage, setRoute, route.zone])
+    }, [userId, accessToken, refreshZones, setErrorMessage, setRoute])
 
-    const deleteResource = useCallback((resourceName: string) => {
+    const deleteZone = useCallback((zoneName: string) => {
         if (!userId) return
             ; (async () => {
-                const req: DeleteResourceRequest = {
-                    type: 'deleteResource',
-                    resourceName,
-                    zone: route.zone,
-                    ownerId: userId,
+                const req: DeleteZoneRequest = {
+                    type: 'deleteZone',
+                    zone: zoneName,
                     auth: { userId, githubAccessToken: accessToken }
                 }
                 const resp = await guiApiRequest(req, { reCaptcha: true, setErrorMessage })
                 if (!resp) return
-                if (!isDeleteResourceResponse(resp)) {
+                if (!isDeleteZoneResponse(resp)) {
                     throw Error('Unexpected response')
                 }
-                refreshResources()
+                refreshZones()
             })()
-    }, [userId, accessToken, refreshResources, setErrorMessage, route.zone])
+    }, [userId, accessToken, refreshZones, setErrorMessage])
 
-    return { resources, refreshResources, addResource, deleteResource }
+    return { zoneInfos, refreshZones, addZone, deleteZone }
 }
 
-export default useResources
+export default useZones

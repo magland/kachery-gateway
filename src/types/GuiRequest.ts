@@ -709,6 +709,10 @@ export type GuiResponse =
     DeleteResourceResponse |
     GetResourcesResponse |
     SetResourceInfoResponse |
+    AddZoneResponse |
+    DeleteZoneResponse |
+    GetZonesResponse |
+    SetZoneInfoResponse |
     GetUserInfoResponse |
     GetUsageResponse |
     GetAdminConfigurationResponse |
@@ -727,6 +731,10 @@ export const isGuiResponse = (x: any): x is GuiResponse => {
         isDeleteResourceResponse,
         isGetResourcesResponse,
         isSetResourceInfoResponse,
+        isAddZoneResponse,
+        isDeleteZoneResponse,
+        isGetZonesResponse,
+        isSetZoneInfoResponse,
         isGetUserInfoResponse,
         isGetUsageResponse,
         isGetAdminConfigurationResponse,

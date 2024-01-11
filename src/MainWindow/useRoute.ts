@@ -24,6 +24,9 @@ export type Route = {
     resourceName: string
     zone: string
 } | {
+    page: 'zone'
+    zone: string
+} | {
     page: 'registerClient',
     clientId: NodeId,
     signature: Signature,
@@ -83,6 +86,15 @@ const useRoute = () => {
             }
         }
     }
+    else if (p.startsWith('/zone/')) {
+        const x = p.split('/')
+        if (x.length === 3) {
+            route = {
+                page: 'zone',
+                zone: x[2]
+            }
+        }
+    }
     else if (p.startsWith('/registerClient')) {
         const x = p.split('/')
         if (x.length === 3) {
@@ -136,6 +148,9 @@ const useRoute = () => {
         else if (route.page === 'resource') {
             pathname2 = `/resource/${route.resourceName}`
             query2['zone'] = route.zone
+        }
+        else if (route.page === 'zone') {
+            pathname2 = `/zone/${route.zone}`
         }
         else if (route.page === 'registerClient') {
             pathname2 = `/registerClient/${route.clientId}`

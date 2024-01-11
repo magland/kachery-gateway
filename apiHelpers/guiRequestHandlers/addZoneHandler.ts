@@ -1,4 +1,5 @@
 import { AddZoneRequest, AddZoneResponse } from "../../src/types/GuiRequest";
+import { ZoneInfo } from "../gatewayRequestHandlers/ZoneInfo";
 import { getZoneData, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
@@ -6,6 +7,13 @@ const MAX_NUM_ZONES_PER_USER = 5
 
 const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string): Promise<AddZoneResponse> => {
     const { zone, ownerId, bucketName, directory } = request
+
+    if (bucketName !== 'default') {
+        throw Error('Only default bucket is supported')
+    }
+    if (directory !== `zones/${zone}`) {
+        throw Error(`Invalid directory. Must be zones/${zone}`)
+    }
 
     if (ownerId !== verifiedUserId) {
         throw Error('Mismatch between ownerId and verifiedUserId')
@@ -30,21 +38,26 @@ const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string):
     if (exists) {
         throw Error('Zone already registered.')
     }
+    const zoneInfo: ZoneInfo = {
+        zone,
+        ownerId,
+        bucketName,
+        directory
+    }
     await putObject(defaultBucket, {
         Key: zoneKey,
         Bucket: defaultBucketName,
-        Body: JSON.stringify({
-            ownerId,
-            bucketName,
-            directory
-        }, null, 4)
+        Body: JSON.stringify(zoneInfo, null, 4)
     })
-    user['zones'] = [...(user['zones'] || []), zone]
-    await putObject(defaultBucket, {
-        Key: userKey,
-        Body: JSON.stringify(user, null, 4),
-        Bucket: defaultBucketName
-    })
+    const existingUserZones = user['zones'] || []
+    if (!existingUserZones.includes(zone)) {
+        user['zones'] = [...existingUserZones, zone]
+        await putObject(defaultBucket, {
+            Key: userKey,
+            Body: JSON.stringify(user, null, 4),
+            Bucket: defaultBucketName
+        })
+    }
     
     return {
         type: 'addZone',

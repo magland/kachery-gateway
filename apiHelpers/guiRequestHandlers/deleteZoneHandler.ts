@@ -1,5 +1,5 @@
 import { DeleteZoneRequest, DeleteZoneResponse } from "../../src/types/GuiRequest";
-import { getUser } from "../common/getDatabaseItems";
+import { getUser, invalidateUserInCache } from "../common/getDatabaseItems";
 import { ZoneData, getZoneData, invalidateZoneInfoInCache, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { deleteObject, getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
@@ -24,8 +24,8 @@ const deleteZoneHandler = async (request: DeleteZoneRequest, verifiedUserId?: st
     user['zones'] = user['zones'].filter((zn: string) => (zn !== zone))
 
     const {bucketName: defaultBucketName} = parseBucketUri(defaultBucket.uri)
-    const registeredZoneKey = joinKeys(zoneInfo.directory, `registered-zones/${zone}`)
-    const userKey = joinKeys(zoneInfo.directory, `users/${zoneInfo.ownerId}`)
+    const registeredZoneKey = `registered-zones/${zone}`
+    const userKey = `users/${zoneInfo.ownerId}`
     await putObject(defaultBucket, {
         Bucket: defaultBucketName,
         Key: userKey,
@@ -33,6 +33,7 @@ const deleteZoneHandler = async (request: DeleteZoneRequest, verifiedUserId?: st
     })
     await deleteObject(defaultBucket, registeredZoneKey)
 
+    invalidateUserInCache('default', zoneInfo.ownerId)
     invalidateZoneInfoInCache(zone)
 
     return {
