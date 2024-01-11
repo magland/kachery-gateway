@@ -61,7 +61,7 @@ const ZonesTable: FunctionComponent<Props> = () => {
     }, [deleteZone])
 
     const handleCreateZone = useCallback((zoneName: string, directory: string) => {
-        addZone(zoneName, directory, {navigateToZonePage: true})
+        addZone(zoneName, directory, {navigateToZonePage: false})
     }, [addZone])
 
     return (

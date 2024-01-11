@@ -5,7 +5,7 @@ import { parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 const setZoneInfoHandler = async (request: SetZoneInfoRequest, verifiedUserId?: string): Promise<SetZoneInfoResponse> => {
     const { zone, bucketName, directory } = request
 
-    const zoneInfo = await getZoneInfo(zone)
+    const zoneInfo = await getZoneInfo(zone, {skipCache: true})
 
     if (zoneInfo.ownerId !== verifiedUserId) {
         throw Error('Not authorized to set resource info')

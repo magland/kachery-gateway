@@ -1,6 +1,7 @@
 import { Button, Table, TableBody, TableCell, TableRow } from '@material-ui/core'
 import useErrorMessage from '../errorMessageContext/useErrorMessage'
 import { FunctionComponent, useCallback, useMemo, useState } from 'react'
+import { useGithubAuth } from '../GithubAuth/useGithubAuth'
 
 type Props = {
     onClose?: () => void
@@ -10,6 +11,8 @@ type Props = {
 const CreateZoneControl: FunctionComponent<Props> = ({onClose, onCreate}) => {
     const [editZoneName, setEditZoneName] = useState<string>('')
     const {setErrorMessage} = useErrorMessage()
+
+    const {userId} = useGithubAuth()
     
     const handleCreate = useCallback(() => {
         setErrorMessage('')
@@ -23,8 +26,22 @@ const CreateZoneControl: FunctionComponent<Props> = ({onClose, onCreate}) => {
     const handleChangeZoneName = useCallback((event: any) => {
         setEditZoneName(event.target.value)
     }, [])
+    if (!userId) {
+        return (
+            <div>
+                <p>
+                    IMPORTANT: you must be signed in to GitHub to add a zone.
+                </p>
+                {onClose && <Button onClick={onClose}>Cancel</Button>}
+            </div>
+        )
+    }
     return (
         <div>
+            <p style={{color: 'red'}}>
+                IMPORTANT: if you are not an admin user, then the zone name must be&nbsp;
+                "{userId}" or "{userId}.[something]", where {userId} is your GitHub user ID.
+            </p>
             <Table style={{maxWidth: 400}}>
                 <TableBody>
                     <TableRow>

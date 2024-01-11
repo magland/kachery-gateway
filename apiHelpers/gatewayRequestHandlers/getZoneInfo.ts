@@ -14,10 +14,12 @@ export type ZoneData = {
 const expirationMSec = 60 * 1000
 const zoneInfoObjectCache = new ObjectCache<ZoneInfo>(expirationMSec)
 
-export const getZoneInfo = async (zone: string): Promise<ZoneInfo> => {
-    const x = zoneInfoObjectCache.get(zone)
-    if (x) {
-        return x
+export const getZoneInfo = async (zone: string, o: {skipCache?: boolean}={}): Promise<ZoneInfo> => {
+    if (!o.skipCache) {
+        const x = zoneInfoObjectCache.get(zone)
+        if (x) {
+            return x
+        }
     }
 
     // hard-coded these for now, until we get them from the database
@@ -75,8 +77,8 @@ export const getZoneInfo = async (zone: string): Promise<ZoneInfo> => {
     return ret
 }
 
-export const getZoneData = async (zone: string): Promise<ZoneData> => {
-    const zoneInfo = await getZoneInfo(zone)
+export const getZoneData = async (zone: string, o: {skipCache?: boolean}={}): Promise<ZoneData> => {
+    const zoneInfo = await getZoneInfo(zone, o)
     const {ownerId, bucketName, directory} = zoneInfo
     const ret: ZoneData = {
         zone,

@@ -6,7 +6,7 @@ import { deleteObject, getObjectContent, objectExists, parseBucketUri, putObject
 const deleteZoneHandler = async (request: DeleteZoneRequest, verifiedUserId?: string): Promise<DeleteZoneResponse> => {
     const { zone } = request
 
-    const defaultZoneData = await getZoneData('default')
+    const defaultZoneData = await getZoneData('default', {skipCache: true})
     const defaultBucket = defaultZoneData.bucket
 
     const zoneKey = `registered-zones/${zone}`

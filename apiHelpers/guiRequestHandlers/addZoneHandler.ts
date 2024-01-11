@@ -1,7 +1,9 @@
 import { AddZoneRequest, AddZoneResponse } from "../../src/types/GuiRequest";
+import { invalidateUserInCache } from "../common/getDatabaseItems";
 import { ZoneInfo } from "../gatewayRequestHandlers/ZoneInfo";
-import { getZoneData, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
+import { getZoneData, invalidateZoneInfoInCache, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { getObjectContent, objectExists, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
+import isAdminUser from "./helpers/isAdminUser";
 
 const MAX_NUM_ZONES_PER_USER = 5
 
@@ -19,7 +21,13 @@ const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string):
         throw Error('Mismatch between ownerId and verifiedUserId')
     }
 
-    const defaultZoneData = await getZoneData('default')
+    if (!isAdminUser(ownerId)) {
+        if ((zone !== ownerId) && (!zone.startsWith(ownerId + '.'))) {
+            throw Error(`Invalid zone name for non-admin user: ${zone}`)
+        }
+    }
+
+    const defaultZoneData = await getZoneData('default', {skipCache: true})
 
     const defaultBucket = defaultZoneData.bucket
     const {bucketName: defaultBucketName} = parseBucketUri(defaultBucket.uri)
@@ -33,7 +41,7 @@ const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string):
         throw Error(`Maximum number of zones per user is ${MAX_NUM_ZONES_PER_USER}`)
     }
 
-    const zoneKey = joinKeys(defaultZoneData.directory, `registered-zones/${zone}`)
+    const zoneKey = `registered-zones/${zone}`
     const exists = await objectExists(defaultBucket, zoneKey)
     if (exists) {
         throw Error('Zone already registered.')
@@ -58,6 +66,9 @@ const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string):
             Bucket: defaultBucketName
         })
     }
+
+    invalidateZoneInfoInCache(zone)
+    invalidateUserInCache('default', ownerId)
     
     return {
         type: 'addZone',

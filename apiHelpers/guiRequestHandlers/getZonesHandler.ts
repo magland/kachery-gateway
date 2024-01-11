@@ -10,7 +10,7 @@ const getZonesHandler = async (request: GetZonesRequest, verifiedUserId?: string
         throw Error('Not authorized')
     }
 
-    const defaultZoneData = await getZoneData('default')
+    const defaultZoneData = await getZoneData('default', { skipCache: true })
 
     const defaultBucket = defaultZoneData.bucket
 
