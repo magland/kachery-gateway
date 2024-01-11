@@ -3,7 +3,7 @@ import { NodeId } from "../../src/types/keypair";
 import { getClient } from '../common/getDatabaseItems';
 import { findFile } from "./findFileHandler";
 import getAuthorizationSettings from "./getAuthorizationSettings";
-import { getZoneInfo, joinKeys } from "./getZoneInfo";
+import { getZoneData, joinKeys } from "./getZoneInfo";
 import ObjectCache from "./ObjectCache";
 import { getSignedUploadUrl } from "./s3Helpers";
 
@@ -64,15 +64,15 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         }
     }
 
-    const zoneInfo = await getZoneInfo(zone || 'default')
+    const zoneData = await getZoneData(zone || 'default')
 
     const h = hash
     // in case we want to copy on finalize
     // const objectKey = joinKeys(zoneInfo.directory, `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}.upload.${randomAlphaString(8)}`)
     // const objectKey = joinKeys(zoneInfo.directory, `uploads/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
-    const objectKey = joinKeys(zoneInfo.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
+    const objectKey = joinKeys(zoneData.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
 
-    const bucket = zoneInfo.bucket
+    const bucket = zoneData.bucket
     const signedUploadUrl = await getSignedUploadUrl(bucket, objectKey)
 
     /////////////////////////////////////////////////////////////////////
@@ -101,7 +101,5 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         signedUploadUrl
     }
 }
-
-
 
 export default initiateFileUploadHandler

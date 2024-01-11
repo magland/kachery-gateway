@@ -3,13 +3,13 @@ import { FileRecord, isFileRecord } from '../../src/types/FileRecord'
 import { FindFileRequest, FindFileResponse } from "../../src/types/GatewayRequest"
 import { NodeId, sha1OfString } from "../../src/types/keypair"
 import validateObject, { isNumber, isString } from '../../src/types/validateObject'
-import { getMongoClient } from '../common/getMongoClient'
-import { HeadObjectOutputX } from "./getS3Client"
-import ObjectCache from './ObjectCache'
-import { getSignedDownloadUrl, headObject } from "./s3Helpers"
-import getAuthorizationSettings from './getAuthorizationSettings'
 import { getClient } from '../common/getDatabaseItems'
-import { getZoneInfo, joinKeys } from './getZoneInfo'
+import { getMongoClient } from '../common/getMongoClient'
+import ObjectCache from './ObjectCache'
+import getAuthorizationSettings from './getAuthorizationSettings'
+import { HeadObjectOutputX } from "./getS3Client"
+import { getZoneData, joinKeys } from './getZoneInfo'
+import { getSignedDownloadUrl, headObject } from "./s3Helpers"
 
 const findFileHandler = async (request: FindFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<FindFileResponse> => {
     const { hashAlg, hash, zone } = request.payload
@@ -91,18 +91,18 @@ export const deleteFromMongoCache = async (cacheCollection: Collection, cacheKey
 export const findFile = async (o: {hashAlg: string, hash: string, zone: string | undefined, noFallback?: boolean}): Promise<FindFileResponse> => {
     const {hashAlg, hash, zone} = o
 
-    const zoneInfo = await getZoneInfo(zone || 'default')
+    const zoneData = await getZoneData(zone || 'default')
 
     let fileRecord: FileRecord | undefined = undefined
 
     const h = hash
-    const objectKey = joinKeys(zoneInfo.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
+    const objectKey = joinKeys(zoneData.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
 
     const client = await getMongoClient()
     const cacheCollection = client.db('kachery-gateway').collection('findFileCache')
 
     // check cache
-    const cacheKey = sha1OfString(`${zone}.${zoneInfo.bucket.uri}.${objectKey}`).toString()
+    const cacheKey = sha1OfString(`${zone}.${zoneData.bucket.uri}.${objectKey}`).toString()
     // first check in-memory cache
     // this will only be available for the lifetime of the serverless function server instance
     let aa = signedUrlObjectCache.get(cacheKey) // check memory cache
@@ -110,7 +110,7 @@ export const findFile = async (o: {hashAlg: string, hash: string, zone: string |
         // check db cache
         aa = await checkMongoCache(cacheCollection, cacheKey)
     }
-    if ((aa) && (zoneInfo.fallbackBucket) && (o.noFallback) && (aa.fileRecord.bucketUri === zoneInfo.fallbackBucket?.uri)) {
+    if ((aa) && (zoneData.fallbackBucket) && (o.noFallback) && (aa.fileRecord.bucketUri === zoneData.fallbackBucket?.uri)) {
         // if the cached record is a fallback cache record
         // and o.noFallback is true
         // then we should not use the cache hit
@@ -139,10 +139,10 @@ export const findFile = async (o: {hashAlg: string, hash: string, zone: string |
         }
     }
     
-    if (zoneInfo.bucket) {
+    if (zoneData.bucket) {
         let headObjectOutput: HeadObjectOutputX | undefined = undefined
         try {
-            headObjectOutput = await headObject(zoneInfo.bucket, objectKey)
+            headObjectOutput = await headObject(zoneData.bucket, objectKey)
         }
         catch(err) {
             // continue
@@ -154,11 +154,11 @@ export const findFile = async (o: {hashAlg: string, hash: string, zone: string |
                 hashAlg,
                 hash,
                 objectKey,
-                bucketUri: zoneInfo.bucket.uri,
+                bucketUri: zoneData.bucket.uri,
                 size,
                 timestamp: Date.now()
             }
-            const url = await getSignedDownloadUrl(zoneInfo.bucket, fileRecord.objectKey, 60 * 60)
+            const url = await getSignedDownloadUrl(zoneData.bucket, fileRecord.objectKey, 60 * 60)
 
             // store in cache
             const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}
@@ -180,10 +180,10 @@ export const findFile = async (o: {hashAlg: string, hash: string, zone: string |
         }
     }
 
-    if ((zoneInfo.fallbackBucket) && (!o.noFallback)) {
+    if ((zoneData.fallbackBucket) && (!o.noFallback)) {
         let headObjectOutput: HeadObjectOutputX | undefined = undefined
         try {
-            headObjectOutput = await headObject(zoneInfo.fallbackBucket, objectKey)
+            headObjectOutput = await headObject(zoneData.fallbackBucket, objectKey)
         }
         catch(err) {
             // continue
@@ -195,11 +195,11 @@ export const findFile = async (o: {hashAlg: string, hash: string, zone: string |
                 hashAlg,
                 hash,
                 objectKey,
-                bucketUri: zoneInfo.fallbackBucket.uri,
+                bucketUri: zoneData.fallbackBucket.uri,
                 size,
                 timestamp: Date.now()
             }
-            const url = await getSignedDownloadUrl(zoneInfo.fallbackBucket, fileRecord.objectKey, 60 * 60)
+            const url = await getSignedDownloadUrl(zoneData.fallbackBucket, fileRecord.objectKey, 60 * 60)
 
             // store in cache
             const cacheRecord = {timestampCreated: Date.now(), url, fileRecord}

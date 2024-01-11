@@ -1,5 +1,5 @@
 import { loadGatewayConfig } from './GatewayConfig'
-import { getZoneInfo, joinKeys } from './getZoneInfo'
+import { getZoneData, joinKeys } from './getZoneInfo'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
@@ -21,8 +21,8 @@ const analyzeLogs = async () => {
 
     for (const zoneName of zoneNames) {
         console.info(`ZONE: ${zoneName}`)
-        const zoneInfo = await getZoneInfo(zoneName)
-        const bucket = zoneInfo.bucket
+        const zoneData = await getZoneData(zoneName)
+        const bucket = zoneData.bucket
         const { bucketName } = parseBucketUri(bucket.uri)
 
         const clients: {[key: string]: {clientId: string, ownerId: string, headerInfo: HeaderInfo | undefined}} = {}
@@ -106,7 +106,7 @@ const analyzeLogs = async () => {
         for (let logsDirName of ['fallback-logs', 'logs']) {
             let continuationToken: string | undefined = undefined
             while (true) {
-                const dirKey = joinKeys(zoneInfo.directory, logsDirName)
+                const dirKey = joinKeys(zoneData.directory, logsDirName)
                 const {objects: logFiles, continuationToken: newContinuationToken} = await listObjects(bucket, `${dirKey}/`, {continuationToken, maxObjects: 500})
                 for (let a of logFiles) {
                     console.info(`Loading ${a.Key} (${a.Size})`)
@@ -205,7 +205,7 @@ const analyzeLogs = async () => {
             totalUsage
         }
 
-        const usageJsonKey = joinKeys(zoneInfo.directory, `usage/usage.json`)
+        const usageJsonKey = joinKeys(zoneData.directory, `usage/usage.json`)
         putObject(bucket, {
             Key: usageJsonKey,
             Bucket: bucketName,

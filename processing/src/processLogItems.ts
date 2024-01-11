@@ -1,6 +1,6 @@
 import * as fs from 'fs'
 import { closeMongoClient, getMongoClient } from "./getMongoClient"
-import { getZoneInfo, joinKeys } from './getZoneInfo'
+import { getZoneData, joinKeys } from './getZoneInfo'
 import { parseBucketUri, putObject } from "./s3Helpers"
 import splitIntoBatches from "./splitIntoBatches"
 import { LogItem, isLogItem } from "./types/LogItem"
@@ -16,9 +16,9 @@ const processLogItems = async () => {
     for (const zoneName of zoneNames) {
         console.info(`ZONE: ${zoneName}`)
 
-        const zoneInfo = await getZoneInfo(zoneName)
+        const zoneData = await getZoneData(zoneName)
 
-        const bucket = zoneInfo.bucket
+        const bucket = zoneData.bucket
         const {bucketName} = parseBucketUri(bucket.uri)
 
         const logItemsCollection = client.db('kachery-gateway').collection('logItems')
@@ -70,7 +70,7 @@ const processLogItems = async () => {
             const logItemsJson = JSON.stringify(logItems) // deterministic stringify can be slow here
             const ts = new Date().toISOString()
             const fname = `log-${ts}.json`
-            const objectKey = joinKeys(zoneInfo.directory, `logs/${fname}`)
+            const objectKey = joinKeys(zoneData.directory, `logs/${fname}`)
             console.info(`Writing ${fname}`)
             fs.writeFileSync(fname, logItemsJson)
             console.info(`Uploading log to bucket ${objectKey}`)

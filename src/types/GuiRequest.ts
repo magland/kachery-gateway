@@ -3,6 +3,7 @@ import { Client, isClient } from "./Client"
 import { isNodeId, isPrivateKeyHex, isSignature, NodeId, PrivateKeyHex, Signature } from "./keypair"
 import { isResource, Resource } from "./Resource"
 import validateObject, { isArrayOf, isBoolean, isEqualTo, isNumber, isOneOf, isString, optional } from "./validateObject"
+import { isZoneInfo, ZoneInfo } from "./ZoneInfo"
 
 //////////////////////////////////////////////////////////////////////////////////
 // addClient
@@ -302,6 +303,126 @@ export const isSetResourceInfoResponse = (x: any): x is SetResourceInfoResponse 
 }
 
 //////////////////////////////////////////////////////////////////////////////////
+// addZone
+
+export type AddZoneRequest = {
+    type: 'addZone'
+    zone: string
+    ownerId: string
+    bucketName: string
+    directory: string
+    auth: Auth
+}
+
+export const isAddZoneRequest = (x: any): x is AddZoneRequest => {
+    return validateObject(x, {
+        type: isEqualTo('addZone'),
+        zone: isString,
+        ownerId: isString,
+        bucketName: isString,
+        directory: isString,
+        auth: isAuth
+    })
+}
+
+export type AddZoneResponse = {
+    type: 'addZone'
+}
+
+export const isAddZoneResponse = (x: any): x is AddZoneResponse => {
+    return validateObject(x, {
+        type: isEqualTo('addZone')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// deleteZone
+
+export type DeleteZoneRequest = {
+    type: 'deleteZone'
+    zone: string
+    auth: Auth
+}
+
+export const isDeleteZoneRequest = (x: any): x is DeleteZoneRequest => {
+    return validateObject(x, {
+        type: isEqualTo('deleteZone'),
+        zone: isString,
+        auth: isAuth
+    })
+}
+
+export type DeleteZoneResponse = {
+    type: 'deleteZone'
+}
+
+export const isDeleteZoneResponse = (x: any): x is DeleteZoneResponse => {
+    return validateObject(x, {
+        type: isEqualTo('deleteZone')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// getZones
+
+export type GetZonesRequest = {
+    type: 'getZones'
+    userId: string
+    auth: Auth
+}
+
+export const isGetZonesRequest = (x: any): x is GetZonesRequest => {
+    return validateObject(x, {
+        type: isEqualTo('getZones'),
+        userId: isString,
+        auth: isAuth
+    })
+}
+
+export type GetZonesResponse = {
+    type: 'getZones'
+    zones: ZoneInfo[]
+}
+
+export const isGetZonesResponse = (x: any): x is GetZonesResponse => {
+    return validateObject(x, {
+        type: isEqualTo('getZones'),
+        zones: isArrayOf(isZoneInfo)
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
+// setZoneInfo
+
+export type SetZoneInfoRequest = {
+    type: 'setZoneInfo'
+    zone: string
+    bucketName?: string
+    directory?: string
+    auth: Auth
+}
+
+export const isSetZoneInfoRequest = (x: any): x is SetZoneInfoRequest => {
+    return validateObject(x, {
+        type: isEqualTo('setZoneInfo'),
+        zone: isString,
+        bucketName: optional(isString),
+        directory: optional(isString),
+        auth: isAuth
+    })
+}
+
+export type SetZoneInfoResponse = {
+    type: 'setZoneInfo'
+}
+
+export const isSetZoneInfoResponse = (x: any): x is SetZoneInfoResponse => {
+    return validateObject(x, {
+        type: isEqualTo('setZoneInfo')
+    })
+}
+
+//////////////////////////////////////////////////////////////////////////////////
 // getUsage
 
 export type GetUsageRequest = {
@@ -543,6 +664,10 @@ export type GuiRequest =
     DeleteResourceRequest |
     GetResourcesRequest |
     SetResourceInfoRequest |
+    AddZoneRequest |
+    DeleteZoneRequest |
+    GetZonesRequest |
+    SetZoneInfoRequest |
     GetUsageRequest |
     GetUserInfoRequest |
     GetAdminConfigurationRequest |
@@ -561,6 +686,10 @@ export const isGuiRequest = (x: any): x is GuiRequest => {
         isDeleteResourceRequest,
         isGetResourcesRequest,
         isSetResourceInfoRequest,
+        isAddZoneRequest,
+        isDeleteZoneRequest,
+        isGetZonesRequest,
+        isSetZoneInfoRequest,
         isGetUserInfoRequest,
         isGetUsageRequest,
         isGetAdminConfigurationRequest,

@@ -1,8 +1,8 @@
 import { FinalizeFileUploadRequest, FinalizeFileUploadResponse } from "../../src/types/GatewayRequest";
 import { NodeId } from '../../src/types/keypair';
 import { getClient } from "../common/getDatabaseItems";
-import { getZoneInfo } from "./getZoneInfo";
 import getAuthorizationSettings from "./getAuthorizationSettings";
+import { getZoneData } from "./getZoneInfo";
 import { MAX_UPLOAD_SIZE } from "./initiateFileUploadHandler";
 import { deleteObject, headObject } from "./s3Helpers";
 
@@ -33,11 +33,11 @@ const finalizeFileUploadHandler = async (request: FinalizeFileUploadRequest, ver
         if (!u.upload) throw Error(`User ${userId} not authorized to upload files.`)
     }
 
-    const zoneInfo = await getZoneInfo(zone || 'default')
-    const bucket = zoneInfo.bucket
+    const zoneData = await getZoneData(zone || 'default')
+    const bucket = zoneData.bucket
 
-    if (zoneInfo.directory) {
-        if (!objectKey.startsWith(zoneInfo.directory + '/')) {
+    if (zoneData.directory) {
+        if (!objectKey.startsWith(zoneData.directory + '/')) {
             throw Error(`Unexpected objectKey for zone with directory: ${objectKey}`)
         }
     }

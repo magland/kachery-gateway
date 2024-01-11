@@ -1,6 +1,6 @@
 import { DeleteResourceRequest, DeleteResourceResponse } from "../../src/types/GuiRequest";
 import { getResource, getUser, invalidateResourceInCache } from "../common/getDatabaseItems";
-import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
+import { getZoneData, joinKeys } from "../gatewayRequestHandlers/getZoneInfo";
 import { deleteObject, parseBucketUri, putObject } from "../gatewayRequestHandlers/s3Helpers";
 
 const deleteResourceHandler = async (request: DeleteResourceRequest, verifiedUserId?: string): Promise<DeleteResourceResponse> => {
@@ -16,14 +16,14 @@ const deleteResourceHandler = async (request: DeleteResourceRequest, verifiedUse
     }
     const user = await getUser(zone || 'default', ownerId)
     if (!user) throw Error(`User not found in zone ${zone || 'default'}: ${ownerId}`)
-    user['resourceNames'] = user['resourceNames'].filter(id => (id !== resourceName))
+    user['resourceNames'] = user['resourceNames'].filter((id: string) => (id !== resourceName))
 
-    const zoneInfo = await getZoneInfo(zone || 'default')
+    const zoneData = await getZoneData(zone || 'default')
 
-    const bucket = zoneInfo.bucket
+    const bucket = zoneData.bucket
     const {bucketName} = parseBucketUri(bucket.uri)
-    const key = joinKeys(zoneInfo.directory, `resources/${resourceName}`)
-    const userKey = joinKeys(zoneInfo.directory, `users/${ownerId}`)
+    const key = joinKeys(zoneData.directory, `resources/${resourceName}`)
+    const userKey = joinKeys(zoneData.directory, `users/${ownerId}`)
     await putObject(bucket, {
         Bucket: bucketName,
         Key: userKey,

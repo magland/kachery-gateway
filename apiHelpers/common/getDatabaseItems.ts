@@ -1,6 +1,6 @@
 import { Client, isClient } from "../../src/types/Client"
 import { isResource, Resource } from "../../src/types/Resource"
-import { getZoneInfo, joinKeys } from "../gatewayRequestHandlers/getZoneInfo"
+import { getZoneData, joinKeys } from "../gatewayRequestHandlers/getZoneInfo"
 import { getObjectContent, objectExists } from "../gatewayRequestHandlers/s3Helpers"
 
 export class ObjectCache<ObjectType> {
@@ -44,10 +44,10 @@ export const getClient = async (zone: string, clientId: string, o: {includeSecre
         return x
     }
 
-    const zoneInfo = await getZoneInfo(zone)
+    const zoneData = await getZoneData(zone)
 
-    const bucket = zoneInfo.bucket
-    const key = joinKeys(zoneInfo.directory, `clients/${clientId}`)
+    const bucket = zoneData.bucket
+    const key = joinKeys(zoneData.directory, `clients/${clientId}`)
     const exists = await objectExists(bucket, key)
     if (!exists) throw Error('Client not registered. Use kachery-cloud-init to register this kachery-cloud client.')
     const client = JSON.parse(await getObjectContent(bucket, key))
@@ -70,10 +70,10 @@ export const getResource = async (zone: string, resourceName: string, o: {includ
         return x
     }
 
-    const zoneInfo = await getZoneInfo(zone)
+    const zoneData = await getZoneData(zone)
 
-    const bucket = zoneInfo.bucket
-    const key = joinKeys(zoneInfo.directory, `resources/${resourceName}`)
+    const bucket = zoneData.bucket
+    const key = joinKeys(zoneData.directory, `resources/${resourceName}`)
     const exists = await objectExists(bucket, key)
     if (!exists) throw Error('Resource not found.')
     const resource = JSON.parse(await getObjectContent(bucket, key))
@@ -95,10 +95,10 @@ export const getUser = async (zone: string, userId: string): Promise<{[key: stri
         return x
     }
 
-    const zoneInfo = await getZoneInfo(zone)
+    const zoneData = await getZoneData(zone)
 
-    const bucket = zoneInfo.bucket
-    const key = joinKeys(zoneInfo.directory, `users/${userId}`)
+    const bucket = zoneData.bucket
+    const key = joinKeys(zoneData.directory, `users/${userId}`)
     const exists = await objectExists(bucket, key)
     if (!exists) return undefined
     const user = JSON.parse(await getObjectContent(bucket, key))

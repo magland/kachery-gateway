@@ -5,11 +5,17 @@ import { getMongoClient } from "../common/getMongoClient";
 import { deleteFromMongoCache, signedUrlObjectCache } from "./findFileHandler";
 import getAuthorizationSettings from "./getAuthorizationSettings";
 import { HeadObjectOutputX } from "./getS3Client";
-import { getZoneInfo, joinKeys } from "./getZoneInfo";
+import { getZoneData, joinKeys } from "./getZoneInfo";
 import { Bucket, headObject, renameObject } from "./s3Helpers";
+
+const disabled = true
 
 const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: NodeId, verifiedUserId?: string): Promise<DeleteFileResponse> => {
     const { hash, hashAlg, zone } = request.payload
+
+    if (disabled) {
+        throw Error('This operation has been disabled')
+    }
 
     const clientId = verifiedClientId
     let userId = verifiedUserId
@@ -33,14 +39,14 @@ const deleteFileHandler = async (request: DeleteFileRequest, verifiedClientId?: 
     if (!u) throw Error(`User ${userId} is not authorized.`)
     if (!u.admin) throw Error(`User ${userId} not authorized to delete files.`)
 
-    const zoneInfo = await getZoneInfo(zone || 'default')
+    const zoneData = await getZoneData(zone || 'default')
 
-    const bucket = zoneInfo.bucket
-    const fallbackBucket: Bucket | undefined = zoneInfo.fallbackBucket
+    const bucket = zoneData.bucket
+    const fallbackBucket: Bucket | undefined = zoneData.fallbackBucket
 
     const h = hash
-    const objectKey = joinKeys(zoneInfo.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
-    const trashObjectKey = joinKeys(zoneInfo.directory, `trash/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
+    const objectKey = joinKeys(zoneData.directory, `${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
+    const trashObjectKey = joinKeys(zoneData.directory, `trash/${hashAlg}/${h[0]}${h[1]}/${h[2]}${h[3]}/${h[4]}${h[5]}/${hash}`)
 
     const doDeleteFromCache = async (bucketUri: string) => {
         // delete from cache

@@ -3,18 +3,22 @@ import axios from 'axios'
 import githubVerifyAccessToken from '../apiHelpers/common/githubVerifyAccessToken'
 import addClientHandler from '../apiHelpers/guiRequestHandlers/addClientHandler'
 import addResourceHandler from '../apiHelpers/guiRequestHandlers/addResourceHandler'
+import addZoneHandler from '../apiHelpers/guiRequestHandlers/addZoneHandler'
 import adminActionHandler from '../apiHelpers/guiRequestHandlers/adminAction'
 import deleteClientHandler from '../apiHelpers/guiRequestHandlers/deleteClientHandler'
 import deleteResourceHandler from '../apiHelpers/guiRequestHandlers/deleteResourceHandler'
+import deleteZoneHandler from '../apiHelpers/guiRequestHandlers/deleteZoneHandler'
 import getAdminConfigurationHandler from '../apiHelpers/guiRequestHandlers/getAdminConfiguration'
 import getAuthorizationSettingsYamlHandler from '../apiHelpers/guiRequestHandlers/getAuthorizationSettingsYamlHandler'
 import getClientsHandler from '../apiHelpers/guiRequestHandlers/getClientsHandler'
 import getResourcesHandler from '../apiHelpers/guiRequestHandlers/getResourcesHandler'
 import getUsageHandler from '../apiHelpers/guiRequestHandlers/getUsageHandler'
+import getZonesHandler from '../apiHelpers/guiRequestHandlers/getZonesHandler'
 import getUserInfoHandler from '../apiHelpers/guiRequestHandlers/getUserInfoHandler'
 import setAuthorizationSettingsYamlHandler from '../apiHelpers/guiRequestHandlers/setAuthorizationSettingsYamlHandler'
 import setClientInfoHandler from '../apiHelpers/guiRequestHandlers/setClientInfoHandler'
 import setResourceInfoHandler from '../apiHelpers/guiRequestHandlers/setResourceInfoHandler'
+import setZoneInfoHandler from '../apiHelpers/guiRequestHandlers/setZoneInfoHandler'
 import testConfigurationHandler from '../apiHelpers/guiRequestHandlers/testConfiguration'
 import writeLogItem from '../apiHelpers/writeLogItem'
 import { isGuiRequest } from '../src/types/GuiRequest'
@@ -97,6 +101,28 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
                 throw Error('ReCaptcha required')
             }
             return await setResourceInfoHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'addZone') {
+            if (!verifiedReCaptchaInfo) {
+                throw Error('ReCaptcha required')
+            }
+            return await addZoneHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'deleteZone') {
+            if (!verifiedReCaptchaInfo) {
+                throw Error('ReCaptcha required')
+            }
+            return await deleteZoneHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'getZones') {
+            // no recaptcha required
+            return await getZonesHandler(request, verifiedUserId)
+        }
+        else if (request.type === 'setZoneInfo') {
+            if (!verifiedReCaptchaInfo) {
+                throw Error('ReCaptcha required')
+            }
+            return await setZoneInfoHandler(request, verifiedUserId)
         }
         else if (request.type === 'getUserInfo') {
             return await getUserInfoHandler(request, verifiedUserId)

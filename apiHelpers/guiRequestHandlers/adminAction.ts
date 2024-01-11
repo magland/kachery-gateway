@@ -1,7 +1,7 @@
 import { AdminActionRequest, AdminActionResponse } from "../../src/types/GuiRequest";
 import getAuthorizationSettings from "../gatewayRequestHandlers/getAuthorizationSettings";
 import getS3Client from "../gatewayRequestHandlers/getS3Client";
-import { getZoneInfo } from "../gatewayRequestHandlers/getZoneInfo";
+import { getZoneData } from "../gatewayRequestHandlers/getZoneInfo";
 import { parseBucketUri } from "../gatewayRequestHandlers/s3Helpers";
 import isAdminUser from "./helpers/isAdminUser";
 
@@ -30,8 +30,8 @@ const adminActionHandler = async (request: AdminActionRequest, verifiedUserId?: 
     let success: boolean
 
     if (actionType === 'setBucketCORS') {
-        const zoneInfo = await getZoneInfo(zone || 'default')
-        const bucket = zoneInfo.bucket
+        const zoneData = await getZoneData(zone || 'default')
+        const bucket = zoneData.bucket
         const {bucketName} = parseBucketUri(bucket.uri)
         const client = getS3Client(bucket)
 
