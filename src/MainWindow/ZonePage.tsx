@@ -102,6 +102,9 @@ const ZonePage: FunctionComponent<Props> = ({zoneName}) => {
                 </TableBody>
             </Table>
             <p /><hr /><p />
+            <button onClick={() => {setRoute({page: 'admin', zone: zoneName})}}>
+                Go to admin page
+            </button>
         </div>
     )
 }
