@@ -15,6 +15,7 @@ import RegisterClientPage from './RegisterClientPage';
 import ResourcePage from './ResourcePage';
 import ResourcesTable from './ResourcesTable';
 import useRoute from './useRoute';
+import ZonesTable from './ZonesTable';
 
 type Props = {
 }
@@ -84,6 +85,8 @@ const MainWindow: FunctionComponent<Props> = () => {
                                 <ClientsTable />
                             ) : route.page === 'resources' ? (
                                 <ResourcesTable />
+                            ) : route.page === 'zones' ? (
+                                <ZonesTable />
                             ) : route.page === 'admin' ? (
                                 <AdminPage
                                     width={W}

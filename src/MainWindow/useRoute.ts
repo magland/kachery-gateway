@@ -13,6 +13,9 @@ export type Route = {
     page: 'resources'
     zone: string
 } | {
+    page: 'zones'
+    zone: string
+} | {
     page: 'client'
     clientId: NodeId
     zone: string
@@ -51,6 +54,12 @@ const useRoute = () => {
     else if (p === '/resources') {
         route = {
             page: 'resources',
+            zone
+        }
+    }
+    else if (p === '/zones') {
+        route = {
+            page: 'zones',
             zone
         }
     }
@@ -110,6 +119,10 @@ const useRoute = () => {
         let pathname2 = '/home'
         if (route.page === 'resources') {
             pathname2 = `/resources`
+            query2['zone'] = route.zone
+        }
+        else if (route.page === 'zones') {
+            pathname2 = `/zones`
             query2['zone'] = route.zone
         }
         else if (route.page === 'clients') {

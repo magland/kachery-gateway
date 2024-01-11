@@ -64,6 +64,7 @@ const LeftPanel: FunctionComponent<Props> = ({width, height}) => {
         }[] = [
             {label: 'Home', route: {page: 'home', zone: route.zone}, icon: <Home />},
             {label: 'Clients', route: {page: 'clients', zone: route.zone}, icon: <ViewModule />},
+            {label: 'Zones', route: {page: 'zones', zone: route.zone}, icon: <ViewModule />},
             {label: 'Resources', route: {page: 'resources', zone: route.zone}, icon: <ViewModule />}
         ]
         if (isAdminForZone) {

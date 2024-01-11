@@ -16,7 +16,7 @@ const deleteClientHandler = async (request: DeleteClientRequest, verifiedUserId?
     }
     const user = await getUser(zone || 'default', ownerId)
     if (!user) throw Error(`User not found in zone ${zone || 'default'}: ${ownerId}`)
-    user['clientIds'] = user['clientIds'].filter(id => (id !== clientId))
+    user['clientIds'] = user['clientIds'].filter((id: string) => (id !== clientId.toString()))
 
     const zoneInfo = await getZoneInfo(zone || 'default')
 

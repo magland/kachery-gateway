@@ -16,7 +16,7 @@ const deleteResourceHandler = async (request: DeleteResourceRequest, verifiedUse
     }
     const user = await getUser(zone || 'default', ownerId)
     if (!user) throw Error(`User not found in zone ${zone || 'default'}: ${ownerId}`)
-    user['resourceNames'] = user['resourceNames'].filter(id => (id !== resourceName))
+    user['resourceNames'] = user['resourceNames'].filter((id: string) => (id !== resourceName))
 
     const zoneInfo = await getZoneInfo(zone || 'default')
 
