@@ -56,7 +56,7 @@
   },
   "devDependencies": {
     "@types/mongodb": "^4.0.7",
-    "@vercel/node": "^2.5.25",
+    "@vercel/node": "^3.0.16",
     "aws-sdk": "^2.1236.0",
     "tweetnacl": "^1.0.3"
   }

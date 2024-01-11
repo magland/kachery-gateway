@@ -22,5 +22,6 @@
   },
   "include": [
     "src"
-  ]
+  ],
+  "note": "Can't get the serverless api to work in dev mode unless I do: npm install -g vercel@28.10.2"
 }
