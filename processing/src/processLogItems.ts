@@ -1,17 +1,14 @@
 import * as fs from 'fs'
 import { closeMongoClient, getMongoClient } from "./getMongoClient"
 import { getZoneData, joinKeys } from './getZoneInfo'
-import { parseBucketUri, putObject } from "./s3Helpers"
+import { listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import splitIntoBatches from "./splitIntoBatches"
 import { LogItem, isLogItem } from "./types/LogItem"
 
 const processLogItems = async () => {
     const client = await getMongoClient()
 
-    // hard-coded for now
-    const zoneNames = [
-        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind'
-    ]
+    const zoneNames = await getRegisteredZoneNames()
 
     for (const zoneName of zoneNames) {
         console.info(`ZONE: ${zoneName}`)
@@ -92,6 +89,38 @@ const processLogItems = async () => {
         }
     }
     closeMongoClient()
+}
+
+export const getRegisteredZoneNames = async () => {
+    const defaultZoneData = await getZoneData('default')
+    const defaultBucket = defaultZoneData.bucket
+    const ret: string[] = []
+
+    // these are hard-coded for now
+    for (const zn of [
+        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind'
+    ]) {
+        ret.push(zn)
+    }
+
+    let continuationToken: string | undefined = undefined
+    while (true) {
+        const aa: {
+            objects: {
+                Key: string;
+                Size: number;
+            }[];
+            continuationToken: string | undefined;
+        } = await listObjects(defaultBucket, `registered-zones/`, {continuationToken, maxObjects: 500})
+        const {objects: registeredZoneObjects, continuationToken: newContinuationToken} = aa
+        for (let obj of registeredZoneObjects) {
+            const zoneName = obj.Key.split('/')[1]
+            ret.push(zoneName)
+        }
+        if (!newContinuationToken) break
+        continuationToken = newContinuationToken
+    }
+    return ret
 }
 
 processLogItems()

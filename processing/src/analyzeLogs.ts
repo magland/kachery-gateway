@@ -1,5 +1,6 @@
 import { loadGatewayConfig } from './GatewayConfig'
 import { getZoneData, joinKeys } from './getZoneInfo'
+import { getRegisteredZoneNames } from './processLogItems'
 import { getObjectContent, listObjects, parseBucketUri, putObject } from "./s3Helpers"
 import { FinalizeFileUploadRequest, FindFileRequest, FindFileResponse } from './types/GatewayRequest'
 import { AddClientRequest } from './types/GuiRequest'
@@ -14,10 +15,7 @@ const analyzeLogs = async () => {
         throw Error(`No buckets in gateway config`)
     }
 
-    // hard-coded for now
-    const zoneNames = [
-        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind'
-    ]
+    const zoneNames = await getRegisteredZoneNames()
 
     for (const zoneName of zoneNames) {
         console.info(`ZONE: ${zoneName}`)
