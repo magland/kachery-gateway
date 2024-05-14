@@ -51,16 +51,16 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
     const { payload, fromClientId, signature, githubUserId, githubAccessToken } = request
     const { timestamp } = payload
     const elapsed = Date.now() - timestamp
-    if ((elapsed > 30000) || (elapsed < -30000)) { 
+    if ((elapsed > 65000) || (elapsed < -65000)) {
 
         // Vercel started being off by 24 hours! For now let's allow that
         let okay = false
         const elapsed2 = Date.now() - timestamp + 24 * 60 * 60 * 1000
-        if ((-30000 < elapsed2) && (elapsed2 < 30000)) {
+        if ((-65000 < elapsed2) && (elapsed2 < 65000)) {
             okay = true
         }
         const elapsed3 = Date.now() - timestamp - 24 * 60 * 60 * 1000
-        if ((-30000 < elapsed3) && (elapsed3 < 30000)) {
+        if ((-65000 < elapsed3) && (elapsed3 < 65000)) {
             okay = true
         }
 
