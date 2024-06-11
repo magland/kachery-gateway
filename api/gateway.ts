@@ -56,11 +56,11 @@ module.exports = (req: VercelRequest, res: VercelResponse) => {
         // Vercel started being off by 24 hours! For now let's allow that
         let okay = false
         const elapsed2 = Date.now() - timestamp + 24 * 60 * 60 * 1000
-        if ((-65000 < elapsed2) && (elapsed2 < 65000)) {
+        if ((-125000 < elapsed2) && (elapsed2 < 125000)) {
             okay = true
         }
         const elapsed3 = Date.now() - timestamp - 24 * 60 * 60 * 1000
-        if ((-65000 < elapsed3) && (elapsed3 < 65000)) {
+        if ((-125000 < elapsed3) && (elapsed3 < 125000)) {
             okay = true
         }
 
