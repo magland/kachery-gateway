@@ -98,7 +98,7 @@ export const getRegisteredZoneNames = async () => {
 
     // these are hard-coded for now
     for (const zn of [
-        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind'
+        'default', 'franklab.default', 'franklab.collaborators', 'franklab.public', 'aind', 'kempner'
     ]) {
         ret.push(zn)
     }

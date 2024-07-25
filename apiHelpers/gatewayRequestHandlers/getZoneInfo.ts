@@ -53,6 +53,11 @@ export const getZoneInfo = async (zone: string, o: {skipCache?: boolean}={}): Pr
         bucketName = 'aind'
         directory = ''
     }
+    else if (zone === 'kempner') {
+        ownerId = 'github|magland'
+        bucketName = 'kempner-kachery-zone'
+        directory = ''
+    }
     else {
         if (zone === 'default') {
             throw Error('Unexpected _752d_')
