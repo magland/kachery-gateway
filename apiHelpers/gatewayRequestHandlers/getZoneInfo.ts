@@ -55,7 +55,7 @@ export const getZoneInfo = async (zone: string, o: {skipCache?: boolean}={}): Pr
     }
     else if (zone === 'kempner') {
         ownerId = 'github|magland'
-        bucketName = 'kempner-kachery-zone'
+        bucketName = 'kempner'
         directory = ''
     }
     else {

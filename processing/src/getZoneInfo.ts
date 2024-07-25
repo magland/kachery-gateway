@@ -53,7 +53,7 @@ export const getZoneInfo = async (zone: string): Promise<ZoneInfo> => {
     }
     else if (zone === 'kempner') {
         ownerId = 'github|magland'
-        bucketName = 'kempner-kachery-zone'
+        bucketName = 'kempner'
         directory = ''
     }
     else {
