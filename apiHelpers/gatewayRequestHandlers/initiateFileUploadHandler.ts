@@ -48,6 +48,13 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
         throw Error('User banned: please configure to use the appropriate franklab zone')
     }
 
+    if ((zone || 'default') === 'default') {
+        if (userId === 'bxy666666') {
+            // a one-off ban to force migration to a new zone
+            throw Error('Upload not allowed for this user. See https://github.com/magland/sortingview/issues/235#issue-2506031928');
+        }
+    }
+
     // check the user ID for authorization
     const authorizationSettings = await getAuthorizationSettings(zone || 'default')
     if (!authorizationSettings.allowPublicUpload) {
@@ -93,7 +100,7 @@ const initiateFileUploadHandler = async (request: InitiateFileUploadRequest, ver
     // }
     // pendingUploads.set(puKey, {hash, hashAlg, projectId, timestamp: Date.now()})
     /////////////////////////////////////////////////////////////////////
-    
+
     return {
         type: 'initiateFileUpload',
         alreadyExists: false,
