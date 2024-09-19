@@ -37,8 +37,10 @@ const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string):
     if (await objectExists(defaultBucket, userKey)) {
         user = JSON.parse(await getObjectContent(defaultBucket, userKey))
     }
-    if ((user['zones'] || []).length >= MAX_NUM_ZONES_PER_USER) {
-        throw Error(`Maximum number of zones per user is ${MAX_NUM_ZONES_PER_USER}`)
+    if (!isAdminUser(ownerId)) {
+        if ((user['zones'] || []).length >= MAX_NUM_ZONES_PER_USER) {
+            throw Error(`Maximum number of zones per user is ${MAX_NUM_ZONES_PER_USER}`)
+        }
     }
 
     const zoneKey = `registered-zones/${zone}`
@@ -69,7 +71,7 @@ const addZoneHandler = async (request: AddZoneRequest, verifiedUserId?: string):
 
     invalidateZoneInfoInCache(zone)
     invalidateUserInCache('default', ownerId)
-    
+
     return {
         type: 'addZone',
     }
